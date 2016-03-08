@@ -7,9 +7,9 @@ SDIS Work:
 
 a service must drop messages that it does not understand.This is a general rule of every protocol.
 
-2 Multicast Channels:
+3 Multicast Channels:
 
-MDB multicast data channel.
+MDB, MDR, MC multicast data channel.
 
 PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
 
