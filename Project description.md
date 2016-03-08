@@ -1,9 +1,3 @@
-
-	
-	<h1>SDIS 2015/2016: Project 1 -- Distributed Backup Service</h1>
-</head>
-<body>
-
 <h2>SDIS 2015/2016 - 2nd Semester<br>
 	 Project 1 -- Distributed Backup Service<br>
 </h2>
