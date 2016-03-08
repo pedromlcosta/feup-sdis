@@ -1,8 +1,6 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<!-- saved from url=(0061)https://web.fe.up.pt/~pfs/aulas/sd2016/projs/proj1/proj1.html -->
-<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+
 	
-	<title>SDIS 2015/2016: Project 1 -- Distributed Backup Service</title>
+	<h1>SDIS 2015/2016: Project 1 -- Distributed Backup Service</h1>
 </head>
 <body>
 
