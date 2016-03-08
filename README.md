@@ -1,2 +1,81 @@
 # feup-sdis
-Distributed Backup System
+SDIS Work:
+
+1. chunk backup
+2. chunk restore
+3. file deletion
+4. space reclaiming
+
+a service must drop messages that it does not understand.This is a general rule of every protocol.
+
+2 Multicast Channels:
+
+MDB multicast data channel.
+
+PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
+
+multicast control channel (MC) 
+STORED <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
+
+
+Hint: Because UDP is not reliable, a peer that has stored a chunk must reply with a STORED message to every PUTCHUNK message it
+receives. Therefore, the initiator-peer needs to keep track of which peers have responded.
+IMP: A peer must never store the chunks of its own files.
+
+
+A server manages local disk storage   or parts /
+Identified by an integer, which is assumed to be unique and that never changes /
+Network may loose or duplicate messages/
+Network failures are transient -  if the sender keeps retransmitting a message, it will eventually reach its destination./
+Backup service will generate an identifier for each file it backs up - applying SHA256/ Quem decide o nome para a bit string é o de backup ou o dono?/
+The backup service splits each file in chunks  backs up each chunk independently/
+Chunk is identified by the pair (fileId, chunkNo)/
+The size of each chunk is 64KByte (where K stands for 1000) /
+The size of the last chunk is always shorter than that size. If the file size is a multiple of the chunk size, the last chunk has size 0. /
+A peer need not store all chunks of a file, or even any chunk/
+The recovery of each chunk is also performed independently/
+In order to tolerate the unavailability of peers, the service backs up each chunk with a given degree of replication/
+All chunks of a given file have the same desired replication degree./
+At any time instant, the actual replication degree of a chunk may be different from the one that is desired/
+Backup service must provide the functionality for reclaiming disk space on peers/
+Each peer retains total control on the use of its local disk space/
+May drop below the desired value. In that case, the service will try to create new copies of the chunk/
+
+MESSAGES:
+The header consists of a sequence of ASCII lines, sequences of ASCII codes terminated with the sequence '0xD''0xA'
+
+1. there may be more than one space between fields;
+2. there may be zero or more spaces after the last field in a line;
+3. the header always terminates with an empty header line. I.e. the <CRLF> of the last header line is followed immediately by another
+<CRLF>, without any character in between.
+
+<MessageType> <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF>
+
+<MessageType>
+This is the type of the message. Each subprotocol specifies its own message types. This field determines the format of the message and
+what actions its receivers should perform. This is encoded as a variable length sequence of ASCII characters.
+
+<Version>
+This is the version of the protocol. It is a three ASCII char sequence with the format <n>'.'<m>, where <n> and <m> are the ASCII codes
+of digits. For example, version 1.0, the one specified in this document, should be encoded as the char sequence '1''.''0'.
+
+<SenderId>
+This is the id of the server that has sent the message. This field is useful in many subprotocols. This is encoded as a variable length
+sequence of ASCII digits.
+<FileId>
+
+This is the file identifier for the backup service. As stated above, it is supposed to be obtained by using the SHA256 cryptographic hash
+function. As its name indicates its length is 256 bit, i.e. 32 bytes, and should be encoded as a 64 ASCII character sequence. The
+encoding is as follows: each byte of the hash value is encoded by the two ASCII characters corresponding to the hexadecimal
+representation of that byte. E.g., a byte with value 0xB2 should be represented by the two char sequence 'B''2' (or 'b''2', it does not
+matter). The entire hash is represented in big-endian order, i.e. from the MSB (byte 31) to the LSB (byte 0).
+
+<ChunkNo>
+This field together with the FileId specifies a chunk in the file. The chunk numbers are integers and should be assigned sequentially
+starting at 0. It is encoded as a sequence of ASCII characters corresponding to the decimal representation of that number, with the most
+significant digit first. The length of this field is variable, but should not be larger than 6 chars. Therefore, each file can have at most one
+million chunks. Given that each chunk is 64 KByte, this limits the size of the files to backup to 64 GByte.
+
+<ReplicationDeg>
+This field contains the desired replication degree of the chunk. This is a digit, thus allowing a replication degree of up to 9. It takes one
+byte, which is the ASCII code of that digit.
