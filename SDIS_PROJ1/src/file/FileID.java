@@ -20,6 +20,7 @@ public class FileID {
 		String absPath = file.getAbsolutePath();
 		Path path = file.toPath();
 		long fileSize = file.length();
+		int homeServer;
 		this.nChunks = (int) Math.floorDiv(fileSize, Chunk.getChunkSize());
 		// each file must have at least 1 chunck
 		this.nChunks = ((this.nChunks == 0 && fileSize > 0) ? 1 : this.nChunks);
