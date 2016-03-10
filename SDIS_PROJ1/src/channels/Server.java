@@ -14,12 +14,28 @@ public class Server extends Thread {
 	public Server() {
 	}
 
-	public int getServerID() {
-		return serverID;
+	public void joinMulticasGroup() {
+		try {
+			if (this.socket != null)
+				this.socket.joinGroup(this.getAddr());
+		} catch (IOException e) {
+			System.out.println("Error in Join Group");
+			e.printStackTrace();
+		}
 	}
 
-	public void setServerID(int serverID) {
-		this.serverID = serverID;
+	public void leaveMulticasGroup() {
+		try {
+			if (this.socket != null)
+				this.socket.leaveGroup(this.getAddr());
+		} catch (IOException e) {
+			System.out.println("Error in Leave Group");
+			e.printStackTrace();
+		}
+	}
+
+	public DatagramPacket createDatagramPacket(byte[] buffer) {
+		return new DatagramPacket(buffer, buffer.length, this.getAddr(), this.getPort());
 	}
 
 	public void joinMulticasGroup(InetAddress mcastaddr) {
@@ -66,6 +82,14 @@ public class Server extends Thread {
 
 	public MulticastSocket getSocket() {
 		return socket;
+	}
+
+	public int getServerID() {
+		return serverID;
+	}
+
+	public void setServerID(int serverID) {
+		this.serverID = serverID;
 	}
 
 	public void setSocket(MulticastSocket socket) {
