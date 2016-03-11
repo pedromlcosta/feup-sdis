@@ -12,7 +12,7 @@ import extra.Extra;
 public class FileID {
 	private int nChunks;
 	private int desiredRepDegree;
-	int homeServer;
+	private int homeServer;
 	private String ID;
 
 	public FileID(String fileName) {
@@ -21,8 +21,8 @@ public class FileID {
 		String absPath = file.getAbsolutePath();
 		Path path = file.toPath();
 		long fileSize = file.length();
-		
-		this.nChunks = (int) Math.floorDiv(fileSize, Chunk.getChunkSize());
+		// TODO case where fileSize multiple of ChunkSize
+		this.nChunks = (int) Math.ceil((1.0 * fileSize) / Chunk.getChunkSize());
 		// each file must have at least 1 chunck
 		this.nChunks = ((this.nChunks == 0 && fileSize > 0) ? 1 : this.nChunks);
 		try {
@@ -58,7 +58,7 @@ public class FileID {
 	public void setHomeServer(int homeServer) {
 		this.homeServer = homeServer;
 	}
-	
+
 	public String getID() {
 		return ID;
 	}
