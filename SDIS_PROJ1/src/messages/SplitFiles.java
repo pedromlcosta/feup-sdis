@@ -72,25 +72,20 @@ public class SplitFiles {
 
 	public boolean joinChunk(Chunk chunk, String name) throws IOException {
 
-		RandomAccessFile fileOut = new RandomAccessFile(name, "rw");
+		RandomAccessFile fileOut = new RandomAccessFile(name, "w");
 		byte[] data = chunk.getData();
 		int id = chunk.getId().getChunkNumber();
 		int pos;
-		
+
 		if (data.length == 0) {
 			fileOut.close();
 			return true;
-		} else if (data.length == CHUNK_SIZE)
-			pos = CHUNK_SIZE * id;
-		else if (data.length < CHUNK_SIZE) {
-			pos = CHUNK_SIZE * (id - 1);
 		} else {
+			pos = CHUNK_SIZE * id;
+			fileOut.write(data, pos, data.length);
 			fileOut.close();
-			return false;
+			return true;
 		}
 
-		fileOut.write(data, pos, data.length);
-		fileOut.close();
-		return true;
 	}
 }

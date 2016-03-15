@@ -25,6 +25,7 @@ public class Main {
 
 		Message testeMsg = new Message();
 		System.out.println(Character.toString(testeMsg.getEOL().toCharArray()[0]));
-		System.out.println(Character.toString((char) 0x44));
+		System.out.println("\u0044");
+		testeMsg.parseMessage("PUTCHUNK    <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF>s");
 	}
 }

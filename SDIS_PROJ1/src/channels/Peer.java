@@ -8,6 +8,12 @@ import file.FileID;
 
 //SINGLETON SYNCRONIZE ALL THREADS HAVE ACESS TO IT
 public class Peer extends Server {
+	static Peer instance = new Peer();
+
+	static Peer getInstance() {
+		return instance;
+	}
+
 	private HashMap<ChunkID, Chunk> stored;
 	private ArrayList<FileID> filesSent;
 	private MC controlChannel;
