@@ -14,6 +14,18 @@ public class Server extends Thread {
 	public Server() {
 	}
 
+	public Server(boolean quitFlag, int serverID, InetAddress addr, int port) {
+		this.quitFlag = quitFlag;
+		this.serverID = serverID;
+		this.addr = addr;
+		this.port = port;
+		try {
+			this.socket = new MulticastSocket(port);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
 	public void joinMulticasGroup() {
 		try {
 			if (this.socket != null)

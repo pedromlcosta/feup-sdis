@@ -1,6 +1,9 @@
 package main;
 
+import java.lang.reflect.Array;
+
 import messages.Message;
+import messages.Message.MESSAGE_TYPE;
 
 public class Main {
 	public static void main(String args[]) {
@@ -28,7 +31,13 @@ public class Main {
 		// System.out.println("\u0044");
 		// testeMsg.parseMessage("PUTCHUNK <Version> <SenderId> <FileId>
 		// <ChunkNo> <ReplicationDeg> <CRLF><CRLF>sasdasdas");
-		testeMsg.validateMsg("PUTCHUNK  Version SenderId FileId ChunkNo_ReplicationDeg<CRLF><CRLF>", 6);
+		String s[] = new String[4];
+		s[0] = "Version";
+		s[1] = "SenderId";
+		s[2] = "FileId";
+		s[3] = "ChunkNo_ReplicationDeg";
+		testeMsg.createMessage(MESSAGE_TYPE.PUTCHUNK, s, new byte[5]);
+		System.out.println("MSG: " + testeMsg.getMessageToSend());
 
 	}
 }

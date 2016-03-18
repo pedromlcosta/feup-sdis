@@ -20,9 +20,9 @@ public class Message {
 		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED
 	}
 
-	private final String VALIDATE_MSG_Part1 = "^(?:(?:\\w)* +){";
-	private final String VALIDATE_MSG_Part2 = "}\\w+ *<CRLF><CRLF>.*";
 	private final String EOL = "\u0013\u0010";
+	private final String VALIDATE_MSG_Part1 = "^(?:(?:\\w)* +){";
+	private final String VALIDATE_MSG_Part2 = "}\\w+ *" + EOL + ".*";
 	private final String PATTERN = " |" + EOL;
 	private String messageToSend = "";
 
@@ -41,21 +41,32 @@ public class Message {
 		return match;
 	}
 
+	public boolean createMessage(MESSAGE_TYPE type, String args[], byte data[]) {
+		createHeader(type, args);
+		messageToSend.concat(new String(data));
+		if (validateMsg(messageToSend, args.length))
+			return true;
+		else {
+			messageToSend = EMPTY_STRING;
+			return false;
+		}
+	}
+
 	public boolean createHeader(MESSAGE_TYPE type, String... args) {
 		if (args.length > 0)
 			switch (type) {
 			case GETCHUNK:
-				return createMessage(args, 3, Message.GETCHUNK);
+				return createHeaderAux(args, 3, Message.GETCHUNK);
 			case CHUNK:
-				return createMessage(args, 3, CHUNK);
+				return createHeaderAux(args, 3, CHUNK);
 			case DELETE:
-				return createMessage(args, 2, DELETE);
+				return createHeaderAux(args, 2, DELETE);
 			case REMOVED:
-				return createMessage(args, 3, REMOVED);
+				return createHeaderAux(args, 3, REMOVED);
 			case PUTCHUNK:
-				return createMessage(args, 4, PUTCHUNK);
+				return createHeaderAux(args, 4, PUTCHUNK);
 			case STORED:
-				return createMessage(args, 3, STORED);
+				return createHeaderAux(args, 3, STORED);
 			default:
 				return false;
 			}
@@ -63,15 +74,13 @@ public class Message {
 	}
 
 	public boolean validateMsg(String s, int nArgs) {
-		String validateRegex = new String(VALIDATE_MSG_Part1 + (nArgs - 1) + VALIDATE_MSG_Part2);
+		String validateRegex = new String(VALIDATE_MSG_Part1 + (nArgs) + VALIDATE_MSG_Part2);
 		Pattern p = Pattern.compile(validateRegex);
 		Matcher m = p.matcher(s);
-		boolean b = m.matches();
-		System.out.println(b);
-		return true;
+		return m.matches();
 	}
 
-	public boolean createMessage(String[] args, int nArgs, String messageType) {
+	public boolean createHeaderAux(String[] args, int nArgs, String messageType) {
 		if (args.length != nArgs)
 			return false;
 		// clean String
@@ -93,12 +102,12 @@ public class Message {
 	}
 
 	public void addEOL() {
-		messageToSend.concat(EOL);
+		messageToSend = messageToSend.concat(EOL);
 	}
 
 	public void addArgs(String[] args) {
 		for (String arg : args) {
-			messageToSend.concat(" " + arg);
+			messageToSend = messageToSend.concat(" " + arg);
 		}
 		addEOL();
 	}
