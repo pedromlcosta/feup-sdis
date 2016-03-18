@@ -24,8 +24,11 @@ public class Main {
 		// }
 
 		Message testeMsg = new Message();
-		System.out.println(Character.toString(testeMsg.getEOL().toCharArray()[0]));
-		System.out.println("\u0044");
-		testeMsg.parseMessage("PUTCHUNK    <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF>s");
+		// System.out.println(Character.toString(testeMsg.getEOL().toCharArray()[0]));
+		// System.out.println("\u0044");
+		// testeMsg.parseMessage("PUTCHUNK <Version> <SenderId> <FileId>
+		// <ChunkNo> <ReplicationDeg> <CRLF><CRLF>sasdasdas");
+		testeMsg.validateMsg("PUTCHUNK  Version SenderId FileId ChunkNo_ReplicationDeg<CRLF><CRLF>", 6);
+
 	}
 }

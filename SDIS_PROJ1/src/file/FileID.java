@@ -16,7 +16,7 @@ public class FileID {
 	private String ID;
 
 	public FileID(String fileName) {
-
+		// TODO multiple Nchunks bellow
 		File file = new File(fileName);
 		String absPath = file.getAbsolutePath();
 		Path path = file.toPath();

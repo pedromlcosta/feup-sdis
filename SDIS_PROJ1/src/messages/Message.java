@@ -1,6 +1,7 @@
 
 package messages;
 
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 //TODO devo mudar quase tudo o que está aqui so ignore this for now
@@ -19,6 +20,8 @@ public class Message {
 		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED
 	}
 
+	private final String VALIDATE_MSG_Part1 = "^(?:(?:\\w)* +){";
+	private final String VALIDATE_MSG_Part2 = "}\\w+ *<CRLF><CRLF>.*";
 	private final String EOL = "\u0013\u0010";
 	private final String PATTERN = " |" + EOL;
 	private String messageToSend = "";
@@ -59,8 +62,13 @@ public class Message {
 		return false;
 	}
 
-	public byte[] getMessageBytes() {
-		return messageToSend.getBytes();
+	public boolean validateMsg(String s, int nArgs) {
+		String validateRegex = new String(VALIDATE_MSG_Part1 + (nArgs - 1) + VALIDATE_MSG_Part2);
+		Pattern p = Pattern.compile(validateRegex);
+		Matcher m = p.matcher(s);
+		boolean b = m.matches();
+		System.out.println(b);
+		return true;
 	}
 
 	public boolean createMessage(String[] args, int nArgs, String messageType) {
@@ -70,6 +78,38 @@ public class Message {
 		messageToSend = messageType;
 		addArgs(args);
 		return true;
+	}
+
+	public void addData(byte[] data) {
+		messageToSend.concat(data.toString());
+	}
+
+	public String addData(String string, byte[] data) {
+		return string.concat(data.toString());
+	}
+
+	public String addEOL(String string) {
+		return string.concat(EOL);
+	}
+
+	public void addEOL() {
+		messageToSend.concat(EOL);
+	}
+
+	public void addArgs(String[] args) {
+		for (String arg : args) {
+			messageToSend.concat(" " + arg);
+		}
+		addEOL();
+	}
+
+	public void discardMessage() {
+		this.setMessageToSend("");
+	}
+
+	// From here there are only gets and sets
+	public byte[] getMessageBytes() {
+		return messageToSend.getBytes();
 	}
 
 	public String getEOL() {
@@ -92,30 +132,36 @@ public class Message {
 		return EMPTY_STRING;
 	}
 
-	public void addData(byte[] data) {
-		messageToSend.concat(data.toString());
+	public static String getGetchunk() {
+		return GETCHUNK;
 	}
 
-	public String addData(String string, byte[] data) {
-		return string.concat(data.toString());
+	public static String getChunk() {
+		return CHUNK;
 	}
 
-	public String addEOL(String string) {
-		return string.concat(EOL);
+	public static String getDelete() {
+		return DELETE;
 	}
 
-	public void discardMessage() {
-		this.setMessageToSend("");
+	public static String getRemoved() {
+		return REMOVED;
 	}
 
-	public void addEOL() {
-		messageToSend.concat(EOL);
+	public static String getPutchunk() {
+		return PUTCHUNK;
 	}
 
-	public void addArgs(String[] args) {
-		for (String arg : args) {
-			messageToSend.concat(" " + arg);
-		}
-		addEOL();
+	public static String getStored() {
+		return STORED;
 	}
+
+	public String getVALIDATE_MSG_Part1() {
+		return VALIDATE_MSG_Part1;
+	}
+
+	public String getVALIDATE_MSG_Part2() {
+		return VALIDATE_MSG_Part2;
+	}
+
 }
