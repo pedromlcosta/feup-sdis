@@ -3,6 +3,9 @@ package channels;
 import java.io.IOException;
 import java.net.InetAddress;
 
+import service.Peer;
+import service.Server;
+
 public class MDR extends Server {
 	Peer user;
 

@@ -1,13 +1,18 @@
-package channels;
+package service;
 
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.HashMap;
+
+import channels.MC;
+import channels.MDB;
+import channels.MDR;
 import chunk.Chunk;
 import chunk.ChunkID;
 import file.FileID;
 
 //SINGLETON SYNCRONIZE ALL THREADS HAVE ACESS TO IT
-public class Peer extends Server {
+public class Peer extends Server implements Invocation{
 	static Peer instance = new Peer();
 
 	static Peer getInstance() {
@@ -70,6 +75,18 @@ public class Peer extends Server {
 
 	public void setRestoreChannel(MDR restoreChannel) {
 		this.restoreChannel = restoreChannel;
+	}
+
+	@Override
+	public String testX(String exampleArg) throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	@Override
+	public String testY(String exampleArg) throws RemoteException {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }
