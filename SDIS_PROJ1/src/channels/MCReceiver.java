@@ -6,14 +6,14 @@ import java.net.InetAddress;
 import service.Peer;
 import service.Server;
 
-public class MDR extends Server {
+public class MCReceiver extends MCServer {
 	Peer user;
 
-	public MDR(String[] args) throws NumberFormatException, IOException {
+	public MCReceiver(String[] args) throws NumberFormatException, IOException {
 		super();
 	}
 
-	public MDR(boolean quitFlag, int serverID, InetAddress addr, int port) {
+	public MCReceiver(boolean quitFlag, int serverID, InetAddress addr, int port) {
 		super(quitFlag, serverID, addr, port);
 	}
 }

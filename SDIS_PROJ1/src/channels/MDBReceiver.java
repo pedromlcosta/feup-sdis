@@ -6,14 +6,14 @@ import java.net.InetAddress;
 import service.Peer;
 import service.Server;
 
-public class MDB extends Server {
+public class MDBReceiver extends Server {
 	Peer user;
 
-	public MDB(String[] args) throws NumberFormatException, IOException {
+	public MDBReceiver(String[] args) throws NumberFormatException, IOException {
 		super();
 	}
 
-	public MDB(boolean quitFlag, int serverID, InetAddress addr, int port) {
+	public MDBReceiver(boolean quitFlag, int serverID, InetAddress addr, int port) {
 		super(quitFlag, serverID, addr, port);
 	}
 }

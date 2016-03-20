@@ -1,10 +1,10 @@
-package service;
+package channels;
 
 import java.io.*;
 import java.net.*;
 import java.rmi.registry.Registry;
 
-public class Server extends Thread {
+public class MCServer extends Thread {
 
 	private MulticastSocket socket = null;
 	private boolean quitFlag = false;
@@ -12,13 +12,12 @@ public class Server extends Thread {
 	private InetAddress addr;
 	private int port;
 	
-	static String remoteName;
-	static Registry rmiRegistry;
 
-	public Server() {
+	public MCServer() {
+		
 	}
 
-	public Server(boolean quitFlag, int serverID, InetAddress addr, int port) {
+	public MCServer(boolean quitFlag, int serverID, InetAddress addr, int port) {
 		this.quitFlag = quitFlag;
 		this.serverID = serverID;
 		this.addr = addr;
@@ -135,5 +134,4 @@ public class Server extends Thread {
 	public void setPort(int port) {
 		this.port = port;
 	}
-
 }

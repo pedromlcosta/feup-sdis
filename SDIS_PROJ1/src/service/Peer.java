@@ -1,12 +1,15 @@
 package service;
 
+import java.rmi.Remote;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import channels.MC;
-import channels.MDB;
-import channels.MDR;
+import channels.MCReceiver;
+import channels.MDBReceiver;
+import channels.MDRReceiver;
 import chunk.Chunk;
 import chunk.ChunkID;
 import file.FileID;
@@ -21,9 +24,9 @@ public class Peer extends Server implements Invocation{
 
 	private HashMap<ChunkID, Chunk> stored;
 	private ArrayList<FileID> filesSent;
-	private MC controlChannel;
-	private MDB dataChannel;
-	private MDR restoreChannel;
+	private MCReceiver controlChannel;
+	private MDBReceiver dataChannel;
+	private MDRReceiver restoreChannel;
 	// TODO change names and check structures
 	// TODO servers that replay to command
 	// TODO check connection between channel an peers
@@ -53,39 +56,52 @@ public class Peer extends Server implements Invocation{
 		this.serverAnsweredCommand = answeredCommand;
 	}
 
-	public MC getControlChannel() {
+	public MCReceiver getControlChannel() {
 		return controlChannel;
 	}
 
-	public void setControlChannel(MC controlChannel) {
+	public void setControlChannel(MCReceiver controlChannel) {
 		this.controlChannel = controlChannel;
 	}
 
-	public MDB getDataChannel() {
+	public MDBReceiver getDataChannel() {
 		return dataChannel;
 	}
 
-	public void setDataChannel(MDB dataChannel) {
+	public void setDataChannel(MDBReceiver dataChannel) {
 		this.dataChannel = dataChannel;
 	}
 
-	public MDR getRestoreChannel() {
+	public MDRReceiver getRestoreChannel() {
 		return restoreChannel;
 	}
 
-	public void setRestoreChannel(MDR restoreChannel) {
+	public void setRestoreChannel(MDRReceiver restoreChannel) {
 		this.restoreChannel = restoreChannel;
+	}
+
+	public void registerRMI(){
+		// Create and export object
+		try{
+			Invocation stub = (Invocation) UnicastRemoteObject.exportObject(instance, 0);
+
+			// Register object to rmi registry
+			rmiRegistry = LocateRegistry.getRegistry();
+			rmiRegistry.bind(remoteName, stub);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
 	}
 
 	@Override
 	public String testX(String exampleArg) throws RemoteException {
-		// TODO Auto-generated method stub
+		System.out.println("testX");
 		return null;
 	}
 
 	@Override
 	public String testY(String exampleArg) throws RemoteException {
-		// TODO Auto-generated method stub
+		System.out.println("testY");
 		return null;
 	}
 
