@@ -4,7 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.rmi.registry.Registry;
 
-public class MCServer extends Thread {
+public class ReceiverServer extends Thread {
 
 	private MulticastSocket socket = null;
 	private boolean quitFlag = false;
@@ -13,11 +13,11 @@ public class MCServer extends Thread {
 	private int port;
 	
 
-	public MCServer() {
+	public ReceiverServer() {
 		
 	}
 
-	public MCServer(boolean quitFlag, int serverID, InetAddress addr, int port) {
+	public ReceiverServer(boolean quitFlag, int serverID, InetAddress addr, int port) {
 		this.quitFlag = quitFlag;
 		this.serverID = serverID;
 		this.addr = addr;

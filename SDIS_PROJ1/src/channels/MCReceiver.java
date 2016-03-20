@@ -6,7 +6,7 @@ import java.net.InetAddress;
 import service.Peer;
 import service.Server;
 
-public class MCReceiver extends MCServer {
+public class MCReceiver extends ReceiverServer {
 	Peer user;
 
 	public MCReceiver(String[] args) throws NumberFormatException, IOException {
