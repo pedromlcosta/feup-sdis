@@ -4,9 +4,8 @@ import java.io.IOException;
 import java.net.InetAddress;
 
 import service.Peer;
-import service.Server;
 
-public class MDBReceiver extends Server {
+public class MDBReceiver extends ReceiverServer {
 	Peer user;
 
 	public MDBReceiver(String[] args) throws NumberFormatException, IOException {

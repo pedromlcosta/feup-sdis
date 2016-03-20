@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.InetAddress;
 
 import service.Peer;
-import service.Server;
 
 public class MCReceiver extends ReceiverServer {
 	Peer user;

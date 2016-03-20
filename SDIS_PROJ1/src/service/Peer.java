@@ -3,6 +3,7 @@ package service;
 import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,7 +16,7 @@ import chunk.ChunkID;
 import file.FileID;
 
 //SINGLETON SYNCRONIZE ALL THREADS HAVE ACESS TO IT
-public class Peer extends Server implements Invocation{
+public class Peer implements Invocation{
 	static Peer instance = new Peer();
 
 	static Peer getInstance() {
@@ -24,9 +25,14 @@ public class Peer extends Server implements Invocation{
 
 	private HashMap<ChunkID, Chunk> stored;
 	private ArrayList<FileID> filesSent;
+	
 	private MCReceiver controlChannel;
 	private MDBReceiver dataChannel;
 	private MDRReceiver restoreChannel;
+	
+	Registry rmiRegistry;
+	String rmiName;
+	private Dispatcher commandDispatcher = new Dispatcher();
 	// TODO change names and check structures
 	// TODO servers that replay to command
 	// TODO check connection between channel an peers
@@ -87,22 +93,39 @@ public class Peer extends Server implements Invocation{
 
 			// Register object to rmi registry
 			rmiRegistry = LocateRegistry.getRegistry();
-			rmiRegistry.bind(remoteName, stub);
+			rmiRegistry.bind(rmiName, stub);
 		}catch(Exception e){
 			e.printStackTrace();
 		}
 	}
 
 	@Override
-	public String testX(String exampleArg) throws RemoteException {
-		System.out.println("testX");
+	public String backup(String exampleArg) throws RemoteException {
+		// O dispatcher vai ter as cenas do socket necessarias
+		// e os metodos para enviar para os canais que queremos as cenas
+		
+		
+		// Call backup protocol through dispatcher
 		return null;
 	}
 
 	@Override
-	public String testY(String exampleArg) throws RemoteException {
-		System.out.println("testY");
+	public String restore(String exampleArg) throws RemoteException {
+		// Call restore protocol
 		return null;
 	}
+
+	@Override
+	public String delete(String exampleArg) throws RemoteException {
+		// Call delete protocol
+		return null;
+	}
+
+	@Override
+	public String reclaim(String exampleArg) throws RemoteException {
+		// Call reclaim protocol
+		return null;
+	}
+
 
 }

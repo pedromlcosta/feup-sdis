@@ -4,7 +4,7 @@ import java.io.*;
 import java.net.*;
 import java.rmi.registry.Registry;
 
-public class Server extends Thread {
+public class Dispatcher extends Thread {
 
 	private MulticastSocket socket = null;
 	private boolean quitFlag = false;
@@ -12,13 +12,11 @@ public class Server extends Thread {
 	private InetAddress addr;
 	private int port;
 	
-	static String remoteName;
-	static Registry rmiRegistry;
 
-	public Server() {
+	public Dispatcher() {
 	}
 
-	public Server(boolean quitFlag, int serverID, InetAddress addr, int port) {
+	public Dispatcher(boolean quitFlag, int serverID, InetAddress addr, int port) {
 		this.quitFlag = quitFlag;
 		this.serverID = serverID;
 		this.addr = addr;
@@ -30,7 +28,7 @@ public class Server extends Thread {
 		}
 	}
 
-	public void joinMulticasGroup() {
+	public void joinMulticastGroup() {
 		try {
 			if (this.socket != null)
 				this.socket.joinGroup(this.getAddr());
@@ -40,7 +38,7 @@ public class Server extends Thread {
 		}
 	}
 
-	public void leaveMulticasGroup() {
+	public void leaveMulticastGroup() {
 		try {
 			if (this.socket != null)
 				this.socket.leaveGroup(this.getAddr());
@@ -54,7 +52,7 @@ public class Server extends Thread {
 		return new DatagramPacket(buffer, buffer.length, this.getAddr(), this.getPort());
 	}
 
-	public void joinMulticasGroup(InetAddress mcastaddr) {
+	public void joinMulticastGroup(InetAddress mcastaddr) {
 		try {
 			if (this.socket != null)
 				this.socket.joinGroup(mcastaddr);
@@ -64,7 +62,7 @@ public class Server extends Thread {
 		}
 	}
 
-	public void leaveMulticasGroup(InetAddress mcastaddr) {
+	public void leaveMulticastGroup(InetAddress mcastaddr) {
 		try {
 			if (this.socket != null)
 				this.socket.leaveGroup(mcastaddr);

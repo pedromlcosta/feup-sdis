@@ -21,10 +21,10 @@ public class TestApp {
 			String protocol = args[2].toLowerCase();
 			String response = null;
 
-			if(protocol.equals("testX")){
-				response = stub.testX(args[3]);
-			}else if(protocol.equals("testY")){
-				response = stub.testY(args[3]);
+			if(protocol.equals("backup")){
+				response = stub.backup(args[3]);
+			}else if(protocol.equals("restore")){
+				response = stub.restore(args[3]);
 			}
 
 
