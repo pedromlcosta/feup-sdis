@@ -1,5 +1,5 @@
 package service;
 
-public class Processor {
+public class Processor extends Thread{
 
 }
