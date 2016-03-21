@@ -27,7 +27,7 @@ public class FileID {
 		this.nChunks = ((this.nChunks == 0 && fileSize > 0) ? 1 : this.nChunks);
 		try {
 			BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
-			// O ID Ã© criado com Path,Owner e data da ultima modificaÃ§Ã£o
+			// O ID  criado com Path,Owner e data da ultima modificação
 			this.ID = Extra.SHA256(absPath + Files.getOwner(path).toString() + attr.lastModifiedTime().toString());
 		} catch (IOException e) {
 			e.printStackTrace();
