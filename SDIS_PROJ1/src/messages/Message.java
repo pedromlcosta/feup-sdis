@@ -43,7 +43,9 @@ public class Message {
 
 	public boolean createMessage(MESSAGE_TYPE type, String args[], byte data[]) {
 		createHeader(type, args);
-		messageToSend.concat(new String(data));
+		if (data != null)
+			messageToSend.concat(new String(data));
+
 		if (validateMsg(messageToSend, args.length))
 			return true;
 		else {
@@ -56,17 +58,17 @@ public class Message {
 		if (args.length > 0)
 			switch (type) {
 			case GETCHUNK:
-				return createHeaderAux(args, 3, Message.GETCHUNK);
+				return createHeaderAux(args, 4, Message.GETCHUNK);
 			case CHUNK:
 				return createHeaderAux(args, 3, CHUNK);
 			case DELETE:
-				return createHeaderAux(args, 2, DELETE);
+				return createHeaderAux(args, 3, DELETE);
 			case REMOVED:
-				return createHeaderAux(args, 3, REMOVED);
+				return createHeaderAux(args, 4, REMOVED);
 			case PUTCHUNK:
-				return createHeaderAux(args, 4, PUTCHUNK);
+				return createHeaderAux(args, 5, PUTCHUNK);
 			case STORED:
-				return createHeaderAux(args, 3, STORED);
+				return createHeaderAux(args, 4, STORED);
 			default:
 				return false;
 			}
@@ -74,7 +76,7 @@ public class Message {
 	}
 
 	public boolean validateMsg(String s, int nArgs) {
-		String validateRegex = new String(VALIDATE_MSG_Part1 + (nArgs) + VALIDATE_MSG_Part2);
+		String validateRegex = new String(VALIDATE_MSG_Part1 + (nArgs - 1) + VALIDATE_MSG_Part2);
 		Pattern p = Pattern.compile(validateRegex);
 		Matcher m = p.matcher(s);
 		return m.matches();
@@ -117,6 +119,14 @@ public class Message {
 	}
 
 	// From here there are only gets and sets
+	public byte[] getMessageData() {
+		Pattern pattern = Pattern.compile(EOL);
+		String[] match = pattern.split(getMessageToSend(), -2);
+
+		return match[1].getBytes();
+
+	}
+
 	public byte[] getMessageBytes() {
 		return messageToSend.getBytes();
 	}

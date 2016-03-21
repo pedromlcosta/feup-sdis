@@ -1,7 +1,5 @@
 package chunk;
 
-import file.FileID;
-
 public class Chunk {
 	private static final int CHUNK_SIZE = 64000;
 	private ChunkID id;
@@ -9,7 +7,7 @@ public class Chunk {
 	private int actualRepDegree;
 	private byte data[];
 
-	public Chunk(FileID id, int number, byte[] data) {
+	public Chunk(String id, int number, byte[] data) {
 		this.data = data;
 		this.id = new ChunkID(id, number);
 	}

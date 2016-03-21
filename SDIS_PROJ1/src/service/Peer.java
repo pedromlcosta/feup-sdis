@@ -16,7 +16,7 @@ import chunk.ChunkID;
 import file.FileID;
 
 //SINGLETON SYNCRONIZE ALL THREADS HAVE ACESS TO IT
-public class Peer implements Invocation{
+public class Peer implements Invocation {
 	static Peer instance = new Peer();
 
 	static Peer getInstance() {
@@ -25,11 +25,11 @@ public class Peer implements Invocation{
 
 	private HashMap<ChunkID, Chunk> stored;
 	private ArrayList<FileID> filesSent;
-	
+
 	private MCReceiver controlChannel;
 	private MDBReceiver dataChannel;
 	private MDRReceiver restoreChannel;
-	
+
 	Registry rmiRegistry;
 	String rmiName;
 	private Dispatcher commandDispatcher = new Dispatcher();
@@ -40,6 +40,10 @@ public class Peer implements Invocation{
 
 	public HashMap<ChunkID, Chunk> getStored() {
 		return stored;
+	}
+
+	public void addChunk(ChunkID id, Chunk chunk) {
+		stored.put(id, chunk);
 	}
 
 	public void setStored(HashMap<ChunkID, Chunk> stored) {
@@ -86,15 +90,15 @@ public class Peer implements Invocation{
 		this.restoreChannel = restoreChannel;
 	}
 
-	public void registerRMI(){
+	public void registerRMI() {
 		// Create and export object
-		try{
+		try {
 			Invocation stub = (Invocation) UnicastRemoteObject.exportObject(instance, 0);
 
 			// Register object to rmi registry
 			rmiRegistry = LocateRegistry.getRegistry();
 			rmiRegistry.bind(rmiName, stub);
-		}catch(Exception e){
+		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
@@ -103,8 +107,7 @@ public class Peer implements Invocation{
 	public String backup(String exampleArg) throws RemoteException {
 		// O dispatcher vai ter as cenas do socket necessarias
 		// e os metodos para enviar para os canais que queremos as cenas
-		
-		
+
 		// Call backup protocol through dispatcher
 		return null;
 	}
@@ -126,6 +129,5 @@ public class Peer implements Invocation{
 		// Call reclaim protocol
 		return null;
 	}
-
 
 }
