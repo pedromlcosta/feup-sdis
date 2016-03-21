@@ -2,7 +2,6 @@ package channels;
 
 import java.io.*;
 import java.net.*;
-import java.rmi.registry.Registry;
 
 public class ReceiverServer extends Thread {
 

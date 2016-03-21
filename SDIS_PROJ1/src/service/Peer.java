@@ -1,6 +1,5 @@
 package service;
 
-import java.rmi.Remote;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -104,7 +103,7 @@ public class Peer implements Invocation {
 	}
 
 	@Override
-	public String backup(String exampleArg) throws RemoteException {
+	public String backup(String filePath, int desiredRepDegree) throws RemoteException {
 		// O dispatcher vai ter as cenas do socket necessarias
 		// e os metodos para enviar para os canais que queremos as cenas
 
@@ -125,7 +124,7 @@ public class Peer implements Invocation {
 	}
 
 	@Override
-	public String reclaim(String exampleArg) throws RemoteException {
+	public String reclaim(int reclaimSpace) throws RemoteException {
 		// Call reclaim protocol
 		return null;
 	}
