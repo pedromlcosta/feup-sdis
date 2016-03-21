@@ -55,7 +55,7 @@ public class BackupProtocol extends Thread {
 		} else
 			peer.getAnsweredCommand().replace(chunkToSendID, new ArrayList<Integer>());
 		do {
-			
+
 			// send Message
 			peer.getDataChannel().writePacket(msgPacket);
 			nMessagesSent++;

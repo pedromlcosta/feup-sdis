@@ -2,6 +2,7 @@ package messages;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -12,23 +13,52 @@ import chunk.Chunk;
 
 public class SplitFiles {
 	private static final int CHUNK_SIZE = 64000;
+	private File file;
+	private FileInputStream fileReader;
+	private RandomAccessFile fileOut;
 
-	public SplitFiles() {
+	public SplitFiles(String fileName) {
+		changeFileToSplit(fileName);
+		changeFileToSplit(fileName);
 	}
 
-	public ArrayList<byte[]> splitFile(String fileName) throws IOException {
-		File file = new File(fileName);
+	public void closeInputStream() throws IOException {
+		fileReader.close();
+	}
+
+	public void closeRandomAcess() throws IOException {
+		fileOut.close();
+	}
+
+	public void changeFileToSplit(String fileName) {
+		try {
+			fileReader = new FileInputStream(fileName);
+			file = new File(fileName);
+
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public void changeFileToMerge(String fileName) {
+
+		try {
+			fileOut = new RandomAccessFile(fileName, "w");
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+
+	public ArrayList<byte[]> splitFile() throws IOException {
 		ArrayList<byte[]> chunks = new ArrayList<byte[]>();
 
 		if (file.exists()) {
-			FileInputStream fileReader = new FileInputStream(fileName);
 
 			while (fileReader.available() > 0) {
 				byte[] chunk = new byte[CHUNK_SIZE];
 				int bytesRead = fileReader.read(chunk);
 				chunks.add(Arrays.copyOf(chunk, bytesRead));
 			}
-			fileReader.close();
 		} else
 			return null;
 		System.out.println(chunks.size());
@@ -38,14 +68,11 @@ public class SplitFiles {
 		return chunks;
 	}
 
-	public byte[] splitFile(String fileName, int StartPos) throws IOException {
-		File file = new File(fileName);
+	public byte[] splitFile(int StartPos) throws IOException {
 
 		if (file.exists()) {
-			FileInputStream fileReader = new FileInputStream(fileName);
 			byte[] chunk = new byte[CHUNK_SIZE];
 			int bytesRead = fileReader.read(chunk, StartPos, CHUNK_SIZE);
-			fileReader.close();
 			if (bytesRead == 0)
 				return null;
 			else
@@ -55,24 +82,8 @@ public class SplitFiles {
 			return null;
 	}
 
-	public void joinChunks(ArrayList<byte[]> chunks, String name) throws IOException {
-		FileOutputStream out = new FileOutputStream(name);
-		for (byte[] chunk : chunks) {
-			out.write(chunk);
-		}
-		out.close();
-	}
-
-	public void joinChunk(byte[] chunk, String name, int pos) throws IOException {
-
-		RandomAccessFile fileOut = new RandomAccessFile(name, "rw");
-		fileOut.write(chunk, pos, chunk.length);
-		fileOut.close();
-	}
-
 	public boolean joinChunk(Chunk chunk, String name) throws IOException {
 
-		RandomAccessFile fileOut = new RandomAccessFile(name, "w");
 		byte[] data = chunk.getData();
 		int id = chunk.getId().getChunkNumber();
 		int pos;
@@ -83,9 +94,37 @@ public class SplitFiles {
 		} else {
 			pos = CHUNK_SIZE * id;
 			fileOut.write(data, pos, data.length);
-			fileOut.close();
 			return true;
 		}
 
 	}
+
+	public File getFile() {
+		return file;
+	}
+
+	public void setFile(File file) {
+		this.file = file;
+	}
+
+	public FileInputStream getFileReader() {
+		return fileReader;
+	}
+
+	public void setFileReader(FileInputStream fileReader) {
+		this.fileReader = fileReader;
+	}
+
+	public RandomAccessFile getFileOut() {
+		return fileOut;
+	}
+
+	public void setFileOut(RandomAccessFile fileOut) {
+		this.fileOut = fileOut;
+	}
+
+	public static int getChunkSize() {
+		return CHUNK_SIZE;
+	}
+
 }
