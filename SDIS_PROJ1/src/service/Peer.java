@@ -24,7 +24,7 @@ public class Peer implements Invocation {
 	}
 
 	private HashMap<ChunkID, Chunk> stored;
-	private ArrayList<FileID> filesSent;
+	private HashMap<String, FileID> filesSent;
 
 	private MCReceiver controlChannel;
 	private MDBReceiver dataChannel;
@@ -38,34 +38,31 @@ public class Peer implements Invocation {
 	// TODO check connection between channel an peers
 	HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 
-	
-	
-	public static void main(String[] args){
-		
+	public static void main(String[] args) {
+
 		Runtime.getRuntime().addShutdownHook(new Thread() {
-			public void run() { 
+			public void run() {
 				try {
 					System.out.println("YES");
-					
+
 					rmiRegistry.unbind(rmiName);
-					//UnicastRemoteObject.unexportObject(instance,true);
+					// UnicastRemoteObject.unexportObject(instance,true);
 				} catch (RemoteException | NotBoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					System.out.println("Problem unbinding");
-				} }
+				}
+			}
 		});
-		
+
 		System.out.println("Hi");
 		rmiName = args[0];
 		registerRMI();
-		
-		
+
 	}
-	
-	//Methods
-	
-	
+
+	// Methods
+
 	public HashMap<ChunkID, Chunk> getStored() {
 		return stored;
 	}
@@ -78,11 +75,11 @@ public class Peer implements Invocation {
 		this.stored = stored;
 	}
 
-	public ArrayList<FileID> getFilesSent() {
+	public HashMap<String, FileID> getFilesSent() {
 		return filesSent;
 	}
 
-	public void setFilesSent(ArrayList<FileID> filesSent) {
+	public void setFilesSent(HashMap<String, FileID> filesSent) {
 		this.filesSent = filesSent;
 	}
 
@@ -121,28 +118,24 @@ public class Peer implements Invocation {
 	public static void registerRMI() {
 		// Create and export object
 		try {
-			
+
 			Invocation stub = (Invocation) UnicastRemoteObject.exportObject(instance, 0);
-			
+
 			// Register object to rmi registry
-			
+
 			rmiRegistry = LocateRegistry.getRegistry();
 			/*
-			try{
-				rmiRegistry = LocateRegistry.createRegistry(1099);
-			}catch(Exception e){
-				System.out.println("Caught ya, bitch");
-				rmiRegistry = LocateRegistry.getRegistry();
-			}
-			*/
-			try{
+			 * try{ rmiRegistry = LocateRegistry.createRegistry(1099);
+			 * }catch(Exception e){ System.out.println("Caught ya, bitch");
+			 * rmiRegistry = LocateRegistry.getRegistry(); }
+			 */
+			try {
 				rmiRegistry.bind(rmiName, stub);
-			}catch(Exception e){
+			} catch (Exception e) {
 				e.printStackTrace();
 				System.out.println("Couldnt bind, try another remote name, this one is in use");
 			}
-			
-			
+
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -154,7 +147,7 @@ public class Peer implements Invocation {
 		// e os metodos para enviar para os canais que queremos as cenas
 
 		// Call backup protocol through dispatcher
-		
+
 		System.out.println("backup called");
 		return "backup sent";
 	}
