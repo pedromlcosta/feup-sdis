@@ -2,7 +2,6 @@ package service;
 
 import java.io.*;
 import java.net.*;
-import java.rmi.registry.Registry;
 
 public class Dispatcher extends Thread {
 
