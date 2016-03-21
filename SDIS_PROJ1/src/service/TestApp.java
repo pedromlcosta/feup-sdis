@@ -31,7 +31,9 @@ public class TestApp {
 
 				switch(subProtocol){
 					case "backup":
+						System.out.println("Here");
 						response = stub.backup(filePath, desiredRepDeg);
+						System.out.println("there");
 						break;
 					case "restore":
 						response = stub.restore(filePath);
@@ -49,7 +51,8 @@ public class TestApp {
 
 			} catch (Exception e) {
 				System.err.println("Client exception: " + e.toString());
-				e.printStackTrace();
+				//e.printStackTrace();
+				System.out.println("No host with that remoteName exists");
 			}
 		}else{
 			

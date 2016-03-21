@@ -1,5 +1,6 @@
 package service;
 
+import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
@@ -29,14 +30,42 @@ public class Peer implements Invocation {
 	private MDBReceiver dataChannel;
 	private MDRReceiver restoreChannel;
 
-	private Registry rmiRegistry;
-	private final String rmiName = "123";
+	private static Registry rmiRegistry;
+	private static String rmiName;
 	private Dispatcher commandDispatcher = new Dispatcher();
 	// TODO change names and check structures
 	// TODO servers that replay to command
 	// TODO check connection between channel an peers
 	HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 
+	
+	
+	public static void main(String[] args){
+		
+		Runtime.getRuntime().addShutdownHook(new Thread() {
+			public void run() { 
+				try {
+					System.out.println("YES");
+					
+					rmiRegistry.unbind(rmiName);
+					//UnicastRemoteObject.unexportObject(instance,true);
+				} catch (RemoteException | NotBoundException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+					System.out.println("Problem unbinding");
+				} }
+		});
+		
+		System.out.println("Hi");
+		rmiName = args[0];
+		registerRMI();
+		
+		
+	}
+	
+	//Methods
+	
+	
 	public HashMap<ChunkID, Chunk> getStored() {
 		return stored;
 	}
@@ -89,14 +118,31 @@ public class Peer implements Invocation {
 		this.restoreChannel = restoreChannel;
 	}
 
-	public void registerRMI() {
+	public static void registerRMI() {
 		// Create and export object
 		try {
+			
 			Invocation stub = (Invocation) UnicastRemoteObject.exportObject(instance, 0);
-
+			
 			// Register object to rmi registry
+			
 			rmiRegistry = LocateRegistry.getRegistry();
-			rmiRegistry.bind(rmiName, stub);
+			/*
+			try{
+				rmiRegistry = LocateRegistry.createRegistry(1099);
+			}catch(Exception e){
+				System.out.println("Caught ya, bitch");
+				rmiRegistry = LocateRegistry.getRegistry();
+			}
+			*/
+			try{
+				rmiRegistry.bind(rmiName, stub);
+			}catch(Exception e){
+				e.printStackTrace();
+				System.out.println("Couldnt bind, try another remote name, this one is in use");
+			}
+			
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -108,25 +154,30 @@ public class Peer implements Invocation {
 		// e os metodos para enviar para os canais que queremos as cenas
 
 		// Call backup protocol through dispatcher
-		return null;
+		
+		System.out.println("backup called");
+		return "backup sent";
 	}
 
 	@Override
 	public String restore(String exampleArg) throws RemoteException {
 		// Call restore protocol
-		return null;
+		System.out.println("restore called");
+		return "restore sent";
 	}
 
 	@Override
 	public String delete(String exampleArg) throws RemoteException {
 		// Call delete protocol
-		return null;
+		System.out.println("delete called");
+		return "delete sent";
 	}
 
 	@Override
 	public String reclaim(int reclaimSpace) throws RemoteException {
 		// Call reclaim protocol
-		return null;
+		System.out.println("reclaim called");
+		return "reclaim sent";
 	}
 
 }
