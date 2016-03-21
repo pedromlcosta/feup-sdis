@@ -10,6 +10,7 @@ public class ReceiverServer extends Thread {
 	private int serverID;
 	private InetAddress addr;
 	private int port;
+	private byte[] buf = new byte[256];
 	
 
 	public ReceiverServer() {
@@ -27,32 +28,43 @@ public class ReceiverServer extends Thread {
 			e.printStackTrace();
 		}
 	}
-
-	public void joinMulticasGroup() {
-		try {
-			if (this.socket != null)
-				this.socket.joinGroup(this.getAddr());
-		} catch (IOException e) {
-			System.out.println("Error in Join Group");
-			e.printStackTrace();
+	
+	public void run(){
+		while(!quitFlag){
+			DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
+			try {
+				socket.receive(receivePacket);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		
+			byte[] receivedMessage = receivePacket.getData();
+			String receivedString = receivedMessage.toString();
+			receivedString = receivedString.substring(0, receivePacket.getLength());
+			
+			System.out.println("Server Received: " + receivedString);
+			
+			// Add message to the queue to get processed
+			// Processor.addToQueue(receivedMessage);
+		
 		}
 	}
 
-	public void leaveMulticasGroup() {
-		try {
-			if (this.socket != null)
-				this.socket.leaveGroup(this.getAddr());
-		} catch (IOException e) {
-			System.out.println("Error in Leave Group");
-			e.printStackTrace();
-		}
-	}
+	
 
 	public DatagramPacket createDatagramPacket(byte[] buffer) {
 		return new DatagramPacket(buffer, buffer.length, this.getAddr(), this.getPort());
 	}
 
-	public void joinMulticasGroup(InetAddress mcastaddr) {
+	public void open() throws IOException{
+		this.socket = new MulticastSocket(port);
+	}
+	
+	public void close(){
+		this.socket.close();
+	}
+	
+	public void joinMulticastGroup(InetAddress mcastaddr) {
 		try {
 			if (this.socket != null)
 				this.socket.joinGroup(mcastaddr);
@@ -62,10 +74,30 @@ public class ReceiverServer extends Thread {
 		}
 	}
 
-	public void leaveMulticasGroup(InetAddress mcastaddr) {
+	public void leaveMulticastGroup(InetAddress mcastaddr) {
 		try {
 			if (this.socket != null)
 				this.socket.leaveGroup(mcastaddr);
+		} catch (IOException e) {
+			System.out.println("Error in Leave Group");
+			e.printStackTrace();
+		}
+	}
+	
+	public void joinMulticastGroup() {
+		try {
+			if (this.socket != null)
+				this.socket.joinGroup(this.getAddr());
+		} catch (IOException e) {
+			System.out.println("Error in Join Group");
+			e.printStackTrace();
+		}
+	}
+
+	public void leaveMulticastGroup() {
+		try {
+			if (this.socket != null)
+				this.socket.leaveGroup(this.getAddr());
 		} catch (IOException e) {
 			System.out.println("Error in Leave Group");
 			e.printStackTrace();
