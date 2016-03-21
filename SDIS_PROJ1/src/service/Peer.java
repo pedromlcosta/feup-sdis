@@ -30,8 +30,8 @@ public class Peer implements Invocation{
 	private MDBReceiver dataChannel;
 	private MDRReceiver restoreChannel;
 	
-	Registry rmiRegistry;
-	String rmiName;
+	private Registry rmiRegistry;
+	private final String rmiName = "123";
 	private Dispatcher commandDispatcher = new Dispatcher();
 	// TODO change names and check structures
 	// TODO servers that replay to command
