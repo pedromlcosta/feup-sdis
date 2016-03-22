@@ -2,6 +2,7 @@ package protocol;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Random;
 
@@ -19,7 +20,7 @@ public class BackupProtocol extends Thread {
 	// STORED message -> MC channel random delay of 0 to 400 ms before sending
 	// message
 	// A peer must never store the chunks of its own files.
-
+	private final int WAITING_TIME = 100;
 	private Peer peer;
 	private SplitFiles split = new SplitFiles();
 
@@ -52,7 +53,8 @@ public class BackupProtocol extends Thread {
 				// Send putChunk msg
 				System.out.println(currentPos + "  " + chunkNumber);
 				putchunkCreate(fileID, chunk, chunkNumber, wantedRepDegree, version);
-			} while (chunk.length > 0 && fileID.getnChunks() != chunkNumber);
+
+			} while (chunk.length > 0 && checkNChunks(fileID, chunkNumber));
 
 			// Empty body message when the file has a size that is multiple of
 			// the ChunkSize
@@ -66,10 +68,22 @@ public class BackupProtocol extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		System.out.println("End of backupFile");
+	}
+
+	public boolean checkNChunks(FileID fileID, int chunkNumber) {
+		if (fileID.isMultiple()) {
+			if (fileID.getnChunks() - 1 == chunkNumber)
+				return false;
+		} else {
+			if (fileID.getnChunks() == chunkNumber)
+				return false;
+		}
+		return true;
 	}
 
 	// TODO most 5 PUTCHUNK messages per chunk. check about server ID
-	public void putchunkCreate(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, int version) {
+	public void putchunkCreate(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, int version) throws SocketException {
 		Message msg = new Message();
 		int nMessagesSent = 0;
 		// Create Chunk
@@ -89,6 +103,7 @@ public class BackupProtocol extends Thread {
 
 		// Send Mensage
 		DatagramPacket msgPacket = peer.getDataChannel().createDatagramPacket(msg.getMessageBytes());
+		// TODO check this byte[0] shit, something does not add up
 		DatagramPacket answerPacket = peer.getDataChannel().createDatagramPacket(new byte[0]);
 
 		// check if the pair chunkID,ServersWhoReplied exists
@@ -105,28 +120,37 @@ public class BackupProtocol extends Thread {
 			// wait for asnwers
 			// TODO check caso de mensagem ser roubad por outro thread (do mesmo
 			// tipo ou não)
-
+			try {
+				peer.getControlChannel().getSocket().setSoTimeout(WAITING_TIME * nMessagesSent);
+			} catch (SocketException e) {
+				System.out.println("Timeout");
+			}
 			peer.getControlChannel().readPacket(answerPacket);
-			String answer = new String(answerPacket.getData());
-			String[] replayArgs = msg.parseMessage(answer);
+			byte[] packetData = answerPacket.getData();
+			System.out.println(packetData.length);
+			if (packetData != null && packetData.length > 0) {
+				String answer = new String(packetData);
+				String[] replayArgs = msg.parseMessage(answer);
 
-			if (replayArgs[0].equals(Message.getStored())) {
-				// FileID
-				String answerFileID = replayArgs[2];
-				// ServerID
-				int answerServerID = Integer.parseInt(replayArgs[1]);
-				// Chunk No
-				int answerChunkNumber = Integer.parseInt(replayArgs[3]);
+				if (replayArgs[0].equals(Message.getStored())) {
+					// FileID
+					String answerFileID = replayArgs[2];
+					// ServerID
+					int answerServerID = Integer.parseInt(replayArgs[1]);
+					// Chunk No
+					int answerChunkNumber = Integer.parseInt(replayArgs[3]);
 
-				if (answerFileID.equals(file.getID()) && answerChunkNumber == chunkNumber) {
-					if (!peer.getAnsweredCommand().get(chunkToSendID).contains(answerServerID)) {
-						chunkToSend.increaseRepDegree();
-						peer.getAnsweredCommand().get(chunkToSendID).add(answerServerID);
+					if (answerFileID.equals(file.getID()) && answerChunkNumber == chunkNumber) {
+						if (!peer.getAnsweredCommand().get(chunkToSendID).contains(answerServerID)) {
+							chunkToSend.increaseRepDegree();
+							peer.getAnsweredCommand().get(chunkToSendID).add(answerServerID);
+						}
 					}
 				}
 			}
-
+			System.out.println(nMessagesSent);
 		} while (nMessagesSent <= 5 && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
+		peer.getControlChannel().getSocket().setSoTimeout(0);
 	}
 
 	// 0 and 400 ms. delay for the stored msg

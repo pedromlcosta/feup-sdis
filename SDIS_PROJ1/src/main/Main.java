@@ -46,8 +46,12 @@ public class Main {
 			BackupProtocol backup = new BackupProtocol();
 			backup.setPeer(Peer.getInstance());
 			backup.getPeer().setServerID(1);
-			backup.getPeer().setControlChannel(new MCReceiver(false, 1, InetAddress.getByName(args[0]), 4445));
-			backup.getPeer().setDataChannel(new MDBReceiver(false, 1, InetAddress.getByName(args[0]), 4446));
+
+			MCReceiver mc = new MCReceiver(false, 1, InetAddress.getByName(args[0]), 4445);
+			MDBReceiver md = new MDBReceiver(false, 1, InetAddress.getByName(args[1]), 4446);
+			mc.start();
+			backup.getPeer().setControlChannel(mc);
+			backup.getPeer().setDataChannel(md);
 			backup.backupFile("C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\src\\B1.tmp", 1, 1);
 			System.out.println("END");
 		} catch (UnknownHostException e) {
