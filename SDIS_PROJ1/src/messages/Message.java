@@ -76,7 +76,7 @@ public class Message {
 	}
 
 	public boolean validateMsg(String s, int nArgs) {
-		String validateRegex = new String(VALIDATE_MSG_Part1 + (nArgs - 1) + VALIDATE_MSG_Part2);
+		String validateRegex = new String(VALIDATE_MSG_Part1 + (nArgs) + VALIDATE_MSG_Part2);
 		Pattern p = Pattern.compile(validateRegex);
 		Matcher m = p.matcher(s);
 		return m.matches();
@@ -128,7 +128,14 @@ public class Message {
 	}
 
 	public byte[] getMessageBytes() {
-		return messageToSend.getBytes();
+
+		if (messageToSend != null)
+			return messageToSend.getBytes();
+		else {
+			System.out.println("MESSAGE NULL");
+			System.out.println(messageToSend);
+			return null;
+		}
 	}
 
 	public String getEOL() {

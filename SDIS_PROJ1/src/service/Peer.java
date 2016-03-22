@@ -30,7 +30,7 @@ public class Peer implements Invocation {
 	private MCReceiver controlChannel;
 	private MDBReceiver dataChannel;
 	private MDRReceiver restoreChannel;
-
+	private int serverID;
 	private static Registry rmiRegistry;
 	private static String rmiName;
 	private Dispatcher commandDispatcher = new Dispatcher();
@@ -38,6 +38,12 @@ public class Peer implements Invocation {
 	// TODO servers that replay to command
 	// TODO check connection between channel an peers
 	HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
+
+	public Peer() {
+		stored = new HashMap<ChunkID, Chunk>();
+		filesSent = new HashMap<String, FileID>();
+		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
+	}
 
 	public static void main(String[] args) {
 
@@ -156,7 +162,7 @@ public class Peer implements Invocation {
 	@Override
 	public String restore(String filePath) throws RemoteException {
 		// Call restore protocol
-		
+
 		RestoreProtocol.startRestore(filePath);
 		System.out.println("restore called");
 		return "restore sent";
@@ -174,6 +180,50 @@ public class Peer implements Invocation {
 		// Call reclaim protocol
 		System.out.println("reclaim called");
 		return "reclaim sent";
+	}
+
+	public static Registry getRmiRegistry() {
+		return rmiRegistry;
+	}
+
+	public static void setRmiRegistry(Registry rmiRegistry) {
+		Peer.rmiRegistry = rmiRegistry;
+	}
+
+	public static String getRmiName() {
+		return rmiName;
+	}
+
+	public static void setRmiName(String rmiName) {
+		Peer.rmiName = rmiName;
+	}
+
+	public Dispatcher getCommandDispatcher() {
+		return commandDispatcher;
+	}
+
+	public void setCommandDispatcher(Dispatcher commandDispatcher) {
+		this.commandDispatcher = commandDispatcher;
+	}
+
+	public HashMap<ChunkID, ArrayList<Integer>> getServerAnsweredCommand() {
+		return serverAnsweredCommand;
+	}
+
+	public void setServerAnsweredCommand(HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand) {
+		this.serverAnsweredCommand = serverAnsweredCommand;
+	}
+
+	public static void setInstance(Peer instance) {
+		Peer.instance = instance;
+	}
+
+	public int getServerID() {
+		return serverID;
+	}
+
+	public void setServerID(int serverID) {
+		this.serverID = serverID;
 	}
 
 }

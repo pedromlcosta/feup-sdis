@@ -21,42 +21,46 @@ public class BackupProtocol extends Thread {
 	// A peer must never store the chunks of its own files.
 
 	private Peer peer;
-	private int serverID;
 	private SplitFiles split = new SplitFiles();
 
-	public BackupProtocol(int serverID) {
-		this.serverID = serverID;
+	public BackupProtocol() {
 	}
 
 	// TODO check version && multiple case
 	public void backupFile(String fileName, int wantedRepDegree, int version) {
 		split.changeFileToSplit(fileName);
-		FileID id = new FileID(fileName);
-		id.setDesiredRepDegree(wantedRepDegree);
+		FileID fileID = new FileID(fileName);
+		fileID.setDesiredRepDegree(wantedRepDegree);
 		byte[] chunk;
 		int currentPos = 0;
 		int chunkNumber = 0;
+
+		// If already in hash file already Send, "fileID" must match with one
+		// already in the hashmap
+		if (peer.getFilesSent().containsKey(fileID.getID()))
+			return;
+		peer.getFilesSent().put(fileID.getID(), fileID);
 
 		try {
 			do {
 				// Get chunk
 				chunk = split.splitFile();
 				// updateFilePos
-				currentPos = chunk.length;
+				currentPos += chunk.length;
 				// update Chunk Number
 				chunkNumber++;
 				// Send putChunk msg
 				System.out.println(currentPos + "  " + chunkNumber);
-				// putchunkCreate(id, chunk, chunkNumber, wantedRepDegree,
-				// version);
-			} while (chunk.length > 0 && id.getnChunks() != chunkNumber);
+				putchunkCreate(fileID, chunk, chunkNumber, wantedRepDegree, version);
+			} while (chunk.length > 0 && fileID.getnChunks() != chunkNumber);
 
 			// Empty body message when the file has a size that is multiple of
 			// the ChunkSize
-			if (id.isMultiple()) {
+			if (fileID.isMultiple()) {
 				chunkNumber++;
-				id.setnChunks(chunkNumber);
-				putchunkCreate(id, new byte[0], chunkNumber, wantedRepDegree, version);
+				fileID.setnChunks(chunkNumber);
+				System.out.println(currentPos + "  " + chunkNumber);
+				putchunkCreate(fileID, new byte[0], chunkNumber, wantedRepDegree, version);
 			}
 
 		} catch (IOException e) {
@@ -75,9 +79,9 @@ public class BackupProtocol extends Thread {
 		ChunkID chunkToSendID = chunkToSend.getId();
 
 		// createMessage
-		String[] args = new String[4];
+		String[] args = new String[5];
 		args[0] = Integer.toString(version);
-		args[1] = Integer.toString(getServerID());
+		args[1] = Integer.toString(peer.getServerID());
 		args[2] = file.getID();
 		args[3] = Integer.toString(chunkNumber);
 		args[4] = Integer.toString(wantedRepDegree);
@@ -131,13 +135,15 @@ public class BackupProtocol extends Thread {
 		String args[] = new String[4];
 		String receivedArgs[] = msg.parseMessage(putchunkMSG);
 
-		if (!msg.validateMsg(putchunkMSG, 5) || Integer.parseInt(receivedArgs[1]) == getServerID())
+		if (!msg.validateMsg(putchunkMSG, 5) || Integer.parseInt(receivedArgs[1]) == peer.getServerID()) {
+			System.out.println("Either the Msg was not valid or you tried to use the same server for both things");
+			System.out.println(msg.getMessageToSend());
 			return;
-
+		}
 		// Version - same version??
 		args[0] = receivedArgs[0];
 		// SenderID
-		args[1] = Integer.toString(getServerID());
+		args[1] = Integer.toString(peer.getServerID());
 		// FileID
 		args[2] = receivedArgs[2];
 		// Chunk No
@@ -179,14 +185,6 @@ public class BackupProtocol extends Thread {
 
 	public void setPeer(Peer peer) {
 		this.peer = peer;
-	}
-
-	public int getServerID() {
-		return serverID;
-	}
-
-	public void setServerID(int serverID) {
-		this.serverID = serverID;
 	}
 
 }

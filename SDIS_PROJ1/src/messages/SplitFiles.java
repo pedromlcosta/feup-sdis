@@ -5,14 +5,12 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.util.ArrayList;
 import java.util.Arrays;
 
 import chunk.Chunk;
 
-//TODO STATIC OR NOT??
+//TODO STATIC OR NOT?? Check if good practice the Chunk.getChunkSize()
 public class SplitFiles {
-	private static final int CHUNK_SIZE = 64000;
 	private File file;
 	private FileInputStream fileReader;
 	private RandomAccessFile fileOut;
@@ -74,8 +72,8 @@ public class SplitFiles {
 	public byte[] splitFile() throws IOException {
 
 		if (file.exists()) {
-			byte[] chunk = new byte[CHUNK_SIZE];
-			int bytesRead = fileReader.read(chunk, 0, CHUNK_SIZE);
+			byte[] chunk = new byte[Chunk.getChunkSize()];
+			int bytesRead = fileReader.read(chunk, 0, Chunk.getChunkSize());
 			// TODO return null or return byte[0]
 			if (bytesRead <= 0)
 				return new byte[0];
@@ -96,7 +94,7 @@ public class SplitFiles {
 			fileOut.close();
 			return true;
 		} else {
-			pos = CHUNK_SIZE * id;
+			pos = Chunk.getChunkSize() * id;
 			fileOut.write(data, pos, data.length);
 			return true;
 		}
@@ -125,10 +123,6 @@ public class SplitFiles {
 
 	public void setFileOut(RandomAccessFile fileOut) {
 		this.fileOut = fileOut;
-	}
-
-	public static int getChunkSize() {
-		return CHUNK_SIZE;
 	}
 
 }

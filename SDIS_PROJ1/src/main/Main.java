@@ -1,6 +1,12 @@
 package main;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+
+import channels.MCReceiver;
+import channels.MDBReceiver;
 import protocol.BackupProtocol;
+import service.Peer;
 
 public class Main {
 	public static void main(String args[]) {
@@ -35,8 +41,18 @@ public class Main {
 		// s[3] = "ChunkNo_ReplicationDeg";
 		// testeMsg.createMessage(MESSAGE_TYPE.PUTCHUNK, s, new byte[5]);
 		// System.out.println("MSG: " + testeMsg.getMessageToSend());
-		BackupProtocol backup = new BackupProtocol(1);
-		backup.backupFile("C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\src\\test.txt", 3, 1);
+
+		try {
+			BackupProtocol backup = new BackupProtocol();
+			backup.setPeer(Peer.getInstance());
+			backup.getPeer().setServerID(1);
+			backup.getPeer().setControlChannel(new MCReceiver(false, 1, InetAddress.getByName(args[0]), 4445));
+			backup.getPeer().setDataChannel(new MDBReceiver(false, 1, InetAddress.getByName(args[0]), 4446));
+			backup.backupFile("C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\src\\B1.tmp", 1, 1);
+			System.out.println("END");
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
 
 	}
 }
