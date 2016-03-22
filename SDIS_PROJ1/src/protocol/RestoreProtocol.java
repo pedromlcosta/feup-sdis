@@ -18,7 +18,9 @@ public class RestoreProtocol {
 	public static void startRestore(String filePath) {
 		fileToRestore = peer.getFilesSent().get(filePath);
 		
-		//Send GETCHUNK
+		//Create GETCHUNK message
+		
+		//Send GETCHUNK message
 		
 	}
 
