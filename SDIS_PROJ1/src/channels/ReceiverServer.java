@@ -3,6 +3,15 @@ package channels;
 import java.io.*;
 import java.net.*;
 
+import messages.ChunkMsg;
+import messages.DeleteMsg;
+import messages.GetChunkMsg;
+import messages.Message;
+import messages.Message.MESSAGE_TYPE;
+import messages.PutChunkMsg;
+import messages.StoredMsg;
+import service.Processor;
+
 public class ReceiverServer extends Thread {
 
 	private MulticastSocket socket = null;
@@ -52,7 +61,30 @@ public class ReceiverServer extends Thread {
 				System.out.println("Server Received: " + receivedString);
 
 				// Add message to the queue to get processed
-				// Processor.addToQueue(receivedMessage);
+				Message msg = null;
+				String[] messageFields = msg.parseMessage(receivedString);
+
+				switch(messageFields[0]){
+					case "PUTCHUNK":
+						msg = new PutChunkMsg(messageFields);
+						break;
+					case "STORED":
+						msg = new StoredMsg(messageFields);
+						break;
+					case "GETCHUNK":
+						msg = new GetChunkMsg(messageFields);
+						break;
+					case "CHUNK":
+						msg = new ChunkMsg(messageFields);
+						break;
+					case "DELETE":
+						msg = new DeleteMsg(messageFields);
+						break;
+				}
+				
+				Processor processingThread = new Processor(msg);
+				processingThread.start();
+				
 			}
 		}
 	}

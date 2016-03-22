@@ -25,6 +25,13 @@ public class Message {
 	private final String VALIDATE_MSG_Part2 = "}\\w+ *" + EOL + ".*";
 	private final String PATTERN = " |" + EOL;
 	private String messageToSend = "";
+	
+	//Message attributes
+	MESSAGE_TYPE type;
+	String Version;
+	String senderID;
+	String fileId;
+	
 
 	// PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg>
 	// <CRLF><CRLF><Body>
@@ -33,7 +40,7 @@ public class Message {
 	// CHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
 	// DELETE <Version> <SenderId> <FileId> <CRLF><CRLF>
 	// REMOVED <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
-	public String[] parseMessage(String Message) {
+	public synchronized String[] parseMessage(String Message) {
 		Pattern pattern = Pattern.compile(PATTERN);
 		String[] match = pattern.split(Message, -2);
 		for (String a : match)
@@ -89,14 +96,6 @@ public class Message {
 		messageToSend = messageType;
 		addArgs(args);
 		return true;
-	}
-
-	public void addData(byte[] data) {
-		messageToSend.concat(data.toString());
-	}
-
-	public String addData(String string, byte[] data) {
-		return string.concat(data.toString());
 	}
 
 	public String addEOL(String string) {

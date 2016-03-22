@@ -10,5 +10,11 @@ import messages.Message;
 public class Processor extends Thread{
 
 	private LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>();
+	Message msg;
+	
+	public Processor(Message msg){
+		this.msg = msg;
+	}
+	
 	
 }

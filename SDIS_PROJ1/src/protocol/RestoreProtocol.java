@@ -1,5 +1,6 @@
 package protocol;
 
+import java.net.DatagramPacket;
 import java.util.ArrayList;
 
 import messages.Message;
@@ -25,18 +26,16 @@ public class RestoreProtocol extends Thread {
 		FileID f = peer.getFilesSent().get(filePath);
 		filesToRestore.add(f);
 		
-		//Create and send GETCHUNK message
+		//Create and send GETCHUNK messages
 		Message msg = new Message();
 		for(int i=0; i < f.getnChunks(); i++){
 			String[] args= {"1.0", Integer.toString(peer.getServerID()), f.getID(), Integer.toString(i)};
 			msg.createMessage(MESSAGE_TYPE.GETCHUNK, args, null);
 			
-			
-			
+			DatagramPacket packet = peer.getControlChannel().createDatagramPacket(msg.getMessageBytes());
+			peer.getControlChannel().writePacket(packet);
 		}
 		
 	}
 
-	
-	
 }
