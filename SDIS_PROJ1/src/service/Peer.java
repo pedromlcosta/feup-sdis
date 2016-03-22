@@ -160,9 +160,11 @@ public class Peer implements Invocation {
 	}
 
 	@Override
-	public synchronized String restore(String filePath) throws RemoteException {
+	public String restore(String filePath) throws RemoteException {
 		// Call restore protocol
 
+		//RestoreProtocol restore = new RestoreProtocol();
+		//restore.start();
 		RestoreProtocol.startRestore(filePath);
 		System.out.println("restore called");
 		return "restore sent";
