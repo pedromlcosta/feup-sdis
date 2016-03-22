@@ -1,9 +1,6 @@
 package main;
 
-import java.lang.reflect.Array;
-
-import messages.Message;
-import messages.Message.MESSAGE_TYPE;
+import protocol.BackupProtocol;
 
 public class Main {
 	public static void main(String args[]) {
@@ -26,18 +23,20 @@ public class Main {
 		//
 		// }
 
-		Message testeMsg = new Message();
+		// Message testeMsg = new Message();
 		// System.out.println(Character.toString(testeMsg.getEOL().toCharArray()[0]));
 		// System.out.println("\u0044");
 		// testeMsg.parseMessage("PUTCHUNK <Version> <SenderId> <FileId>
 		// <ChunkNo> <ReplicationDeg> <CRLF><CRLF>sasdasdas");
-		String s[] = new String[4];
-		s[0] = "Version";
-		s[1] = "SenderId";
-		s[2] = "FileId";
-		s[3] = "ChunkNo_ReplicationDeg";
-		testeMsg.createMessage(MESSAGE_TYPE.PUTCHUNK, s, new byte[5]);
-		System.out.println("MSG: " + testeMsg.getMessageToSend());
+		// String s[] = new String[4];
+		// s[0] = "Version";
+		// s[1] = "SenderId";
+		// s[2] = "FileId";
+		// s[3] = "ChunkNo_ReplicationDeg";
+		// testeMsg.createMessage(MESSAGE_TYPE.PUTCHUNK, s, new byte[5]);
+		// System.out.println("MSG: " + testeMsg.getMessageToSend());
+		BackupProtocol backup = new BackupProtocol(1);
+		backup.backupFile("C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\src\\test.txt", 3, 1);
 
 	}
 }

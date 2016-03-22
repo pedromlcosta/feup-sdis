@@ -3,7 +3,6 @@ package messages;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.ArrayList;
@@ -11,6 +10,7 @@ import java.util.Arrays;
 
 import chunk.Chunk;
 
+//TODO STATIC OR NOT??
 public class SplitFiles {
 	private static final int CHUNK_SIZE = 64000;
 	private File file;
@@ -20,6 +20,9 @@ public class SplitFiles {
 	public SplitFiles(String fileName) {
 		changeFileToSplit(fileName);
 		changeFileToSplit(fileName);
+	}
+
+	public SplitFiles() {
 	}
 
 	public void closeInputStream() throws IOException {
@@ -49,32 +52,33 @@ public class SplitFiles {
 		}
 	}
 
-	public ArrayList<byte[]> splitFile() throws IOException {
-		ArrayList<byte[]> chunks = new ArrayList<byte[]>();
+	// public ArrayList<byte[]> splitFile() throws IOException {
+	// ArrayList<byte[]> chunks = new ArrayList<byte[]>();
+	//
+	// if (file.exists()) {
+	//
+	// while (fileReader.available() > 0) {
+	// byte[] chunk = new byte[CHUNK_SIZE];
+	// int bytesRead = fileReader.read(chunk);
+	// chunks.add(Arrays.copyOf(chunk, bytesRead));
+	// }
+	// } else
+	// return null;
+	// System.out.println(chunks.size());
+	// for (byte[] chunk : chunks) {
+	// System.out.println(chunk.length);
+	// }
+	// return chunks;
+	// }
 
-		if (file.exists()) {
-
-			while (fileReader.available() > 0) {
-				byte[] chunk = new byte[CHUNK_SIZE];
-				int bytesRead = fileReader.read(chunk);
-				chunks.add(Arrays.copyOf(chunk, bytesRead));
-			}
-		} else
-			return null;
-		System.out.println(chunks.size());
-		for (byte[] chunk : chunks) {
-			System.out.println(chunk.length);
-		}
-		return chunks;
-	}
-
-	public byte[] splitFile(int StartPos) throws IOException {
+	public byte[] splitFile() throws IOException {
 
 		if (file.exists()) {
 			byte[] chunk = new byte[CHUNK_SIZE];
-			int bytesRead = fileReader.read(chunk, StartPos, CHUNK_SIZE);
-			if (bytesRead == 0)
-				return null;
+			int bytesRead = fileReader.read(chunk, 0, CHUNK_SIZE);
+			// TODO return null or return byte[0]
+			if (bytesRead <= 0)
+				return new byte[0];
 			else
 				return Arrays.copyOf(chunk, bytesRead);
 

@@ -14,6 +14,7 @@ public class FileID {
 	private int desiredRepDegree;
 	private int homeServer;
 	private String ID;
+	private boolean multiple = false;
 
 	public FileID(String fileName) {
 		// TODO multiple Nchunks bellow
@@ -25,14 +26,20 @@ public class FileID {
 		this.nChunks = (int) Math.ceil((1.0 * fileSize) / Chunk.getChunkSize());
 		// each file must have at least 1 chunck
 		this.nChunks = ((this.nChunks == 0 && fileSize > 0) ? 1 : this.nChunks);
+
+		// In case fileSize is a multiple of ChunkSize
+		if (fileSize % Chunk.getChunkSize() == 0) {
+			multiple = true;
+		}
 		try {
 			BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
-			// O ID  criado com Path,Owner e data da ultima modificação
+			// O ID criado com Path,Owner e data da ultima modificação
 			this.ID = Extra.SHA256(absPath + Files.getOwner(path).toString() + attr.lastModifiedTime().toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println("FileSize: " + file.length() + "\n" + "Nchunks: " + this.nChunks + "\n ID: " + this.ID);
+		System.out.println(
+				"FileID create\nFileSize: " + file.length() + "\n" + "Nchunks: " + this.nChunks + "\n ID: " + this.ID);
 	}
 
 	public int getnChunks() {
@@ -65,6 +72,14 @@ public class FileID {
 
 	public void setID(String ID) {
 		this.ID = ID;
+	}
+
+	public boolean isMultiple() {
+		return multiple;
+	}
+
+	public void setMultiple(boolean multiple) {
+		this.multiple = multiple;
 	}
 
 }

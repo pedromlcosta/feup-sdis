@@ -1,5 +1,6 @@
 package protocol;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.Random;
@@ -9,6 +10,7 @@ import chunk.ChunkID;
 import file.FileID;
 import messages.Message;
 import messages.Message.MESSAGE_TYPE;
+import messages.SplitFiles;
 import service.Peer;
 
 public class BackupProtocol extends Thread {
@@ -20,12 +22,49 @@ public class BackupProtocol extends Thread {
 
 	private Peer peer;
 	private int serverID;
+	private SplitFiles split = new SplitFiles();
 
 	public BackupProtocol(int serverID) {
 		this.serverID = serverID;
 	}
 
-	// most 5 PUTCHUNK messages per chunk.
+	// TODO check version && multiple case
+	public void backupFile(String fileName, int wantedRepDegree, int version) {
+		split.changeFileToSplit(fileName);
+		FileID id = new FileID(fileName);
+		id.setDesiredRepDegree(wantedRepDegree);
+		byte[] chunk;
+		int currentPos = 0;
+		int chunkNumber = 0;
+
+		try {
+			do {
+				// Get chunk
+				chunk = split.splitFile();
+				// updateFilePos
+				currentPos = chunk.length;
+				// update Chunk Number
+				chunkNumber++;
+				// Send putChunk msg
+				System.out.println(currentPos + "  " + chunkNumber);
+				// putchunkCreate(id, chunk, chunkNumber, wantedRepDegree,
+				// version);
+			} while (chunk.length > 0 && id.getnChunks() != chunkNumber);
+
+			// Empty body message when the file has a size that is multiple of
+			// the ChunkSize
+			if (id.isMultiple()) {
+				chunkNumber++;
+				id.setnChunks(chunkNumber);
+				putchunkCreate(id, new byte[0], chunkNumber, wantedRepDegree, version);
+			}
+
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+
+	// TODO most 5 PUTCHUNK messages per chunk. check about server ID
 	public void putchunkCreate(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, int version) {
 		Message msg = new Message();
 		int nMessagesSent = 0;
@@ -116,15 +155,20 @@ public class BackupProtocol extends Thread {
 			peer.getStored().get(chunk.getId()).increaseRepDegree();
 		}
 
+		// create message and packets
 		msg.createMessage(MESSAGE_TYPE.STORED, args, null);
 		DatagramPacket packet = peer.getControlChannel().createDatagramPacket(msg.getMessageBytes());
+
+		// get Random Delay
 		Random randomDelayGenerator = new Random();
 		int delay = randomDelayGenerator.nextInt(401);
+		// sleep
 		try {
 			Thread.sleep(delay);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
+		// send message
 		peer.getControlChannel().writePacket(packet);
 
 	}
