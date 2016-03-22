@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.ArrayList;
 
 import chunk.Chunk;
 import extra.Extra;
@@ -15,7 +16,9 @@ public class FileID {
 	private int homeServer;
 	private String ID;
 	private boolean multiple = false;
-
+	private ArrayList<Chunk> fileChunks = new ArrayList<Chunk>();
+	
+	
 	public FileID(String fileName) {
 		// TODO multiple Nchunks bellow
 		File file = new File(fileName);

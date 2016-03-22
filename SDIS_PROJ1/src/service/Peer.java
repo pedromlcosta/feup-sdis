@@ -149,7 +149,7 @@ public class Peer implements Invocation {
 	}
 
 	@Override
-	public String backup(String filePath, int desiredRepDegree) throws RemoteException {
+	public synchronized String backup(String filePath, int desiredRepDegree) throws RemoteException {
 		// O dispatcher vai ter as cenas do socket necessarias
 		// e os metodos para enviar para os canais que queremos as cenas
 
@@ -163,20 +163,22 @@ public class Peer implements Invocation {
 	public String restore(String filePath) throws RemoteException {
 		// Call restore protocol
 
+		//RestoreProtocol restore = new RestoreProtocol();
+		//restore.start();
 		RestoreProtocol.startRestore(filePath);
 		System.out.println("restore called");
 		return "restore sent";
 	}
 
 	@Override
-	public String delete(String filePath) throws RemoteException {
+	public synchronized String delete(String filePath) throws RemoteException {
 		// Call delete protocol
 		System.out.println("delete called");
 		return "delete sent";
 	}
 
 	@Override
-	public String reclaim(int reclaimSpace) throws RemoteException {
+	public synchronized String reclaim(int reclaimSpace) throws RemoteException {
 		// Call reclaim protocol
 		System.out.println("reclaim called");
 		return "reclaim sent";
