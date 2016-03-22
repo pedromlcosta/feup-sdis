@@ -11,10 +11,9 @@ public class ReceiverServer extends Thread {
 	private InetAddress addr;
 	private int port;
 	private byte[] buf = new byte[256];
-	
 
 	public ReceiverServer() {
-		
+
 	}
 
 	public ReceiverServer(boolean quitFlag, int serverID, InetAddress addr, int port) {
@@ -24,46 +23,52 @@ public class ReceiverServer extends Thread {
 		this.port = port;
 		try {
 			this.socket = new MulticastSocket(port);
+			this.socket.setSoTimeout(400);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
-	public void run(){
-		while(!quitFlag){
+
+	@Override
+	public void run() {
+
+		while (!quitFlag) {
+			System.out.println("Started Running the thread");
 			DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
 			try {
 				socket.receive(receivePacket);
+			} catch (SocketTimeoutException e) {
+				System.out.println("Error TimeOut");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
-		
+
 			byte[] receivedMessage = receivePacket.getData();
-			String receivedString = receivedMessage.toString();
-			receivedString = receivedString.substring(0, receivePacket.getLength());
-			
-			System.out.println("Server Received: " + receivedString);
-			
-			// Add message to the queue to get processed
-			// Processor.addToQueue(receivedMessage);
-		
+			String receivedString = new String(receivedMessage);
+			System.out.println(receivedString.length() + "  " + receivedString.isEmpty() + "   L:" + receivedString);
+			if (receivedString.length() > 0) {
+				receivedString = receivedString.substring(0, receivePacket.getLength());
+
+				System.out.println("Server Received: " + receivedString);
+
+				// Add message to the queue to get processed
+				// Processor.addToQueue(receivedMessage);
+			}
 		}
 	}
-
-	
 
 	public DatagramPacket createDatagramPacket(byte[] buffer) {
 		return new DatagramPacket(buffer, buffer.length, this.getAddr(), this.getPort());
 	}
 
-	public void open() throws IOException{
+	public void open() throws IOException {
 		this.socket = new MulticastSocket(port);
 	}
-	
-	public void close(){
+
+	public void close() {
 		this.socket.close();
 	}
-	
+
 	public void joinMulticastGroup(InetAddress mcastaddr) {
 		try {
 			if (this.socket != null)
@@ -83,7 +88,7 @@ public class ReceiverServer extends Thread {
 			e.printStackTrace();
 		}
 	}
-	
+
 	public void joinMulticastGroup() {
 		try {
 			if (this.socket != null)
@@ -111,6 +116,7 @@ public class ReceiverServer extends Thread {
 	public void writePacket(DatagramPacket p) {
 		try {
 			this.socket.send(p);
+			System.out.println("Packer sent");
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Error writePacket");
@@ -120,6 +126,8 @@ public class ReceiverServer extends Thread {
 	public void readPacket(DatagramPacket p) {
 		try {
 			this.socket.receive(p);
+		} catch (SocketTimeoutException e) {
+			System.out.println("Error TimeOut");
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Error readPacket");
