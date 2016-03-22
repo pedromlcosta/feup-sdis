@@ -1,13 +1,14 @@
 package service;
 
 
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.LinkedBlockingQueue;
+
 import messages.Message;
 
 
 
 public class Processor extends Thread{
 
-	private ConcurrentLinkedQueue<Message> messageQueue = new ConcurrentLinkedQueue<Message>();
+	private LinkedBlockingQueue<Message> messageQueue = new LinkedBlockingQueue<Message>();
 	
 }

@@ -8,6 +8,7 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import protocol.RestoreProtocol;
 import channels.MCReceiver;
 import channels.MDBReceiver;
 import channels.MDRReceiver;
@@ -19,7 +20,7 @@ import file.FileID;
 public class Peer implements Invocation {
 	static Peer instance = new Peer();
 
-	static Peer getInstance() {
+	public static Peer getInstance() {
 		return instance;
 	}
 
@@ -153,14 +154,16 @@ public class Peer implements Invocation {
 	}
 
 	@Override
-	public String restore(String exampleArg) throws RemoteException {
+	public String restore(String filePath) throws RemoteException {
 		// Call restore protocol
+		
+		RestoreProtocol.startRestore(filePath);
 		System.out.println("restore called");
 		return "restore sent";
 	}
 
 	@Override
-	public String delete(String exampleArg) throws RemoteException {
+	public String delete(String filePath) throws RemoteException {
 		// Call delete protocol
 		System.out.println("delete called");
 		return "delete sent";
