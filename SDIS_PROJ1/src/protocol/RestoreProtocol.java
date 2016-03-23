@@ -34,6 +34,17 @@ public class RestoreProtocol extends Thread {
 			return;
 		}
 		
+		// Check if file is already being restored at the moment or not
+		// TODO put function on MDR
+		if (receiverChannel.getChunksBeingReceived().containsKey(file) == false)
+			receiverChannel.getChunksBeingReceived().put(file, new ArrayList<Chunk>());
+		else{
+			System.out.println("This file is already being restored");
+			return;
+		}
+			
+		
+		
 		//Create and send GETCHUNK messages
 		Message msg = new Message();
 		for(int i=0; i < file.getnChunks(); i++){
@@ -54,6 +65,10 @@ public class RestoreProtocol extends Thread {
 			
 			// Do stuff with the chunk
 		}
+		
+		//File Restore over, remove FileID from chunks being received
+		//TODO put function on MDR
+		receiverChannel.getChunksBeingReceived().remove(file);
 		
 	}
 	

@@ -11,7 +11,8 @@ import service.Peer;
 
 public class MDRReceiver extends ReceiverServer {
 	private Peer user;
-	private HashMap<FileID, ArrayList<Chunk> > chunksBeingReceived;
+	// Must be volatile so that 2 restores dont access it at the same time for the same file!
+	private volatile HashMap<FileID, ArrayList<Chunk> > chunksBeingReceived = new  HashMap<FileID, ArrayList<Chunk> >();
 
 	public MDRReceiver(String[] args) throws NumberFormatException, IOException {
 		super();

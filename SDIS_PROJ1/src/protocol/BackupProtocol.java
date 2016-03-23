@@ -12,7 +12,7 @@ import chunk.ChunkID;
 import file.FileID;
 import messages.Message;
 import messages.Message.MESSAGE_TYPE;
-import messages.SplitFiles;
+import messages.FileHandler;
 import service.Peer;
 
 public class BackupProtocol extends Thread {
@@ -37,7 +37,7 @@ public class BackupProtocol extends Thread {
 
 	// TODO check version && multiple case | Check as object or dataMember
 	public void run() {
-		SplitFiles split = new SplitFiles();
+		FileHandler split = new FileHandler();
 		split.changeFileToSplit(fileName);
 		FileID fileID = new FileID(fileName);
 		fileID.setDesiredRepDegree(wantedRepDegree);

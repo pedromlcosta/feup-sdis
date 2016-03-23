@@ -10,17 +10,17 @@ import java.util.Arrays;
 import chunk.Chunk;
 
 //TODO STATIC OR NOT?? Check if good practice the Chunk.getChunkSize()
-public class SplitFiles {
+public class FileHandler {
 	private File file;
 	private FileInputStream fileReader;
 	private RandomAccessFile fileOut;
 
-	public SplitFiles(String fileName) {
+	public FileHandler(String fileName) {
 		changeFileToSplit(fileName);
 		changeFileToSplit(fileName);
 	}
 
-	public SplitFiles() {
+	public FileHandler() {
 	}
 
 	public void closeInputStream() throws IOException {
