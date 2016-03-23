@@ -44,7 +44,8 @@ public class Main {
 		// System.out.println("MSG: " + testeMsg.getMessageToSend());
 
 		try {
-			BackupProtocol backup = new BackupProtocol();
+			
+			BackupProtocol backup = new BackupProtocol("derp.txt", 4, "1.0");
 			backup.setPeer(Peer.getInstance());
 			backup.getPeer().setServerID(1);
 
@@ -53,8 +54,9 @@ public class Main {
 			new Thread(mc).start();
 			backup.getPeer().setControlChannel(mc);
 			backup.getPeer().setDataChannel(md);
-			backup.backupFile("C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\src\\B1.tmp", 1, 1);
+			//backup.backupFile("C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\src\\B1.tmp", 1, 1);
 			System.out.println("END");
+			
 		} catch (UnknownHostException e) {
 			e.printStackTrace();
 		}
