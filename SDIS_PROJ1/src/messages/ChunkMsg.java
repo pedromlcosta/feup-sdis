@@ -1,6 +1,5 @@
 package messages;
 
-import messages.Message.MESSAGE_TYPE;
 
 public class ChunkMsg extends Message{
 

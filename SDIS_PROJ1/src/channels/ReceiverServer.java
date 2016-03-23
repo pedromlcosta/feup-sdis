@@ -7,7 +7,6 @@ import messages.ChunkMsg;
 import messages.DeleteMsg;
 import messages.GetChunkMsg;
 import messages.Message;
-import messages.Message.MESSAGE_TYPE;
 import messages.PutChunkMsg;
 import messages.StoredMsg;
 import service.Processor;
@@ -61,7 +60,7 @@ public class ReceiverServer extends Thread {
 				System.out.println("Server Received: " + receivedString);
 
 				// Add message to the queue to get processed
-				Message msg = null;
+				Message msg = new Message();
 				String[] messageFields = msg.parseMessage(receivedString);
 
 				switch(messageFields[0]){

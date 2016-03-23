@@ -1,7 +1,5 @@
 package messages;
 
-import messages.Message.MESSAGE_TYPE;
-
 public class DeleteMsg extends Message{
 	
 	public DeleteMsg(){

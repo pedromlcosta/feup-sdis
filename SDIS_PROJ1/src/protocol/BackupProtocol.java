@@ -24,12 +24,19 @@ public class BackupProtocol extends Thread {
 	// A peer must never store the chunks of its own files.
 	private final int WAITING_TIME = 100;
 	private Peer peer;
+	private String fileName;
+	private int wantedRepDegree;
+	private String version;
 
-	public BackupProtocol() {
+	public BackupProtocol(String fileName, int wantedRepDegree, String version) {
+		this.fileName = fileName;
+		this.wantedRepDegree = wantedRepDegree;
+		this.version = version;
 	}
+	
 
 	// TODO check version && multiple case | Check as object or dataMember
-	public void backupFile(String fileName, int wantedRepDegree, int version) {
+	public void run() {
 		SplitFiles split = new SplitFiles();
 		split.changeFileToSplit(fileName);
 		FileID fileID = new FileID(fileName);
@@ -85,7 +92,7 @@ public class BackupProtocol extends Thread {
 	}
 
 	// TODO most 5 PUTCHUNK messages per chunk. check about server ID
-	public void putchunkCreate(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, int version) throws SocketException {
+	public void putchunkCreate(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version) throws SocketException {
 		Message msg = new Message();
 		int nMessagesSent = 0;
 		// Create Chunk
@@ -96,7 +103,7 @@ public class BackupProtocol extends Thread {
 
 		// createMessage
 		String[] args = new String[5];
-		args[0] = Integer.toString(version);
+		args[0] = version;
 		args[1] = Integer.toString(peer.getServerID());
 		args[2] = file.getID();
 		args[3] = Integer.toString(chunkNumber);
