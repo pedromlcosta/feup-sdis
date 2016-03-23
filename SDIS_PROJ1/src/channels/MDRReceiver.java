@@ -29,4 +29,15 @@ public class MDRReceiver extends ReceiverServer {
 	public void setChunksBeingReceived(HashMap<FileID, ArrayList<Chunk> > chunksBeingReceived) {
 		this.chunksBeingReceived = chunksBeingReceived;
 	}
+	
+	// Synchronized to avoid 2 restores at once interleaving the functions used inside
+	public synchronized boolean isBeingRestoredAlready(FileID file){
+		if (chunksBeingReceived.containsKey(file) == false){
+			chunksBeingReceived.put(file, new ArrayList<Chunk>());
+			return false;
+		}
+		else{
+			return true;
+		}
+	}
 }

@@ -3,6 +3,7 @@ package messages;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
@@ -13,6 +14,7 @@ import chunk.Chunk;
 public class FileHandler {
 	private File file;
 	private FileInputStream fileReader;
+	private FileOutputStream fileWriter;
 	private RandomAccessFile fileOut;
 
 	public FileHandler(String fileName) {
@@ -22,6 +24,7 @@ public class FileHandler {
 
 	public FileHandler() {
 	}
+	
 
 	public void closeInputStream() throws IOException {
 		fileReader.close();
@@ -124,5 +127,25 @@ public class FileHandler {
 	public void setFileOut(RandomAccessFile fileOut) {
 		this.fileOut = fileOut;
 	}
+	
+	// PEDRO STUFF BELOW
+	
+	public void createFile(String fileName){
+		try {
+			fileWriter = new FileOutputStream(fileName);
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void writeToFile(byte[] fileData) throws IOException{
+		fileWriter.write(fileData);
+		//writePos++;
+	}
+	
+	public void openOutStream(){
+		
+	}
+	
 
 }
