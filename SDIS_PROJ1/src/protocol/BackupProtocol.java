@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Random;
+import java.util.concurrent.TimeUnit;
 
 import chunk.Chunk;
 import chunk.ChunkID;
@@ -16,19 +17,20 @@ import service.Peer;
 
 public class BackupProtocol extends Thread {
 
+	private static final int INITIAL_WAITING_TIME = 1;
 	// PUTCHUNK message -> MDB channel
 	// STORED message -> MC channel random delay of 0 to 400 ms before sending
 	// message
 	// A peer must never store the chunks of its own files.
 	private final int WAITING_TIME = 100;
 	private Peer peer;
-	private SplitFiles split = new SplitFiles();
 
 	public BackupProtocol() {
 	}
 
-	// TODO check version && multiple case
+	// TODO check version && multiple case | Check as object or dataMember
 	public void backupFile(String fileName, int wantedRepDegree, int version) {
+		SplitFiles split = new SplitFiles();
 		split.changeFileToSplit(fileName);
 		FileID fileID = new FileID(fileName);
 		fileID.setDesiredRepDegree(wantedRepDegree);
@@ -112,6 +114,8 @@ public class BackupProtocol extends Thread {
 			peer.getAnsweredCommand().put(chunkToSendID, new ArrayList<Integer>());
 		} else
 			peer.getAnsweredCommand().replace(chunkToSendID, new ArrayList<Integer>());
+		long waitTime = TimeUnit.SECONDS.toNanos(INITIAL_WAITING_TIME);
+
 		do {
 
 			// send Message
@@ -120,36 +124,38 @@ public class BackupProtocol extends Thread {
 			// wait for asnwers
 			// TODO check caso de mensagem ser roubad por outro thread (do mesmo
 			// tipo ou não)
-			try {
-				peer.getControlChannel().getSocket().setSoTimeout(WAITING_TIME * nMessagesSent);
-			} catch (SocketException e) {
-				System.out.println("Timeout");
-			}
-			peer.getControlChannel().readPacket(answerPacket);
-			byte[] packetData = answerPacket.getData();
-			System.out.println(packetData.length);
-			if (packetData != null && packetData.length > 0) {
-				String answer = new String(packetData);
-				String[] replayArgs = msg.parseMessage(answer);
+			long startTime = System.nanoTime();
+			long elapsedTime;
+			do {
+				peer.getControlChannel().readPacket(answerPacket);
+				byte[] packetData = answerPacket.getData();
+				System.out.println(packetData.length);
+				if (packetData != null && packetData.length > 0) {
+					String answer = new String(packetData);
+					String[] replayArgs = msg.parseMessage(answer);
 
-				if (replayArgs[0].equals(Message.getStored())) {
-					// FileID
-					String answerFileID = replayArgs[2];
-					// ServerID
-					int answerServerID = Integer.parseInt(replayArgs[1]);
-					// Chunk No
-					int answerChunkNumber = Integer.parseInt(replayArgs[3]);
+					if (replayArgs[0].equals(Message.getStored())) {
+						// FileID
+						String answerFileID = replayArgs[2];
+						// ServerID
+						int answerServerID = Integer.parseInt(replayArgs[1]);
+						// Chunk No
+						int answerChunkNumber = Integer.parseInt(replayArgs[3]);
 
-					if (answerFileID.equals(file.getID()) && answerChunkNumber == chunkNumber) {
-						if (!peer.getAnsweredCommand().get(chunkToSendID).contains(answerServerID)) {
-							chunkToSend.increaseRepDegree();
-							peer.getAnsweredCommand().get(chunkToSendID).add(answerServerID);
+						if (answerFileID.equals(file.getID()) && answerChunkNumber == chunkNumber) {
+							if (!peer.getAnsweredCommand().get(chunkToSendID).contains(answerServerID)) {
+								chunkToSend.increaseRepDegree();
+								peer.getAnsweredCommand().get(chunkToSendID).add(answerServerID);
+							}
 						}
 					}
 				}
-			}
+			} while ((elapsedTime = System.nanoTime() - startTime) < waitTime);
+			System.out.println(elapsedTime);
 			System.out.println(nMessagesSent);
-		} while (nMessagesSent <= 5 && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
+			waitTime *= 2;
+		} while (nMessagesSent < 5 && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
+
 		peer.getControlChannel().getSocket().setSoTimeout(0);
 	}
 

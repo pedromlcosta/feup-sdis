@@ -1,5 +1,6 @@
 package main;
 
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 
@@ -9,7 +10,7 @@ import protocol.BackupProtocol;
 import service.Peer;
 
 public class Main {
-	public static void main(String args[]) {
+	public static void main(String args[]) throws IOException {
 		// System.out.println(Extra.SHA256("HI"));
 		// FileID f = new FileID("");
 		//
@@ -49,7 +50,7 @@ public class Main {
 
 			MCReceiver mc = new MCReceiver(false, 1, InetAddress.getByName(args[0]), 4445);
 			MDBReceiver md = new MDBReceiver(false, 1, InetAddress.getByName(args[1]), 4446);
-			mc.start();
+			new Thread(mc).start();
 			backup.getPeer().setControlChannel(mc);
 			backup.getPeer().setDataChannel(md);
 			backup.backupFile("C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\src\\B1.tmp", 1, 1);
