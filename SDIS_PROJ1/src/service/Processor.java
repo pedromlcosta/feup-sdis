@@ -85,14 +85,17 @@ public class Processor extends Thread {
 	}
 
 	private void storedHandler() {
-		new BackupProtocol(Peer.getInstance()).putchunkReceive(this.msg);
-		;
+		// I got a stored now I need to send them to the queue, we should have a
+		// Task that goes through that List and checks the Lists and such
+		// Maybe I do not need to keep on reading but just wait the time and
+		// then wait for a few secs and check the number of ppl who replied ?
 		// Filipe places the message in a queue? that will be read by the
 		// protocole handling the putcunk Message creation // concorrent?
 		// guardar no Peer?
 	}
 
 	private void putChunkHandler() {
+		new BackupProtocol(Peer.getInstance()).putchunkReceive(this.msg);
 		// Filipe -> putchunk call the function it needs to handle the putuch
 	}
 

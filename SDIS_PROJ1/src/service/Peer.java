@@ -7,15 +7,15 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
-import protocol.BackupProtocol;
-import protocol.RestoreProtocol;
 import channels.MCReceiver;
 import channels.MDBReceiver;
 import channels.MDRReceiver;
-import chunk.Chunk;
 import chunk.ChunkID;
 import file.FileID;
+import protocol.BackupProtocol;
+import protocol.RestoreProtocol;
 
 //SINGLETON SYNCRONIZE ALL THREADS HAVE ACESS TO IT
 public class Peer implements Invocation {
@@ -40,6 +40,7 @@ public class Peer implements Invocation {
 	// TODO servers that replay to command
 	// TODO check connection between channel an peers
 	HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
+	HashMap<Entry<ChunkID, Integer>, String[]> putChunkMessages;
 
 	public Peer() {
 		stored = new ArrayList<ChunkID>();

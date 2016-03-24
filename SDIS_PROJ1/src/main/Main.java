@@ -3,13 +3,17 @@ package main;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.util.concurrent.TimeUnit;
 
 import channels.MCReceiver;
 import channels.MDBReceiver;
+import messages.Message;
 import protocol.BackupProtocol;
 import service.Peer;
 
 public class Main {
+	private static final long INITIAL_WAITING_TIME = 1;
+
 	public static void main(String args[]) throws IOException {
 		// System.out.println(Extra.SHA256("HI"));
 		// FileID f = new FileID("");
@@ -43,22 +47,35 @@ public class Main {
 		// testeMsg.createMessage(MESSAGE_TYPE.PUTCHUNK, s, new byte[5]);
 		// System.out.println("MSG: " + testeMsg.getMessageToSend());
 
-		try {
+		// try {
+		//
+		// BackupProtocol backup = new BackupProtocol("derp.txt", 4, "1.0",
+		// Peer.getInstance());
+		// backup.getPeer().setServerID(1);
+		//
+		// MCReceiver mc = new MCReceiver(false, 1,
+		// InetAddress.getByName(args[0]), 4445);
+		// MDBReceiver md = new MDBReceiver(false, 1,
+		// InetAddress.getByName(args[1]), 4446);
+		// new Thread(mc).start();
+		// backup.getPeer().setControlChannel(mc);
+		// backup.getPeer().setDataChannel(md);
+		// //
+		// backup.backupFile("C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\src\\B1.tmp",
+		// // 1, 1);
+		// System.out.println("END");
+		//
+		// } catch (UnknownHostException e) {
+		// e.printStackTrace();
+		// }
+		long waitTime = TimeUnit.SECONDS.toNanos(INITIAL_WAITING_TIME);
 
-			BackupProtocol backup = new BackupProtocol("derp.txt", 4, "1.0", Peer.getInstance());
-			backup.getPeer().setServerID(1);
-
-			MCReceiver mc = new MCReceiver(false, 1, InetAddress.getByName(args[0]), 4445);
-			MDBReceiver md = new MDBReceiver(false, 1, InetAddress.getByName(args[1]), 4446);
-			new Thread(mc).start();
-			backup.getPeer().setControlChannel(mc);
-			backup.getPeer().setDataChannel(md);
-			// backup.backupFile("C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\src\\B1.tmp",
-			// 1, 1);
-			System.out.println("END");
-
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
+		long elapsedTime;
+		for (int i = 0; i < 3; i++) {
+			long startTime = System.nanoTime();
+			do {
+			} while ((elapsedTime = System.nanoTime() - startTime) < waitTime);
+			System.out.println(TimeUnit.NANOSECONDS.toSeconds(elapsedTime));
 		}
 
 	}
