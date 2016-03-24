@@ -11,14 +11,6 @@ public class ChunkID {
 		this.chunkNumber = number;
 	}
 
-	public String getFile() {
-		return fileID;
-	}
-
-	public void setFile(String file) {
-		this.fileID = file;
-	}
-
 	public int getChunkNumber() {
 		return chunkNumber;
 	}
@@ -33,7 +25,7 @@ public class ChunkID {
 
 		ChunkID chunkObj = (ChunkID) obj;
 
-		if (this.getChunkNumber() != chunkObj.getChunkNumber() || !this.getFile().equals(chunkObj.getFile()))
+		if (this.getChunkNumber() != chunkObj.getChunkNumber() || !this.getFileID().equals(chunkObj.getFileID()))
 			return false;
 
 		return true;

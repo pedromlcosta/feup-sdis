@@ -40,7 +40,6 @@ public class Peer implements Invocation {
 	// TODO servers that replay to command
 	// TODO check connection between channel an peers
 	HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
-	HashMap<Entry<ChunkID, Integer>, String[]> putChunkMessages;
 
 	public Peer() {
 		stored = new ArrayList<ChunkID>();

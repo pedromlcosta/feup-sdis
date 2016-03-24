@@ -1,5 +1,6 @@
 package service;
 
+import java.util.ArrayList;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -15,7 +16,8 @@ import protocol.BackupProtocol;
 
 public class Processor extends Thread {
 
-	private final long GETCHUNK_WAITING_NANO = TimeUnit.MILLISECONDS.toNanos(400); // In milliseconds
+	private final long GETCHUNK_WAITING_NANO = TimeUnit.MILLISECONDS.toNanos(400); // In
+																					// milliseconds
 	private String messageString;
 	private Message msg;
 
@@ -80,10 +82,11 @@ public class Processor extends Thread {
 		// Costa
 
 		// 1o - Verificar se o Chunk pertence a um ficheiro em restore
-		
+
 		// 2o - Se pertencer, guardar em chunksBeingReceived
-		
-		// 3o - Se não pertencer, guardar só a informação que foi recebido um chunk
+
+		// 3o - Se não pertencer, guardar só a informação que foi recebido um
+		// chunk
 		// So ver se e valido e adicionar aos chunks esperados desse ficheiro...
 	}
 
@@ -92,19 +95,17 @@ public class Processor extends Thread {
 
 		// Ciclo com timer 0-400ms -> como sei se chegou um chunk? e tem de ser
 		// chunk do mesmo ficheiro, para esperar?
-		
+
 		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
-		
-		if(Peer.getInstance().hasChunkStored(chunkID)){
+
+		if (Peer.getInstance().hasChunkStored(chunkID)) {
 			try {
 				Thread.sleep((new Random()).nextInt(401));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 
-			
-
-			if(Peer.getInstance().getRestoreChannel().receivedForeignChunk(chunkID)){
+			if (Peer.getInstance().getRestoreChannel().receivedForeignChunk(chunkID)) {
 
 			}
 		}
@@ -119,6 +120,16 @@ public class Processor extends Thread {
 		// Filipe places the message in a queue? that will be read by the
 		// protocole handling the putcunk Message creation // concorrent?
 		// guardar no Peer?
+
+		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
+		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand().get(chunkID);
+		int senderID = Integer.parseInt(this.msg.getSenderID());
+		if (answered == null) {
+			answered = new ArrayList<Integer>();
+			Peer.getInstance().getAnsweredCommand().put(chunkID, answered);
+
+		}
+		answered.add(senderID);
 	}
 
 	private void putChunkHandler() {
