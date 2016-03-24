@@ -1,11 +1,14 @@
 package main;
 
+import java.util.concurrent.TimeUnit;
+
 import messages.Message;
 import messages.Message.MESSAGE_TYPE;
 
 public class Test {
 	
 	public static void main(String[] args){
+		/*
 		Message msg = new Message();
 		// createMessage
 		String[] messageArgs2 = new String[4];
@@ -26,6 +29,18 @@ public class Test {
 				test += "Arg " + Integer.toString(i+1) + " " + receivedArgs[i] + "\n" ;
 		}
 		System.out.println(test);
+		 */
+
+		long waitTime = TimeUnit.MILLISECONDS.toNanos(400);
+
+		long elapsedTime;
+		for (int i = 0; i < 3; i++) {
+			long startTime = System.nanoTime();
+			do {
+				elapsedTime = System.nanoTime() - startTime;
+			} while (elapsedTime  < waitTime);
+			System.out.println(TimeUnit.NANOSECONDS.toMillis(elapsedTime));
+		}
 		
 	}
 	

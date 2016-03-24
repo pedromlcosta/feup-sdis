@@ -1,5 +1,9 @@
 package service;
 
+import java.util.Random;
+import java.util.concurrent.TimeUnit;
+
+import chunk.ChunkID;
 import messages.ChunkMsg;
 import messages.DeleteMsg;
 import messages.GetChunkMsg;
@@ -11,8 +15,9 @@ import protocol.BackupProtocol;
 
 public class Processor extends Thread {
 
-	String messageString;
-	Message msg;
+	private final long GETCHUNK_WAITING_NANO = TimeUnit.MILLISECONDS.toNanos(400); // In milliseconds
+	private String messageString;
+	private Message msg;
 
 	public Processor(String messageString) {
 		this.messageString = messageString;
@@ -74,6 +79,11 @@ public class Processor extends Thread {
 	private void chunkHandler() {
 		// Costa
 
+		// 1o - Verificar se o Chunk pertence a um ficheiro em restore
+		
+		// 2o - Se pertencer, guardar em chunksBeingReceived
+		
+		// 3o - Se não pertencer, guardar só a informação que foi recebido um chunk
 		// So ver se e valido e adicionar aos chunks esperados desse ficheiro...
 	}
 
@@ -82,6 +92,23 @@ public class Processor extends Thread {
 
 		// Ciclo com timer 0-400ms -> como sei se chegou um chunk? e tem de ser
 		// chunk do mesmo ficheiro, para esperar?
+		
+		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
+		
+		if(Peer.getInstance().hasChunkStored(chunkID)){
+			try {
+				Thread.sleep((new Random()).nextInt(401));
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+
+			
+
+			if(Peer.getInstance().getRestoreChannel().receivedForeignChunk(chunkID)){
+
+			}
+		}
+
 	}
 
 	private void storedHandler() {

@@ -230,5 +230,9 @@ public class Peer implements Invocation {
 	public void setServerID(int serverID) {
 		this.serverID = serverID;
 	}
+	
+	public boolean hasChunkStored(ChunkID chunkID){
+		return stored.contains(chunkID);
+	}
 
 }

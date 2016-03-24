@@ -75,13 +75,13 @@ public class RestoreProtocol extends Thread {
 
 		//File Restore over, remove FileID from chunks being received
 		//TODO put function on MDR
-		receiverChannel.getChunksBeingReceived().remove(file);
+		receiverChannel.getRestoreChunksReceived().remove(file);
 		
 	}
 	
 	public Chunk waitForChunk(FileID file) throws InterruptedException{
 		
-		ArrayList<Chunk> fileChunks = receiverChannel.getChunksBeingReceived().get(file);
+		ArrayList<Chunk> fileChunks = receiverChannel.getRestoreChunksReceived().get(file);
 		Chunk chunk = null;		
 		
 		while(true){
