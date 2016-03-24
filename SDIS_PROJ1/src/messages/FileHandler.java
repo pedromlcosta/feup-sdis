@@ -130,12 +130,22 @@ public class FileHandler {
 	
 	// PEDRO STUFF BELOW
 	
-	public void createFile(String fileName){
-		try {
-			fileWriter = new FileOutputStream(fileName);
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
+	public synchronized boolean createFile(String filePath){
+
+		File f = new File(filePath);
+		
+		if(!f.exists() && !f.isDirectory()) { 
+			try {
+				fileWriter = new FileOutputStream(filePath);
+				return true;
+			} catch (FileNotFoundException e) {
+				e.printStackTrace();
+			}
+		}else{
+			return false;
 		}
+		
+		return false;
 	}
 	
 	public void writeToFile(byte[] fileData) throws IOException{

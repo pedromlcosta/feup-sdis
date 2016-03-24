@@ -47,7 +47,10 @@ public class RestoreProtocol extends Thread {
 
 
 		// Send GETCHUNK -> Wait for CHUNK -> Write it to the file
-		fileHandler.createFile(filePath);
+		if (!fileHandler.createFile(filePath)){
+			System.out.println("File with this name already exists, couldn't restore");
+			return;
+		}
 		Message msg = new Message();
 		
 		for(int i=0; i < file.getnChunks(); i++){
