@@ -100,8 +100,8 @@ public class BackupProtocol extends Thread {
 		int nMessagesSent = 0;
 		// Create Chunk
 		Chunk chunkToSend = new Chunk(file.getID(), chunkNumber, chunkData);
-		chunkToSend.setDesiredRepDegree(wantedRepDegree);
-		chunkToSend.setActualRepDegree(0);
+		chunkToSend.getId().setDesiredRepDegree(wantedRepDegree);
+		chunkToSend.getId().setActualRepDegree(0);
 		ChunkID chunkToSendID = chunkToSend.getId();
 
 		// createMessage
@@ -190,14 +190,15 @@ public class BackupProtocol extends Thread {
 		byte msgData[] = msg.getMessageData();
 
 		Chunk chunk = new Chunk(args[2], Integer.parseInt(args[2]), msgData);
-
+		int index;
 		// TODO Check if condition makes sense
-		if (!peer.getStored().containsKey(chunk.getId())) {
+		if ((index = peer.getStored().indexOf(chunk.getId())) < 0) {
 			chunk.setDesiredRepDegree(putchunkMSG.getReplicationDeg());
 			chunk.setActualRepDegree(1);
-			peer.addChunk(chunk.getId(), chunk);
+			peer.addChunk(chunk.getId());
 		} else {
-			peer.getStored().get(chunk.getId()).increaseRepDegree();
+
+			peer.getStored().get(index).increaseRepDegree();
 		}
 
 		// create message and packets

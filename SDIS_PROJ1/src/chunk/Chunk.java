@@ -3,8 +3,6 @@ package chunk;
 public class Chunk {
 	private static final int CHUNK_SIZE = 64000;
 	private ChunkID id;
-	private int desiredRepDegree;
-	private int actualRepDegree;
 	private byte data[];
 
 	public Chunk(String id, int number, byte[] data) {
@@ -24,30 +22,6 @@ public class Chunk {
 	public void setId(ChunkID id) {
 		this.id = id;
 	}
-	
-	public int getDesiredRepDegree() {
-		return desiredRepDegree;
-	}
-
-	public void setDesiredRepDegree(int desiredRepDegree) {
-		this.desiredRepDegree = desiredRepDegree;
-	}
-
-	public int getActualRepDegree() {
-		return actualRepDegree;
-	}
-
-	public void setActualRepDegree(int actualRepDegree) {
-		this.actualRepDegree = actualRepDegree;
-	}
-	
-	public void increaseRepDegree(){
-		this.actualRepDegree++;
-	}
-	
-	public void decreaseRepDegree(){
-		this.actualRepDegree--;
-	}
 
 	public byte[] getData() {
 		return data;
@@ -59,6 +33,27 @@ public class Chunk {
 
 	public static int getChunkSize() {
 		return CHUNK_SIZE;
+	}
+
+	public void increaseRepDegree() {
+		this.id.increaseRepDegree();
+	}
+
+	public int getDesiredRepDegree() {
+		return this.id.getDesiredRepDegree();
+	}
+
+	public int getActualRepDegree() {
+		return this.id.getDesiredRepDegree();
+	}
+
+	public void setDesiredRepDegree(int replicationDeg) {
+		this.id.setDesiredRepDegree(replicationDeg);
+	}
+
+	public void setActualRepDegree(int i) {
+		this.id.setActualRepDegree(i);
+
 	}
 
 }

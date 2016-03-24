@@ -25,7 +25,8 @@ public class Peer implements Invocation {
 		return instance;
 	}
 
-	private HashMap<ChunkID, Chunk> stored;
+	private ArrayList<ChunkID> stored;
+	// private HashMap<ChunkID, Chunk> stored;
 	private HashMap<String, FileID> filesSent;
 
 	private MCReceiver controlChannel;
@@ -41,7 +42,7 @@ public class Peer implements Invocation {
 	HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 
 	public Peer() {
-		stored = new HashMap<ChunkID, Chunk>();
+		stored = new ArrayList<ChunkID>();
 		filesSent = new HashMap<String, FileID>();
 		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
 	}
@@ -71,15 +72,15 @@ public class Peer implements Invocation {
 
 	// Methods
 
-	public HashMap<ChunkID, Chunk> getStored() {
+	public ArrayList<ChunkID> getStored() {
 		return stored;
 	}
 
-	public void addChunk(ChunkID id, Chunk chunk) {
-		stored.put(id, chunk);
+	public void addChunk(ChunkID id) {
+		stored.add(id);
 	}
 
-	public void setStored(HashMap<ChunkID, Chunk> stored) {
+	public void setStored(ArrayList<ChunkID> stored) {
 		this.stored = stored;
 	}
 
