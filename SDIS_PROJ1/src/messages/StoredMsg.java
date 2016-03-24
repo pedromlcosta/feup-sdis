@@ -1,15 +1,15 @@
 package messages;
 
+public class StoredMsg extends Message {
+	String ChunkNo;
 
-public class StoredMsg extends Message{
-String ChunkNo;
-	
-	public StoredMsg(){
+	public StoredMsg() {
 		type = MESSAGE_TYPE.STORED;
 	}
 
 	public StoredMsg(String[] messageFields) {
-		if(messageFields.length < 5){
+		// TODO check number and such
+		if (messageFields.length < 5) {
 			System.out.println("Failed creating Stored message. Not enough fields");
 			return;
 		}

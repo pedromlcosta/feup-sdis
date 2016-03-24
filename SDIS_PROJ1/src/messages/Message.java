@@ -202,4 +202,60 @@ public class Message {
 		return VALIDATE_MSG_Part2;
 	}
 
+	public MESSAGE_TYPE getType() {
+		return type;
+	}
+
+	public void setType(MESSAGE_TYPE type) {
+		this.type = type;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public String getSenderID() {
+		return senderID;
+	}
+
+	public void setSenderID(String senderID) {
+		this.senderID = senderID;
+	}
+
+	public String getFileId() {
+		return fileId;
+	}
+
+	public void setFileId(String fileId) {
+		this.fileId = fileId;
+	}
+
+	public int getChunkNo() {
+		return chunkNo;
+	}
+
+	public void setChunkNo(int chunkNo) {
+		this.chunkNo = chunkNo;
+	}
+
+	public int getReplicationDeg() {
+		return replicationDeg;
+	}
+
+	public void setReplicationDeg(int replicationDeg) {
+		this.replicationDeg = replicationDeg;
+	}
+
+	public byte[] getBody() {
+		return body;
+	}
+
+	public void setBody(byte[] body) {
+		this.body = body;
+	}
+
 }

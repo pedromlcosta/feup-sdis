@@ -44,8 +44,6 @@ public class ReceiverServer extends Thread {
 			DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
 			try {
 				socket.receive(receivePacket);
-			} catch (SocketTimeoutException e) {
-				System.out.println("Error TimeOut");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

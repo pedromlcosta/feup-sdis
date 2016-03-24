@@ -1,7 +1,5 @@
 package service;
 
-import java.util.concurrent.LinkedBlockingQueue;
-
 import messages.ChunkMsg;
 import messages.DeleteMsg;
 import messages.GetChunkMsg;
@@ -9,6 +7,7 @@ import messages.Message;
 import messages.PutChunkMsg;
 import messages.RemovedMsg;
 import messages.StoredMsg;
+import protocol.BackupProtocol;
 
 public class Processor extends Thread {
 
@@ -86,6 +85,8 @@ public class Processor extends Thread {
 	}
 
 	private void storedHandler() {
+		new BackupProtocol(Peer.getInstance()).putchunkReceive(this.msg);
+		;
 		// Filipe places the message in a queue? that will be read by the
 		// protocole handling the putcunk Message creation // concorrent?
 		// guardar no Peer?
