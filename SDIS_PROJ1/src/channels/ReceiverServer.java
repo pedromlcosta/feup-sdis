@@ -31,7 +31,6 @@ public class ReceiverServer extends Thread {
 		this.port = port;
 		try {
 			this.socket = new MulticastSocket(port);
-			this.socket.setSoTimeout(400);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -62,29 +61,29 @@ public class ReceiverServer extends Thread {
 				// Add message to the queue to get processed
 				Message msg = new Message();
 				String[] messageFields = msg.parseMessage(receivedString);
-				//TODO Check if it is valid
+				// TODO Check if it is valid
 
-				switch(messageFields[0]){
-					case "PUTCHUNK":
-						msg = new PutChunkMsg(messageFields);
-						break;
-					case "STORED":
-						msg = new StoredMsg(messageFields);
-						break;
-					case "GETCHUNK":
-						msg = new GetChunkMsg(messageFields);
-						break;
-					case "CHUNK":
-						msg = new ChunkMsg(messageFields);
-						break;
-					case "DELETE":
-						msg = new DeleteMsg(messageFields);
-						break;
+				switch (messageFields[0]) {
+				case "PUTCHUNK":
+					msg = new PutChunkMsg(messageFields);
+					break;
+				case "STORED":
+					msg = new StoredMsg(messageFields);
+					break;
+				case "GETCHUNK":
+					msg = new GetChunkMsg(messageFields);
+					break;
+				case "CHUNK":
+					msg = new ChunkMsg(messageFields);
+					break;
+				case "DELETE":
+					msg = new DeleteMsg(messageFields);
+					break;
 				}
-				
-				Processor processingThread = new Processor(msg);
-				processingThread.start();
-				
+
+				// Processor processingThread = new Processor(msg);
+				// processingThread.start();
+
 			}
 		}
 	}

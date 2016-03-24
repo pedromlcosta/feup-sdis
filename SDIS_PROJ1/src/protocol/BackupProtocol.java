@@ -22,7 +22,6 @@ public class BackupProtocol extends Thread {
 	// STORED message -> MC channel random delay of 0 to 400 ms before sending
 	// message
 	// A peer must never store the chunks of its own files.
-	private final int WAITING_TIME = 100;
 	private Peer peer;
 	private String fileName;
 	private int wantedRepDegree;
@@ -33,9 +32,9 @@ public class BackupProtocol extends Thread {
 		this.wantedRepDegree = wantedRepDegree;
 		this.version = version;
 	}
-	
 
-	// TODO check version && multiple case | Check as object or dataMember
+	// TODO check version && multiple case | Check as object or dataMember |
+	// Why? it does not make much sense the run being this
 	public void run() {
 		FileHandler split = new FileHandler();
 		split.changeFileToSplit(fileName);
@@ -134,6 +133,7 @@ public class BackupProtocol extends Thread {
 			long startTime = System.nanoTime();
 			long elapsedTime;
 			do {
+				// TODO replace the readPacket for going to the hash map
 				peer.getControlChannel().readPacket(answerPacket);
 				byte[] packetData = answerPacket.getData();
 				System.out.println(packetData.length);
@@ -163,7 +163,6 @@ public class BackupProtocol extends Thread {
 			waitTime *= 2;
 		} while (nMessagesSent < 5 && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
 
-		peer.getControlChannel().getSocket().setSoTimeout(0);
 	}
 
 	// 0 and 400 ms. delay for the stored msg
