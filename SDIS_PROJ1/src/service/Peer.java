@@ -155,7 +155,7 @@ public class Peer implements Invocation {
 		// e os metodos para enviar para os canais que queremos as cenas
 
 		// Call backup protocol through dispatcher
-		Thread backup = new BackupProtocol(filePath, desiredRepDegree, "1.0");
+		Thread backup = new BackupProtocol(filePath, desiredRepDegree, "1.0", Peer.getInstance());
 		backup.start();
 		System.out.println("backup called");
 		return "backup sent";

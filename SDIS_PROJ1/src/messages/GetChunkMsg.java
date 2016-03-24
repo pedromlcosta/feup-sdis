@@ -10,7 +10,7 @@ public class GetChunkMsg extends Message{
 
 	public GetChunkMsg(String[] messageFields) {
 		if(messageFields.length < 5){
-			System.out.println("Failed creating Stored message. Not enough fields");
+			System.out.println("Failed creating GetChunk message. Not enough fields");
 			return;
 		}
 		version = messageFields[1];

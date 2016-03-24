@@ -25,8 +25,8 @@ public class Message {
 	protected final String VALIDATE_MSG_Part2 = "}\\w+ *" + EOL + ".*";
 	protected final String PATTERN = " |" + EOL;
 	protected String messageToSend = "";
-	
-	//Message attributes
+
+	// Message attributes
 	MESSAGE_TYPE type;
 	String version;
 	String senderID;
@@ -34,7 +34,6 @@ public class Message {
 	int chunkNo;
 	int replicationDeg;
 	byte[] body;
-	
 
 	// PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg>
 	// <CRLF><CRLF><Body>
@@ -46,54 +45,48 @@ public class Message {
 	public synchronized String[] parseMessage(String Message) {
 		Pattern pattern = Pattern.compile(PATTERN);
 		String[] match = pattern.split(Message, -2);
-		//for (String a : match)
-			//System.out.println("Print: " + a);
+		// for (String a : match)
+		// System.out.println("Print: " + a);
 		return match;
 	}
 
 	public boolean createMessage(MESSAGE_TYPE type, String args[], byte data[]) {
 		createHeader(type, args);
-		if (data != null){
-			//System.out.println("Message to send before data: " + messageToSend);
+		if (data != null) {
+			// System.out.println("Message to send before data: " +
+			// messageToSend);
 			messageToSend = messageToSend.concat(new String(data));
 		}
 		if (validateMsg(messageToSend, args.length))
 			return true;
 		else {
 			System.out.println("Mensagem nao valida");
-			//messageToSend = EMPTY_STRING;
+			// messageToSend = EMPTY_STRING;
 			return false;
 		}
 	}
 
 	public boolean createHeader(MESSAGE_TYPE type, String... args) {
-		boolean created = false;
-		
-		if (args.length > 0)
-						
+
+		if (args.length > 0) {
+
 			switch (type) {
 			case GETCHUNK:
-				created = createHeaderAux(args, 4, Message.GETCHUNK);
-				break;
+				return createHeaderAux(args, 4, Message.GETCHUNK);
 			case CHUNK:
-				created = createHeaderAux(args, 4, CHUNK);
-				break;
+				return createHeaderAux(args, 4, CHUNK);
 			case DELETE:
-				created = createHeaderAux(args, 3, DELETE);
-				break;
+				return createHeaderAux(args, 3, DELETE);
 			case REMOVED:
-				created = createHeaderAux(args, 4, REMOVED);
-				break;
+				return createHeaderAux(args, 4, REMOVED);
 			case PUTCHUNK:
-				created = createHeaderAux(args, 5, PUTCHUNK);
-				break;
+				return createHeaderAux(args, 5, PUTCHUNK);
 			case STORED:
-				created = createHeaderAux(args, 4, STORED);
-				break;
-			default:
-				break;
+				return createHeaderAux(args, 4, STORED);
+
 			}
-		return created;
+		}
+		return false;
 	}
 
 	public boolean validateMsg(String s, int nArgs) {
@@ -104,7 +97,7 @@ public class Message {
 	}
 
 	public boolean createHeaderAux(String[] args, int nArgs, String messageType) {
-		if (args.length != nArgs){
+		if (args.length != nArgs) {
 			System.out.println("Args given for this type of message: " + args.length);
 			System.out.println("Args expected: " + nArgs);
 			return false;
@@ -137,8 +130,9 @@ public class Message {
 	}
 
 	// From here there are only gets and sets
+	// TODO 2 EOL are needed
 	public byte[] getMessageData() {
-		Pattern pattern = Pattern.compile(EOL);
+		Pattern pattern = Pattern.compile(EOL + EOL);
 		String[] match = pattern.split(getMessageToSend(), -2);
 
 		return match[1].getBytes();
@@ -206,6 +200,62 @@ public class Message {
 
 	public String getVALIDATE_MSG_Part2() {
 		return VALIDATE_MSG_Part2;
+	}
+
+	public MESSAGE_TYPE getType() {
+		return type;
+	}
+
+	public void setType(MESSAGE_TYPE type) {
+		this.type = type;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public String getSenderID() {
+		return senderID;
+	}
+
+	public void setSenderID(String senderID) {
+		this.senderID = senderID;
+	}
+
+	public String getFileId() {
+		return fileId;
+	}
+
+	public void setFileId(String fileId) {
+		this.fileId = fileId;
+	}
+
+	public int getChunkNo() {
+		return chunkNo;
+	}
+
+	public void setChunkNo(int chunkNo) {
+		this.chunkNo = chunkNo;
+	}
+
+	public int getReplicationDeg() {
+		return replicationDeg;
+	}
+
+	public void setReplicationDeg(int replicationDeg) {
+		this.replicationDeg = replicationDeg;
+	}
+
+	public byte[] getBody() {
+		return body;
+	}
+
+	public void setBody(byte[] body) {
+		this.body = body;
 	}
 
 }

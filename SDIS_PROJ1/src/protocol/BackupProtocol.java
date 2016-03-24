@@ -22,20 +22,23 @@ public class BackupProtocol extends Thread {
 	// STORED message -> MC channel random delay of 0 to 400 ms before sending
 	// message
 	// A peer must never store the chunks of its own files.
-	private final int WAITING_TIME = 100;
 	private Peer peer;
 	private String fileName;
 	private int wantedRepDegree;
 	private String version;
 
-	public BackupProtocol(String fileName, int wantedRepDegree, String version) {
+	public BackupProtocol(String fileName, int wantedRepDegree, String version, Peer instance) {
 		this.fileName = fileName;
 		this.wantedRepDegree = wantedRepDegree;
 		this.version = version;
 	}
-	
 
-	// TODO check version && multiple case | Check as object or dataMember
+	public BackupProtocol(Peer instance) {
+		this.peer = instance;
+	}
+
+	// TODO check version && multiple case | Check as object or dataMember |
+	// Why? it does not make much sense the run being this
 	public void run() {
 		FileHandler split = new FileHandler();
 		split.changeFileToSplit(fileName);
@@ -134,6 +137,7 @@ public class BackupProtocol extends Thread {
 			long startTime = System.nanoTime();
 			long elapsedTime;
 			do {
+				// TODO replace the readPacket for going to the hash map
 				peer.getControlChannel().readPacket(answerPacket);
 				byte[] packetData = answerPacket.getData();
 				System.out.println(packetData.length);
@@ -163,35 +167,33 @@ public class BackupProtocol extends Thread {
 			waitTime *= 2;
 		} while (nMessagesSent < 5 && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
 
-		peer.getControlChannel().getSocket().setSoTimeout(0);
 	}
 
 	// 0 and 400 ms. delay for the stored msg
-	public void putchunkReceive(String putchunkMSG) {
+	public void putchunkReceive(Message putchunkMSG) {
 		Message msg = new Message();
 		String args[] = new String[4];
-		String receivedArgs[] = msg.parseMessage(putchunkMSG);
 
-		if (!msg.validateMsg(putchunkMSG, 5) || Integer.parseInt(receivedArgs[1]) == peer.getServerID()) {
-			System.out.println("Either the Msg was not valid or you tried to use the same server for both things");
+		if (Integer.parseInt(putchunkMSG.getSenderID()) == peer.getServerID()) {
+			System.out.println("Either the Msg was you tried to use the same server ");
 			System.out.println(msg.getMessageToSend());
 			return;
 		}
 		// Version - same version??
-		args[0] = receivedArgs[0];
+		args[0] = getVersion();
 		// SenderID
 		args[1] = Integer.toString(peer.getServerID());
 		// FileID
-		args[2] = receivedArgs[2];
+		args[2] = putchunkMSG.getFileId();
 		// Chunk No
-		args[3] = receivedArgs[3];
+		args[3] = Integer.toString(putchunkMSG.getChunkNo());
 		byte msgData[] = msg.getMessageData();
 
 		Chunk chunk = new Chunk(args[2], Integer.parseInt(args[2]), msgData);
 
 		// TODO Check if condition makes sense
 		if (!peer.getStored().containsKey(chunk.getId())) {
-			chunk.setDesiredRepDegree(Integer.parseInt(receivedArgs[4]));
+			chunk.setDesiredRepDegree(putchunkMSG.getReplicationDeg());
 			chunk.setActualRepDegree(1);
 			peer.addChunk(chunk.getId(), chunk);
 		} else {
@@ -216,12 +218,41 @@ public class BackupProtocol extends Thread {
 
 	}
 
+	// Gets and Sets
 	public Peer getPeer() {
 		return peer;
 	}
 
 	public void setPeer(Peer peer) {
 		this.peer = peer;
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public int getWantedRepDegree() {
+		return wantedRepDegree;
+	}
+
+	public void setWantedRepDegree(int wantedRepDegree) {
+		this.wantedRepDegree = wantedRepDegree;
+	}
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public static int getInitialWaitingTime() {
+		return INITIAL_WAITING_TIME;
 	}
 
 }
