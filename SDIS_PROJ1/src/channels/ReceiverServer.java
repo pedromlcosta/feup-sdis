@@ -59,32 +59,13 @@ public class ReceiverServer extends Thread {
 
 				System.out.println("Server Received: " + receivedString);
 
-				// Add message to the queue to get processed
-				Message msg = new Message();
-				String[] messageFields = msg.parseMessage(receivedString);
-				//TODO Check if it is valid
-
-				switch(messageFields[0]){
-					case "PUTCHUNK":
-						msg = new PutChunkMsg(messageFields);
-						break;
-					case "STORED":
-						msg = new StoredMsg(messageFields);
-						break;
-					case "GETCHUNK":
-						msg = new GetChunkMsg(messageFields);
-						break;
-					case "CHUNK":
-						msg = new ChunkMsg(messageFields);
-						break;
-					case "DELETE":
-						msg = new DeleteMsg(messageFields);
-						break;
-				}
+				//TODO Check if ReceivedString is valid!!!!!!!!!!
+				//TODO funcao auxiliar que tira string do packet?
 				
-				Processor processingThread = new Processor(msg);
+				Processor processingThread = new Processor(receivedString);
 				processingThread.start();
 				
+				receivedString = "";
 			}
 		}
 	}
