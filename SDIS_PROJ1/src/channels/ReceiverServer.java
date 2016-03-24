@@ -62,6 +62,7 @@ public class ReceiverServer extends Thread {
 				// Add message to the queue to get processed
 				Message msg = new Message();
 				String[] messageFields = msg.parseMessage(receivedString);
+				//TODO Check if it is valid
 
 				switch(messageFields[0]){
 					case "PUTCHUNK":

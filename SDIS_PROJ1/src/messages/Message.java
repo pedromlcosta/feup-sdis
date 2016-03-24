@@ -20,11 +20,11 @@ public class Message {
 		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED
 	}
 
-	private final String EOL = "\u0013\u0010";
-	private final String VALIDATE_MSG_Part1 = "^(?:(?:\\w)* +){";
-	private final String VALIDATE_MSG_Part2 = "}\\w+ *" + EOL + ".*";
-	private final String PATTERN = " |" + EOL;
-	private String messageToSend = "";
+	protected final String EOL = "\u0013\u0010";
+	protected final String VALIDATE_MSG_Part1 = "^(?:(?:\\w)* +){";
+	protected final String VALIDATE_MSG_Part2 = "}\\w+ *" + EOL + ".*";
+	protected final String PATTERN = " |" + EOL;
+	protected String messageToSend = "";
 	
 	//Message attributes
 	MESSAGE_TYPE type;
@@ -43,20 +43,22 @@ public class Message {
 	public synchronized String[] parseMessage(String Message) {
 		Pattern pattern = Pattern.compile(PATTERN);
 		String[] match = pattern.split(Message, -2);
-		for (String a : match)
-			System.out.println("Print: " + a);
+		//for (String a : match)
+			//System.out.println("Print: " + a);
 		return match;
 	}
 
 	public boolean createMessage(MESSAGE_TYPE type, String args[], byte data[]) {
 		createHeader(type, args);
-		if (data != null)
-			messageToSend.concat(new String(data));
-
+		if (data != null){
+			//System.out.println("Message to send before data: " + messageToSend);
+			messageToSend = messageToSend.concat(new String(data));
+		}
 		if (validateMsg(messageToSend, args.length))
 			return true;
 		else {
-			messageToSend = EMPTY_STRING;
+			System.out.println("Entrou aqui");
+			//messageToSend = EMPTY_STRING;
 			return false;
 		}
 	}
@@ -110,6 +112,7 @@ public class Message {
 		for (String arg : args) {
 			messageToSend = messageToSend.concat(" " + arg);
 		}
+		addEOL();
 		addEOL();
 	}
 
