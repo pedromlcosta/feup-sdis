@@ -57,31 +57,40 @@ public class Message {
 		if (validateMsg(messageToSend, args.length))
 			return true;
 		else {
-			System.out.println("Entrou aqui");
+			System.out.println("Mensagem nao valida");
 			//messageToSend = EMPTY_STRING;
 			return false;
 		}
 	}
 
 	public boolean createHeader(MESSAGE_TYPE type, String... args) {
+		boolean created = false;
+		
 		if (args.length > 0)
+						
 			switch (type) {
 			case GETCHUNK:
-				return createHeaderAux(args, 4, Message.GETCHUNK);
+				created = createHeaderAux(args, 4, Message.GETCHUNK);
+				break;
 			case CHUNK:
-				return createHeaderAux(args, 3, CHUNK);
+				created = createHeaderAux(args, 4, CHUNK);
+				break;
 			case DELETE:
-				return createHeaderAux(args, 3, DELETE);
+				created = createHeaderAux(args, 3, DELETE);
+				break;
 			case REMOVED:
-				return createHeaderAux(args, 4, REMOVED);
+				created = createHeaderAux(args, 4, REMOVED);
+				break;
 			case PUTCHUNK:
-				return createHeaderAux(args, 5, PUTCHUNK);
+				created = createHeaderAux(args, 5, PUTCHUNK);
+				break;
 			case STORED:
-				return createHeaderAux(args, 4, STORED);
+				created = createHeaderAux(args, 4, STORED);
+				break;
 			default:
-				return false;
+				break;
 			}
-		return false;
+		return created;
 	}
 
 	public boolean validateMsg(String s, int nArgs) {
@@ -92,10 +101,14 @@ public class Message {
 	}
 
 	public boolean createHeaderAux(String[] args, int nArgs, String messageType) {
-		if (args.length != nArgs)
+		if (args.length != nArgs){
+			System.out.println("Args given for this type of message: " + args.length);
+			System.out.println("Args expected: " + nArgs);
 			return false;
+		}
 		// clean String
 		messageToSend = messageType;
+		System.out.println("Entrou aqui");
 		addArgs(args);
 		return true;
 	}
