@@ -12,14 +12,15 @@ String ChunkNo;
 	}
 	
 	public ChunkMsg(String[] messageFields){
-		
+		if(messageFields.length < 5){
+			System.out.println("Failed creating Stored message. Not enough fields");
+			return;
+		}
+		version = messageFields[1];
+		senderID = messageFields[2];
+		fileId = messageFields[3];
+		chunkNo = Integer.parseInt(messageFields[4]);
+		body = messageFields[5].getBytes();
 	}
 	
-	public synchronized String[] parseMessage(String Message) {
-		Pattern pattern = Pattern.compile(PATTERN);
-		String[] match = pattern.split(Message, -2);
-		for (String a : match)
-			System.out.println("Print: " + a);
-		return match;
-	}
 }

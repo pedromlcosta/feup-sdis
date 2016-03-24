@@ -28,9 +28,12 @@ public class Message {
 	
 	//Message attributes
 	MESSAGE_TYPE type;
-	String Version;
+	String version;
 	String senderID;
 	String fileId;
+	int chunkNo;
+	int replicationDeg;
+	byte[] body;
 	
 
 	// PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg>
