@@ -40,7 +40,7 @@ public class RestoreProtocol extends Thread {
 
 		// Check if file is already being restored at the moment or not 
 		// and flag it as being restored if not
-		if (receiverChannel.isBeingRestoredAlready(file)){
+		if (receiverChannel.isBeingRestoredAlready(filePath)){
 			System.out.println("This file is already being restored");
 			return;
 		}

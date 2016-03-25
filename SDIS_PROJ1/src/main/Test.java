@@ -31,17 +31,7 @@ public class Test {
 		System.out.println(test);
 		 */
 
-		long waitTime = TimeUnit.MILLISECONDS.toNanos(400);
 
-		long elapsedTime;
-		for (int i = 0; i < 3; i++) {
-			long startTime = System.nanoTime();
-			do {
-				elapsedTime = System.nanoTime() - startTime;
-			} while (elapsedTime  < waitTime);
-			System.out.println(TimeUnit.NANOSECONDS.toMillis(elapsedTime));
-		}
-		
 	}
 	
 	

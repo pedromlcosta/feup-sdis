@@ -5,9 +5,9 @@ public class Chunk {
 	private ChunkID id;
 	private byte data[];
 
-	public Chunk(String id, int number, byte[] data) {
+	public Chunk(String fileID, int number, byte[] data) {
 		this.data = data;
-		this.id = new ChunkID(id, number);
+		this.id = new ChunkID(fileID, number);
 	}
 
 	public Chunk(ChunkID id, byte[] data) {

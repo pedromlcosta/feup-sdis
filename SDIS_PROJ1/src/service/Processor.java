@@ -1,8 +1,11 @@
 package service;
 
+import java.net.DatagramPacket;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import channels.MDRReceiver;
+import chunk.Chunk;
 import chunk.ChunkID;
 import messages.ChunkMsg;
 import messages.DeleteMsg;
@@ -11,6 +14,7 @@ import messages.Message;
 import messages.PutChunkMsg;
 import messages.RemovedMsg;
 import messages.StoredMsg;
+import messages.Message.MESSAGE_TYPE;
 import protocol.BackupProtocol;
 
 public class Processor extends Thread {
@@ -77,7 +81,17 @@ public class Processor extends Thread {
 	}
 
 	private void chunkHandler() {
-		// Costa
+
+		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
+		MDRReceiver restoreChannel = Peer.getInstance().getRestoreChannel();
+		
+		// Received a chunk and was expecting it for a restore
+		if(restoreChannel.expectingRestoreChunks(chunkID.getFileID())){
+			restoreChannel.addRestoreChunk(chunkID.getFileID(), new Chunk(chunkID, msg.getBody()));
+		}else{ // Received a chunk whose file wasn't being restored
+			restoreChannel.receivedForeignChunk(chunkID);
+		}
+		
 
 		// 1o - Verificar se o Chunk pertence a um ficheiro em restore
 		
@@ -88,25 +102,42 @@ public class Processor extends Thread {
 	}
 
 	private void getChunkHandler() {
-		// Costa
-
-		// Ciclo com timer 0-400ms -> como sei se chegou um chunk? e tem de ser
-		// chunk do mesmo ficheiro, para esperar?
 		
 		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
+		MDRReceiver restore = Peer.getInstance().getRestoreChannel();
 		
 		if(Peer.getInstance().hasChunkStored(chunkID)){
+			
+			// Start waiting for chunks with this ID
+			restore.expectingForeignChunk(chunkID, true);
+			
 			try {
 				Thread.sleep((new Random()).nextInt(401));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-
 			
-
-			if(Peer.getInstance().getRestoreChannel().receivedForeignChunk(chunkID)){
+			// Check if any chunks expected arrived while sleeping
+			if(!restore.wasForeignChunkReceived(chunkID)){
+				// enviar mensagem com o chunk
+				
+				//Byte[] chunkBody = fileHandler.loadChunkBody(chunkID);
+				String[] args= {"1.0", Integer.toString(Peer.getInstance().getServerID()), chunkID.getFileID(), Integer.toString(chunkID.getChunkNumber())};
+				
+				byte[] chunkBody = new byte[64];
+				Message chunkMsg = new Message();
+				if(chunkMsg.createMessage(MESSAGE_TYPE.CHUNK, args, chunkBody) == true){
+					DatagramPacket packet = restore.createDatagramPacket(chunkMsg.getMessageBytes());
+					restore.writePacket(packet);
+				}else{
+					System.out.println("Wasn't able to create and send chunk message");
+				}
 
 			}
+			
+			// Stop waiting for chunks with this ID
+			restore.expectingForeignChunk(chunkID, false);
+			
 		}
 
 	}
