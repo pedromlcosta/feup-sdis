@@ -1,6 +1,12 @@
 package chunk;
 
-public class ChunkID {
+import java.io.Serializable;
+
+public class ChunkID implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String fileID;
 	private int chunkNumber;
 	private int desiredRepDegree;
@@ -9,6 +15,13 @@ public class ChunkID {
 	public ChunkID(String id, int number) {
 		this.fileID = id;
 		this.chunkNumber = number;
+	}
+
+	public ChunkID(String fileID, int chunkNumber, int desiredRepDegree, int actualRepDegree) {
+		this.fileID = fileID;
+		this.chunkNumber = chunkNumber;
+		this.desiredRepDegree = desiredRepDegree;
+		this.actualRepDegree = actualRepDegree;
 	}
 
 	public int getChunkNumber() {
@@ -58,6 +71,11 @@ public class ChunkID {
 	public void increaseRepDegree() {
 		actualRepDegree++;
 
+	}
+
+	public String toString() {
+		return "\nFileID: " + this.fileID + " \nChunkNumber: " + this.chunkNumber + "\nDesired Degree: " + this.desiredRepDegree
+				+ "\nActual Degree: " + this.actualRepDegree + "\n";
 	}
 
 }

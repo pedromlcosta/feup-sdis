@@ -1,17 +1,17 @@
 package main;
 
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.concurrent.TimeUnit;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 
-import channels.MDBReceiver;
-import protocol.BackupProtocol;
-import service.Peer;
+import chunk.Chunk;
+import chunk.ChunkID;
 
 public class Main {
 
-	public static void main(String args[]) throws IOException {
+	public static void main(String args[]) throws IOException, ClassNotFoundException {
 		// System.out.println(Extra.SHA256("HI"));
 		// FileID f = new FileID("");
 		//
@@ -44,21 +44,30 @@ public class Main {
 		// testeMsg.createMessage(MESSAGE_TYPE.PUTCHUNK, s, new byte[5]);
 		// System.out.println("MSG: " + testeMsg.getMessageToSend());
 
-		try {
-
-			BackupProtocol backup = new BackupProtocol("C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\src\\B1.tmp", 0, "1.0",
-					Peer.getInstance());
-			MDBReceiver md = new MDBReceiver(false, 1, InetAddress.getByName(args[1]), 4446);
-			backup.getPeer().setServerID(1);
-			new Thread(md).start();
-			backup.getPeer().setDataChannel(md);
-			backup.start();
-			//
-			System.out.println("END");
-
-		} catch (UnknownHostException e) {
-			e.printStackTrace();
-		}
+		ChunkID chunkID = new ChunkID("TestarStuff", 10, 20, 30);
+		Chunk chunk = new Chunk(chunkID, new byte[5]);
+		// FileOutputStream fileOut = new FileOutputStream("employee.ser");
+		// ObjectOutputStream out = new ObjectOutputStream(fileOut);
+		FileInputStream fileOut = new FileInputStream("employee.ser");
+		ObjectInputStream out = new ObjectInputStream(fileOut);
+		Chunk Answer = (Chunk) out.readObject();
+		// out.writeObject(chunk);
+		out.close();
+		fileOut.close();
+		System.out.println(Answer);
+		/*
+		 * try {
+		 * 
+		 * BackupProtocol backup = new BackupProtocol(
+		 * "C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\src\\B1.tmp", 0,
+		 * "1.0", Peer.getInstance()); MDBReceiver md = new MDBReceiver(false,
+		 * 1, InetAddress.getByName(args[1]), 4446);
+		 * backup.getPeer().setServerID(1); new Thread(md).start();
+		 * backup.getPeer().setDataChannel(md); backup.start(); //
+		 * System.out.println("END");
+		 * 
+		 * } catch (UnknownHostException e) { e.printStackTrace(); }
+		 */
 
 	}
 }

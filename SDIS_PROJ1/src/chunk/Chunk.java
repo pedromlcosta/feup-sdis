@@ -1,6 +1,12 @@
 package chunk;
 
-public class Chunk {
+import java.io.Serializable;
+
+public class Chunk implements Serializable {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 2L;
 	private static final int CHUNK_SIZE = 64000;
 	private ChunkID id;
 	private byte data[];
@@ -54,6 +60,10 @@ public class Chunk {
 	public void setActualRepDegree(int i) {
 		this.id.setActualRepDegree(i);
 
+	}
+
+	public String toString() {
+		return "ID: " + this.id + "Length Of Data: " + this.data.length;
 	}
 
 }
