@@ -1,15 +1,9 @@
 package main;
 
+import java.io.File;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.concurrent.TimeUnit;
 
-import channels.MCReceiver;
-import channels.MDBReceiver;
-import messages.Message;
-import protocol.BackupProtocol;
-import service.Peer;
+import extra.Extra;
 
 public class Main {
 	private static final long INITIAL_WAITING_TIME = 1;
@@ -68,15 +62,16 @@ public class Main {
 		// } catch (UnknownHostException e) {
 		// e.printStackTrace();
 		// }
-		long waitTime = TimeUnit.SECONDS.toNanos(INITIAL_WAITING_TIME);
+		// long waitTime = TimeUnit.SECONDS.toNanos(INITIAL_WAITING_TIME);
+		//
+		// long elapsedTime;
+		// for (int i = 0; i < 3; i++) {
+		// long startTime = System.nanoTime();
+		// do {
+		// } while ((elapsedTime = System.nanoTime() - startTime) < waitTime);
+		// System.out.println(TimeUnit.NANOSECONDS.toSeconds(elapsedTime));
+		// }
 
-		long elapsedTime;
-		for (int i = 0; i < 3; i++) {
-			long startTime = System.nanoTime();
-			do {
-			} while ((elapsedTime = System.nanoTime() - startTime) < waitTime);
-			System.out.println(TimeUnit.NANOSECONDS.toSeconds(elapsedTime));
-		}
-
+	System.out.println(Extra.createDirectory("backup"));
 	}
 }

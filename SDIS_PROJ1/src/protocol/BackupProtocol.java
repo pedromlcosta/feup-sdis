@@ -1,5 +1,8 @@
 package protocol;
 
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.SocketException;
@@ -9,6 +12,7 @@ import java.util.concurrent.TimeUnit;
 
 import chunk.Chunk;
 import chunk.ChunkID;
+import extra.Extra;
 import file.FileID;
 import messages.Message;
 import messages.Message.MESSAGE_TYPE;
@@ -174,8 +178,13 @@ public class BackupProtocol extends Thread {
 	// 0 and 400 ms. delay for the stored msg
 	public void putchunkReceive(Message putchunkMSG) {
 		Message msg = new Message();
+		String dirPath = "";
 		String args[] = new String[4];
-
+		try {
+			dirPath = Extra.createDirectory("backup");
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 		if (Integer.parseInt(putchunkMSG.getSenderID()) == peer.getServerID()) {
 			System.out.println("Either the Msg was you tried to use the same server ");
 			System.out.println(msg.getMessageToSend());
@@ -202,10 +211,23 @@ public class BackupProtocol extends Thread {
 			peer.getStored().get(index).increaseRepDegree();
 		}
 
+		ChunkID id = chunk.getId();
+		// TODO Writes/Overwrites chunkFile, perhaps write the whole chunk
+		// instead of just the data
+		try {
+			FileOutputStream fileWriter = new FileOutputStream(dirPath + File.separator + id.getFileID() + id.getChunkNumber());
+			fileWriter.write(msgData);
+			fileWriter.close();
+		} catch (FileNotFoundException e1) {
+			System.out.println("FileNotFound");
+			e1.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 		// create message and packets
 		msg.createMessage(MESSAGE_TYPE.STORED, args, null);
 		DatagramPacket packet = peer.getControlChannel().createDatagramPacket(msg.getMessageBytes());
-
 		// get Random Delay
 		int delay = new Random().nextInt(SLEEP_TIME);
 		// sleep

@@ -1,8 +1,14 @@
 package extra;
 
+import java.io.File;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
 import javax.xml.bind.DatatypeConverter;
 
 public class Extra {
@@ -23,5 +29,18 @@ public class Extra {
 			e.printStackTrace();
 		}
 		return hashed;
+	}
+
+	// TODO check if it is what we want Always relative to the place the
+	// function is called
+	public static String createDirectory(String dirName) throws IOException {
+		String currentDir = new File(".").getCanonicalPath();
+		Path path = Paths.get(currentDir + File.separator + dirName);
+
+		if (!(Files.exists(path) && Files.isDirectory(path))) {
+			Files.createDirectory(path);
+
+		}
+		return path.toString();
 	}
 }
