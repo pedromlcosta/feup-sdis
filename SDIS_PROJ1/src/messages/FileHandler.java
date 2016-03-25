@@ -5,13 +5,17 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectInputStream;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 
 import chunk.Chunk;
+import chunk.ChunkID;
+import extra.Extra;
 
 //TODO STATIC OR NOT?? Check if good practice the Chunk.getChunkSize()
 public class FileHandler {
+	public static final String BACKUP_FOLDER_NAME = "backup";
 	private File file;
 	private FileInputStream fileReader;
 	private FileOutputStream fileWriter;
@@ -24,7 +28,6 @@ public class FileHandler {
 
 	public FileHandler() {
 	}
-	
 
 	public void closeInputStream() throws IOException {
 		fileReader.close();
@@ -52,25 +55,6 @@ public class FileHandler {
 			e.printStackTrace();
 		}
 	}
-
-	// public ArrayList<byte[]> splitFile() throws IOException {
-	// ArrayList<byte[]> chunks = new ArrayList<byte[]>();
-	//
-	// if (file.exists()) {
-	//
-	// while (fileReader.available() > 0) {
-	// byte[] chunk = new byte[CHUNK_SIZE];
-	// int bytesRead = fileReader.read(chunk);
-	// chunks.add(Arrays.copyOf(chunk, bytesRead));
-	// }
-	// } else
-	// return null;
-	// System.out.println(chunks.size());
-	// for (byte[] chunk : chunks) {
-	// System.out.println(chunk.length);
-	// }
-	// return chunks;
-	// }
 
 	public byte[] splitFile() throws IOException {
 
@@ -127,35 +111,52 @@ public class FileHandler {
 	public void setFileOut(RandomAccessFile fileOut) {
 		this.fileOut = fileOut;
 	}
-	
+
 	// PEDRO STUFF BELOW
-	
-	public synchronized boolean createFile(String filePath){
+
+	public synchronized boolean createFile(String filePath) {
 
 		File f = new File(filePath);
-		
-		if(!f.exists() && !f.isDirectory()) { 
+
+		if (!f.exists() && !f.isDirectory()) {
 			try {
 				fileWriter = new FileOutputStream(filePath);
 				return true;
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}
-		}else{
+		} else {
 			return false;
 		}
-		
+
 		return false;
 	}
-	
-	public void writeToFile(byte[] fileData) throws IOException{
+
+	public void writeToFile(byte[] fileData) throws IOException {
 		fileWriter.write(fileData);
-		//writePos++;
+		// writePos++;
 	}
-	
-	public void openOutStream(){
-		
+
+	public void openOutStream() {
+
 	}
-	
+
+	// TODO check this part
+	public byte[] loadChunkBody(ChunkID chunkID) throws ClassNotFoundException {
+		String path;
+		try {
+			path = Extra.createDirectory(BACKUP_FOLDER_NAME);
+			FileInputStream fileOut = new FileInputStream(path + File.pathSeparator + chunkID.getFileID() + "_" + chunkID.getChunkNumber());
+			ObjectInputStream out = new ObjectInputStream(fileOut);
+			Chunk storedChunk = (Chunk) out.readObject();
+			out.close();
+			return storedChunk.getData();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// incase of error
+		return new byte[0];
+	}
 
 }

@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 
 import chunk.Chunk;
 import chunk.ChunkID;
+import file.FileID;
 
 public class Main {
 
@@ -43,18 +44,19 @@ public class Main {
 		// s[3] = "ChunkNo_ReplicationDeg";
 		// testeMsg.createMessage(MESSAGE_TYPE.PUTCHUNK, s, new byte[5]);
 		// System.out.println("MSG: " + testeMsg.getMessageToSend());
-
-		ChunkID chunkID = new ChunkID("TestarStuff", 10, 20, 30);
-		Chunk chunk = new Chunk(chunkID, new byte[5]);
-		// FileOutputStream fileOut = new FileOutputStream("employee.ser");
-		// ObjectOutputStream out = new ObjectOutputStream(fileOut);
-		FileInputStream fileOut = new FileInputStream("employee.ser");
-		ObjectInputStream out = new ObjectInputStream(fileOut);
-		Chunk Answer = (Chunk) out.readObject();
-		// out.writeObject(chunk);
+		FileID file = new FileID("C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\src\\B1.tmp");
+		System.out.println(file.getID());
+		ChunkID chunkID = new ChunkID(file.getID(), 10, 20, 30);
+		Chunk chunk = new Chunk(chunkID, new byte[64000]);
+		FileOutputStream fileOut = new FileOutputStream("employee.ser");
+		ObjectOutputStream out = new ObjectOutputStream(fileOut);
+		// FileInputStream fileOut = new FileInputStream("employee.ser");
+		// ObjectInputStream out = new ObjectInputStream(fileOut);
+		// Chunk Answer = (Chunk) out.readObject();
+		out.writeObject(chunk);
 		out.close();
 		fileOut.close();
-		System.out.println(Answer);
+		// System.out.println(Answer);
 		/*
 		 * try {
 		 * 
@@ -68,6 +70,6 @@ public class Main {
 		 * 
 		 * } catch (UnknownHostException e) { e.printStackTrace(); }
 		 */
-
+		System.out.println("end");
 	}
 }

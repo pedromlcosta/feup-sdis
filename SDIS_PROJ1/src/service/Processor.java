@@ -1,5 +1,6 @@
 package service;
 
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.Random;
@@ -10,12 +11,13 @@ import chunk.Chunk;
 import chunk.ChunkID;
 import messages.ChunkMsg;
 import messages.DeleteMsg;
+import messages.FileHandler;
 import messages.GetChunkMsg;
 import messages.Message;
+import messages.Message.MESSAGE_TYPE;
 import messages.PutChunkMsg;
 import messages.RemovedMsg;
 import messages.StoredMsg;
-import messages.Message.MESSAGE_TYPE;
 import protocol.BackupProtocol;
 
 public class Processor extends Thread {
@@ -54,7 +56,13 @@ public class Processor extends Thread {
 				msg = new GetChunkMsg(messageFields);
 
 				messageFields = null;
-				getChunkHandler();
+				try {
+					getChunkHandler();
+				} catch (ClassNotFoundException e) {
+					e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 				break;
 			case "CHUNK":
 				msg = new ChunkMsg(messageFields);
@@ -105,11 +113,11 @@ public class Processor extends Thread {
 		// So ver se e valido e adicionar aos chunks esperados desse ficheiro...
 	}
 
-	private void getChunkHandler() {
+	private void getChunkHandler() throws ClassNotFoundException, IOException {
 
 		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
 		MDRReceiver restore = Peer.getInstance().getRestoreChannel();
-
+		FileHandler fileHandler = new FileHandler();
 		if (Peer.getInstance().hasChunkStored(chunkID)) {
 
 			// Start waiting for chunks with this ID
@@ -125,11 +133,10 @@ public class Processor extends Thread {
 			if (!restore.wasForeignChunkReceived(chunkID)) {
 				// enviar mensagem com o chunk
 
-				// Byte[] chunkBody = fileHandler.loadChunkBody(chunkID);
-				String[] args = { "1.0", Integer.toString(Peer.getInstance().getServerID()), chunkID.getFileID(),
-						Integer.toString(chunkID.getChunkNumber()) };
+				byte[] chunkBody = fileHandler.loadChunkBody(chunkID);
+				String[] args = { "1.0", Integer.toString(Peer.getInstance().getServerID()), chunkID.getFileID(), Integer.toString(chunkID.getChunkNumber()) };
 
-				byte[] chunkBody = new byte[64];
+				// byte[] chunkBody = new byte[64];
 				Message chunkMsg = new Message();
 				if (chunkMsg.createMessage(MESSAGE_TYPE.CHUNK, args, chunkBody) == true) {
 					DatagramPacket packet = restore.createDatagramPacket(chunkMsg.getMessageBytes());
@@ -158,13 +165,17 @@ public class Processor extends Thread {
 
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
 		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand().get(chunkID);
-		int senderID = Integer.parseInt(this.msg.getSenderID());
-		if (answered == null) {
-			answered = new ArrayList<Integer>();
-			Peer.getInstance().getAnsweredCommand().put(chunkID, answered);
+		synchronized (answered) {
+			int senderID = Integer.parseInt(this.msg.getSenderID());
+			if (answered == null) {
+				answered = new ArrayList<Integer>();
 
+				Peer.getInstance().getAnsweredCommand().put(chunkID, answered);
+
+			}
+			if (answered.isEmpty() || !answered.contains(senderID))
+				answered.add(senderID);
 		}
-		answered.add(senderID);
 	}
 
 	private void putChunkHandler() {
