@@ -21,9 +21,9 @@ public class Message {
 	}
 
 	protected final String EOL = "\u0013\u0010";
-	protected final String VALIDATE_MSG_Part1 = "^(?:(?:\\w)* +){";
-	protected final String VALIDATE_MSG_Part2 = "}\\w+ *" + EOL + ".*";
-	protected final String PATTERN = " |" + EOL;
+	protected final String VALIDATE_MSG_Part1 = "^(?:(?:\\w|\\.)* +){";
+	protected final String VALIDATE_MSG_Part2 = "}\\w+ *" + EOL + EOL + ".*";
+	protected final String PATTERN = " |" + (EOL + EOL);
 	protected String messageToSend = "";
 
 	// Message attributes
@@ -45,22 +45,31 @@ public class Message {
 	public synchronized String[] parseMessage(String Message) {
 		Pattern pattern = Pattern.compile(PATTERN);
 		String[] match = pattern.split(Message, -2);
-		// for (String a : match)
-		// System.out.println("Print: " + a);
+		for (String a : match)
+			System.out.println("Print: " + a);
 		return match;
+	}
+
+	public Message() {
+
 	}
 
 	public boolean createMessage(MESSAGE_TYPE type, String args[], byte data[]) {
 		createHeader(type, args);
-		if (data != null) {
-			// System.out.println("Message to send before data: " +
-			// messageToSend);
-			messageToSend = messageToSend.concat(new String(data));
-		}
-		if (validateMsg(messageToSend, args.length))
+
+		if (validateMsg(messageToSend, args.length)) {
+			if (data != null) {
+				// System.out.println("Message to send before data: " +
+				// messageToSend);
+				String s = new String(data);
+				System.out.println(data.length);
+				System.out.println(s);
+				messageToSend = messageToSend.concat(new String(data));
+			}
 			return true;
-		else {
+		} else {
 			System.out.println("Mensagem nao valida");
+			System.out.println(args.length);
 			// messageToSend = EMPTY_STRING;
 			return false;
 		}
@@ -91,6 +100,7 @@ public class Message {
 
 	public boolean validateMsg(String s, int nArgs) {
 		String validateRegex = new String(VALIDATE_MSG_Part1 + (nArgs) + VALIDATE_MSG_Part2);
+		System.out.println(s);
 		Pattern p = Pattern.compile(validateRegex);
 		Matcher m = p.matcher(s);
 		return m.matches();
@@ -104,7 +114,6 @@ public class Message {
 		}
 		// clean String
 		messageToSend = messageType;
-		System.out.println("Entrou aqui");
 		addArgs(args);
 		return true;
 	}

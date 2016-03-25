@@ -41,8 +41,8 @@ public class FileID {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println(
-				"FileID create\nFileSize: " + file.length() + "\n" + "Nchunks: " + this.nChunks + "\n ID: " + this.ID);
+//		System.out.println(
+//				"FileID create\nFileSize: " + file.length() + "\n" + "Nchunks: " + this.nChunks + "\n ID: " + this.ID);
 	}
 
 	public int getnChunks() {

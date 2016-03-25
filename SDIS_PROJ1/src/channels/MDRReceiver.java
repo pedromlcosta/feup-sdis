@@ -11,7 +11,7 @@ import file.FileID;
 import service.Peer;
 
 public class MDRReceiver extends ReceiverServer {
-	private Peer user;
+	
 	// Must be volatile so that 2 restores dont access it at the same time for the same file!
 	private volatile HashMap<String, ArrayList<Chunk> > restoreChunksReceived = new  HashMap<String, ArrayList<Chunk> >();
 	private volatile HashMap<ChunkID, Boolean> foreignChunksReceived = new HashMap<ChunkID, Boolean>();

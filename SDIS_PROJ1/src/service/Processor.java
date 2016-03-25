@@ -31,50 +31,52 @@ public class Processor extends Thread {
 
 	public void run() {
 		// HANDLE MESSAGES HERE
-		String[] messageFields = msg.parseMessage(messageString);
-		messageString = ""; // Empty, so as not to fill unnecessary space
+		if (msg != null && messageString != null) {
+			String[] messageFields = msg.parseMessage(messageString);
+			messageString = ""; // Empty, so as not to fill unnecessary space
 
-		switch (messageFields[0]) {
-		case "PUTCHUNK":
-			msg = new PutChunkMsg(messageFields);
+			switch (messageFields[0]) {
+			case "PUTCHUNK":
+				msg = new PutChunkMsg(messageFields);
 
-			// Unreserve the now unneeded array space, while the processor
-			// handles the message
-			messageFields = null;
-			putChunkHandler();
-			break;
-		case "STORED":
-			msg = new StoredMsg(messageFields);
+				// Unreserve the now unneeded array space, while the processor
+				// handles the message
+				messageFields = null;
+				putChunkHandler();
+				break;
+			case "STORED":
+				msg = new StoredMsg(messageFields);
 
-			messageFields = null;
-			storedHandler();
-			break;
-		case "GETCHUNK":
-			msg = new GetChunkMsg(messageFields);
+				messageFields = null;
+				storedHandler();
+				break;
+			case "GETCHUNK":
+				msg = new GetChunkMsg(messageFields);
 
-			messageFields = null;
-			getChunkHandler();
-			break;
-		case "CHUNK":
-			msg = new ChunkMsg(messageFields);
+				messageFields = null;
+				getChunkHandler();
+				break;
+			case "CHUNK":
+				msg = new ChunkMsg(messageFields);
 
-			messageFields = null;
-			chunkHandler();
-			break;
-		case "DELETE":
-			msg = new DeleteMsg(messageFields);
+				messageFields = null;
+				chunkHandler();
+				break;
+			case "DELETE":
+				msg = new DeleteMsg(messageFields);
 
-			messageFields = null;
-			deleteHandler();
-			break;
-		case "REMOVED":
-			msg = new RemovedMsg(messageFields);
+				messageFields = null;
+				deleteHandler();
+				break;
+			case "REMOVED":
+				msg = new RemovedMsg(messageFields);
 
-			messageFields = null;
-			removeHandler();
-			break;
-		default:
-			break;
+				messageFields = null;
+				removeHandler();
+				break;
+			default:
+				break;
+			}
 		}
 	}
 
@@ -86,14 +88,13 @@ public class Processor extends Thread {
 
 		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
 		MDRReceiver restoreChannel = Peer.getInstance().getRestoreChannel();
-		
+
 		// Received a chunk and was expecting it for a restore
-		if(restoreChannel.expectingRestoreChunks(chunkID.getFileID())){
+		if (restoreChannel.expectingRestoreChunks(chunkID.getFileID())) {
 			restoreChannel.addRestoreChunk(chunkID.getFileID(), new Chunk(chunkID, msg.getBody()));
-		}else{ // Received a chunk whose file wasn't being restored
+		} else { // Received a chunk whose file wasn't being restored
 			restoreChannel.receivedForeignChunk(chunkID);
 		}
-		
 
 		// 1o - Verificar se o Chunk pertence a um ficheiro em restore
 
@@ -104,43 +105,44 @@ public class Processor extends Thread {
 		// So ver se e valido e adicionar aos chunks esperados desse ficheiro...
 	}
 
-private void getChunkHandler() {
-		
+	private void getChunkHandler() {
+
 		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
 		MDRReceiver restore = Peer.getInstance().getRestoreChannel();
-		
-		if(Peer.getInstance().hasChunkStored(chunkID)){
-			
+
+		if (Peer.getInstance().hasChunkStored(chunkID)) {
+
 			// Start waiting for chunks with this ID
 			restore.expectingForeignChunk(chunkID, true);
-			
+
 			try {
 				Thread.sleep((new Random()).nextInt(401));
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			
+
 			// Check if any chunks expected arrived while sleeping
-			if(!restore.wasForeignChunkReceived(chunkID)){
+			if (!restore.wasForeignChunkReceived(chunkID)) {
 				// enviar mensagem com o chunk
-				
-				//Byte[] chunkBody = fileHandler.loadChunkBody(chunkID);
-				String[] args= {"1.0", Integer.toString(Peer.getInstance().getServerID()), chunkID.getFileID(), Integer.toString(chunkID.getChunkNumber())};
-				
+
+				// Byte[] chunkBody = fileHandler.loadChunkBody(chunkID);
+				String[] args = { "1.0", Integer.toString(Peer.getInstance().getServerID()), chunkID.getFileID(),
+						Integer.toString(chunkID.getChunkNumber()) };
+
 				byte[] chunkBody = new byte[64];
 				Message chunkMsg = new Message();
-				if(chunkMsg.createMessage(MESSAGE_TYPE.CHUNK, args, chunkBody) == true){
+				if (chunkMsg.createMessage(MESSAGE_TYPE.CHUNK, args, chunkBody) == true) {
 					DatagramPacket packet = restore.createDatagramPacket(chunkMsg.getMessageBytes());
 					restore.writePacket(packet);
-				}else{
+				} else {
 					System.out.println("Wasn't able to create and send chunk message");
 				}
 
 			}
-			
+
 			// Stop waiting for chunks with this ID
 			restore.expectingForeignChunk(chunkID, false);
-			
+
 		}
 
 	}
@@ -166,6 +168,7 @@ private void getChunkHandler() {
 	}
 
 	private void putChunkHandler() {
+		System.out.println("Putchunk");
 		new BackupProtocol(Peer.getInstance()).putchunkReceive(this.msg);
 		// Filipe -> putchunk call the function it needs to handle the putuch
 	}

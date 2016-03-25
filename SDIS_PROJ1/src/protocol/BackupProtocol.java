@@ -36,6 +36,7 @@ public class BackupProtocol extends Thread {
 		this.fileName = fileName;
 		this.wantedRepDegree = wantedRepDegree;
 		this.version = version;
+		this.peer = instance;
 	}
 
 	public BackupProtocol(Peer instance) {
@@ -63,8 +64,7 @@ public class BackupProtocol extends Thread {
 			do {
 				// Get chunk
 				chunk = split.splitFile();
-				// updateFilePos
-				currentPos += chunk.length;
+				currentPos = chunk.length;
 				// update Chunk Number
 				chunkNumber++;
 				// Send putChunk msg
@@ -91,13 +91,8 @@ public class BackupProtocol extends Thread {
 	}
 
 	public boolean checkNChunks(FileID fileID, int chunkNumber) {
-		if (fileID.isMultiple()) {
-			if (fileID.getnChunks() - 1 == chunkNumber)
-				return false;
-		} else {
-			if (fileID.getnChunks() == chunkNumber)
-				return false;
-		}
+		if (fileID.getnChunks() == chunkNumber)
+			return false;
 		return true;
 	}
 
@@ -122,16 +117,14 @@ public class BackupProtocol extends Thread {
 		msg.createMessage(MESSAGE_TYPE.PUTCHUNK, args, chunkData);
 
 		// Send Mensage
-		DatagramPacket msgPacket = peer.getDataChannel().createDatagramPacket(msg.getMessageBytes());
+		DatagramPacket msgPacket = peer.getDataChannel().createDatagramPacket(msg.getMessageBytes()); //
 		// TODO check this byte[0] shit, something does not add up
 
-		// check if the pair chunkID,ServersWhoReplied exists
-		// TODO when should we clean ArrayList to avoid having "false positives"
-		if (!peer.getAnsweredCommand().containsKey(chunkToSendID)) {
-			// Place
+		// check if the pair chunkID,ServersWhoReplied exists // TODO when
+		// should we clean ArrayList to avoid having "false positives"
+		if (!peer.getAnsweredCommand().containsKey(chunkToSendID)) { // Place
 			peer.getAnsweredCommand().put(chunkToSendID, new ArrayList<Integer>());
-		} else
-			// Replace
+		} else // Replace
 			peer.getAnsweredCommand().replace(chunkToSendID, new ArrayList<Integer>());
 
 		long waitTime = TimeUnit.SECONDS.toNanos(INITIAL_WAITING_TIME);
@@ -143,29 +136,25 @@ public class BackupProtocol extends Thread {
 			long startTime = System.nanoTime();
 			long elapsedTime;
 			ArrayList<Integer> serverAnswers;
-			// wait for asnwers
-			do {
-				// Should I add a sleep? so that it will no wast processor time?
-				// like sleep for 400ms??
-				// TODO replace the readPacket for going to the hash map
-				if ((serverAnswers = Peer.getInstance().getAnsweredCommand().get(chunkToSendID)) != null && !serverAnswers.isEmpty()) {
+			if ((serverAnswers = Peer.getInstance().getAnsweredCommand().get(chunkToSendID)) != null && !serverAnswers.isEmpty()) {
 
-					int size = serverAnswers.size();
-					if (chunkToSend.getDesiredRepDegree() == size) {
-						chunkToSend.setActualRepDegree(size);
-						// TODO delete when System.out.println is also deleted
-						elapsedTime = -1;
-						break;
-					}
-
+				int size = serverAnswers.size();
+				if (chunkToSend.getDesiredRepDegree() == size) {
+					chunkToSend.setActualRepDegree(size); // TODO delete
+															// when
+					// System.out.println is also deleted
+					elapsedTime = -1;
+					break;
 				}
-			} while ((elapsedTime = System.nanoTime() - startTime) < waitTime);
+
+			}
+			while ((elapsedTime = System.nanoTime() - startTime) < waitTime)
+				;
 			System.out.println(elapsedTime);
 			System.out.println(nMessagesSent);
 
 			waitTime *= 2;
 		} while (nMessagesSent < 5 && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
-
 	}
 
 	public int checkMessagesReceivedForChunk(ChunkID chunkToSendID) {
@@ -192,10 +181,13 @@ public class BackupProtocol extends Thread {
 		}
 		// Version - same version??
 		args[0] = getVersion();
+
 		// SenderID
 		args[1] = Integer.toString(peer.getServerID());
+
 		// FileID
 		args[2] = putchunkMSG.getFileId();
+
 		// Chunk No
 		args[3] = Integer.toString(putchunkMSG.getChunkNo());
 		byte msgData[] = msg.getMessageData();

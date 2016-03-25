@@ -1,14 +1,12 @@
 package channels;
 
-import java.io.*;
-import java.net.*;
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.MulticastSocket;
+import java.net.SocketTimeoutException;
 
-import messages.ChunkMsg;
-import messages.DeleteMsg;
-import messages.GetChunkMsg;
-import messages.Message;
-import messages.PutChunkMsg;
-import messages.StoredMsg;
+import service.Peer;
 import service.Processor;
 
 public class ReceiverServer extends Thread {
@@ -19,6 +17,7 @@ public class ReceiverServer extends Thread {
 	private InetAddress addr;
 	private int port;
 	private byte[] buf = new byte[256];
+	private Peer user;
 
 	public ReceiverServer() {
 
@@ -31,7 +30,6 @@ public class ReceiverServer extends Thread {
 		this.port = port;
 		try {
 			this.socket = new MulticastSocket(port);
-			this.socket.setSoTimeout(400);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -45,26 +43,25 @@ public class ReceiverServer extends Thread {
 			DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
 			try {
 				socket.receive(receivePacket);
-			} catch (SocketTimeoutException e) {
-				System.out.println("Error TimeOut");
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 
 			byte[] receivedMessage = receivePacket.getData();
 			String receivedString = new String(receivedMessage);
-			System.out.println(receivedString.length() + "  " + receivedString.isEmpty() + "   L:" + receivedString);
+			// System.out.println(receivedString.length() + " " +
+			// receivedString.isEmpty() + " L:" + receivedString);
 			if (receivedString.length() > 0) {
 				receivedString = receivedString.substring(0, receivePacket.getLength());
 
 				System.out.println("Server Received: " + receivedString);
 
-				//TODO Check if ReceivedString is valid!!!!!!!!!!
-				//TODO funcao auxiliar que tira string do packet?
-				
+				// TODO Check if ReceivedString is valid!!!!!!!!!!
+				// TODO funcao auxiliar que tira string do packet?
+
 				Processor processingThread = new Processor(receivedString);
 				processingThread.start();
-				
+
 				receivedString = "";
 			}
 		}
@@ -129,7 +126,7 @@ public class ReceiverServer extends Thread {
 	public void writePacket(DatagramPacket p) {
 		try {
 			this.socket.send(p);
-			System.out.println("Packer sent");
+			System.out.println("Packet sent");
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Error writePacket");
@@ -186,4 +183,21 @@ public class ReceiverServer extends Thread {
 	public void setPort(int port) {
 		this.port = port;
 	}
+
+	public byte[] getBuf() {
+		return buf;
+	}
+
+	public void setBuf(byte[] buf) {
+		this.buf = buf;
+	}
+
+	public Peer getUser() {
+		return user;
+	}
+
+	public void setUser(Peer user) {
+		this.user = user;
+	}
+
 }
