@@ -169,7 +169,7 @@ public class Processor extends Thread {
 
 	private void putChunkHandler() {
 		System.out.println("Putchunk");
-		new BackupProtocol(Peer.getInstance()).putchunkReceive(this.msg);
+		new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg);
 		// Filipe -> putchunk call the function it needs to handle the putuch
 	}
 

@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -165,7 +166,7 @@ public class BackupProtocol extends Thread {
 	}
 
 	// 0 and 400 ms. delay for the stored msg
-	public void putchunkReceive(Message putchunkMSG) {
+	public void putChunkReceive(Message putchunkMSG) {
 		Message msg = new Message();
 		String dirPath = "";
 		String args[] = new String[4];
@@ -192,7 +193,8 @@ public class BackupProtocol extends Thread {
 		args[3] = Integer.toString(putchunkMSG.getChunkNo());
 		byte msgData[] = msg.getMessageData();
 
-		Chunk chunk = new Chunk(args[2], Integer.parseInt(args[2]), msgData);
+		// TODO good idea?
+		Chunk chunk = new Chunk(new ChunkID(args[2], Integer.parseInt(args[2])), msgData);
 		int index;
 		// TODO Check if condition makes sense
 		if ((index = peer.getStored().indexOf(chunk.getId())) < 0) {
@@ -208,8 +210,10 @@ public class BackupProtocol extends Thread {
 		// instead of just the data
 		try {
 			FileOutputStream fileWriter = new FileOutputStream(dirPath + File.separator + id.getFileID() + id.getChunkNumber());
-			fileWriter.write(msgData);
+			ObjectOutputStream out = new ObjectOutputStream(fileWriter);
+			out.writeObject(chunk);
 			fileWriter.close();
+			out.close();
 		} catch (FileNotFoundException e1) {
 			System.out.println("FileNotFound");
 			e1.printStackTrace();
