@@ -17,6 +17,7 @@ import service.Peer;
 
 public class BackupProtocol extends Thread {
 
+	private static final int SLEEP_TIME = 401;
 	private static final int INITIAL_WAITING_TIME = 1;
 	// PUTCHUNK message -> MDB channel
 	// STORED message -> MC channel random delay of 0 to 400 ms before sending
@@ -79,6 +80,8 @@ public class BackupProtocol extends Thread {
 
 		} catch (IOException e) {
 			e.printStackTrace();
+		} catch (InterruptedException e) {
+			e.printStackTrace();
 		}
 		System.out.println("End of backupFile");
 	}
@@ -95,7 +98,8 @@ public class BackupProtocol extends Thread {
 	}
 
 	// TODO most 5 PUTCHUNK messages per chunk. check about server ID
-	public void putchunkCreate(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version) throws SocketException {
+	public void putchunkCreate(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version)
+			throws SocketException, InterruptedException {
 		Message msg = new Message();
 		int nMessagesSent = 0;
 		// Create Chunk
@@ -124,49 +128,25 @@ public class BackupProtocol extends Thread {
 			peer.getAnsweredCommand().put(chunkToSendID, new ArrayList<Integer>());
 		} else
 			peer.getAnsweredCommand().replace(chunkToSendID, new ArrayList<Integer>());
-		long waitTime = TimeUnit.SECONDS.toNanos(INITIAL_WAITING_TIME);
+		long waitTime = TimeUnit.SECONDS.toMillis(INITIAL_WAITING_TIME);
 
 		do {
-
 			// send Message
 			peer.getDataChannel().writePacket(msgPacket);
 			nMessagesSent++;
-			// wait for asnwers
-			// TODO check caso de mensagem ser roubad por outro thread (do mesmo
-			// tipo ou não)
-			long startTime = System.nanoTime();
-			long elapsedTime;
-			do {
-				// TODO replace the readPacket for going to the hash map
-				peer.getControlChannel().readPacket(answerPacket);
-				byte[] packetData = answerPacket.getData();
-				System.out.println(packetData.length);
-				if (packetData != null && packetData.length > 0) {
-					String answer = new String(packetData);
-					String[] replayArgs = msg.parseMessage(answer);
-
-					if (replayArgs[0].equals(Message.getStored())) {
-						// FileID
-						String answerFileID = replayArgs[2];
-						// ServerID
-						int answerServerID = Integer.parseInt(replayArgs[1]);
-						// Chunk No
-						int answerChunkNumber = Integer.parseInt(replayArgs[3]);
-
-						if (answerFileID.equals(file.getID()) && answerChunkNumber == chunkNumber) {
-							if (!peer.getAnsweredCommand().get(chunkToSendID).contains(answerServerID)) {
-								chunkToSend.increaseRepDegree();
-								peer.getAnsweredCommand().get(chunkToSendID).add(answerServerID);
-							}
-						}
-					}
-				}
-			} while ((elapsedTime = System.nanoTime() - startTime) < waitTime);
-			System.out.println(elapsedTime);
-			System.out.println(nMessagesSent);
+			Thread.sleep(waitTime);
+			int newDegree = checkMessagesReceivedForChunk(chunkToSendID);
+			chunkToSend.setActualRepDegree(newDegree);
 			waitTime *= 2;
 		} while (nMessagesSent < 5 && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
 
+	}
+
+	public int checkMessagesReceivedForChunk(ChunkID chunkToSendID) {
+		ArrayList<Integer> servers = peer.getAnsweredCommand().get(chunkToSendID);
+		if (servers != null)
+			return servers.size();
+		return 0;
 	}
 
 	// 0 and 400 ms. delay for the stored msg
@@ -197,7 +177,6 @@ public class BackupProtocol extends Thread {
 			chunk.setActualRepDegree(1);
 			peer.addChunk(chunk.getId());
 		} else {
-
 			peer.getStored().get(index).increaseRepDegree();
 		}
 
@@ -206,8 +185,7 @@ public class BackupProtocol extends Thread {
 		DatagramPacket packet = peer.getControlChannel().createDatagramPacket(msg.getMessageBytes());
 
 		// get Random Delay
-		Random randomDelayGenerator = new Random();
-		int delay = randomDelayGenerator.nextInt(401);
+		int delay = new Random().nextInt(SLEEP_TIME);
 		// sleep
 		try {
 			Thread.sleep(delay);
