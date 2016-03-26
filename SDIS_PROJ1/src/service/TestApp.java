@@ -19,6 +19,7 @@ public class TestApp {
 		
 		if (valid){
 			try {
+				/*
 				remoteName = args[0];
 				subProtocol = args[1].toLowerCase();
 				filePath = args[2];
@@ -31,9 +32,7 @@ public class TestApp {
 
 				switch(subProtocol){
 					case "backup":
-						System.out.println("Here");
 						response = stub.backup(filePath, desiredRepDeg);
-						System.out.println("there");
 						break;
 					case "restore":
 						response = stub.restore(filePath);
@@ -48,7 +47,7 @@ public class TestApp {
 				}
 				
 				System.out.println("response: " + response);
-
+				*/
 			} catch (Exception e) {
 				System.err.println("Client exception: " + e.toString());
 				//e.printStackTrace();
@@ -56,8 +55,8 @@ public class TestApp {
 			}
 		}else{
 			
-			System.out.println("Args not valid");
-			
+			System.out.println("Args not valid. Correct usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>. ");
+			System.out.println("<opnd_2> must be empty for the restore, delete and reclaim protocols.");
 			return;
 		}
 			
@@ -68,14 +67,90 @@ public class TestApp {
 	// Options:
 	// BACKUP file repDeg
 	// RESTORE file
-	// DELETE FILE
-	//
+	// DELETE file
+	// RECLAIM space
 	
 	static boolean validArgs(String[] args){
 		
 		System.out.println("Validating args...");
 		
+		if(args.length == 0){
+			System.out.println("No args found.");
+			return false;
+		}
+
+		if(args.length < 3){ // Min number of args: 3  Max number or args: 4
+			System.out.println("Incorrect number of args.");
+		}else{
+			// Verify peer_ap first
+			if (args[0] == null || !isNumeric(args[0])){
+				System.out.println("<peer_ap> must be a numeric value.");
+				return false;
+			} 
+			
+			String protocol = args[1].toLowerCase();
+
+			if (protocol == "backup"){
+				if(args.length != 4){
+					System.out.println("Incorrect number of args.");
+					return false;
+				}
+				//if(args[2].notValidFile) ??
+				
+				
+				if(!isNumeric(args[3])){
+					System.out.println("Backup expects <opnd_2> to be a numeric value.");
+					return false;
+				}else if(Integer.parseInt(args[3])>9 || Integer.parseInt(args[3]) <1){
+					System.out.println("Backup expects <opnd_2> to be a value between 1 and 9.");
+					return false;
+				}
+			}else if (protocol == "restore"){
+				if(args.length != 3){
+					System.out.println("Incorrect number of args.");
+					return false;
+				}
+				
+				//if(args[2].notValidFile) ??
+			}else if (protocol == "delete"){
+				if(args.length != 3){
+					System.out.println("Incorrect number of args.");
+					return false;
+				}
+				
+				//if(args[2].notValidFile) ??
+			}else if (protocol == "reclaim"){
+				if(args.length != 3){
+					System.out.println("Incorrect number of args.");
+					return false;
+				}
+				
+				if(!isNumeric(args[2])){
+					System.out.println("Reclaim expects <opnd_1> to be a numeric value.");
+					return false;
+				}
+				
+			}else{
+				System.out.println("<protocol> must be one of the following: Backup, restore, delete or reclaim.");
+			}
+		}
+
+		
+		
 		return true;
+	}
+	
+	public static boolean isNumeric(String str)  
+	{  
+	  try  
+	  {  
+	    double i = Integer.parseInt(str);  
+	  }  
+	  catch(NumberFormatException nfe)  
+	  {  
+	    return false;  
+	  }  
+	  return true;  
 	}
 	
 }
