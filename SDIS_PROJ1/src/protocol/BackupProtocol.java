@@ -52,9 +52,6 @@ public class BackupProtocol extends Thread {
 		split.changeFileToSplit(fileName);
 		FileID fileID = new FileID(fileName);
 		fileID.setDesiredRepDegree(wantedRepDegree);
-		byte[] chunk;
-		int currentPos = 0;
-		int chunkNumber = 0;
 
 		// If already in hash file already Send, "fileID" must match with one
 		// already in the hashmap
@@ -64,6 +61,14 @@ public class BackupProtocol extends Thread {
 				return;
 			sentFiles.put(fileID.getID(), fileID);
 		}
+		backupFile(split, fileID);
+		System.out.println("End of backupFile");
+	}
+
+	public void backupFile(FileHandler split, FileID fileID) {
+		byte[] chunk;
+		int currentPos;
+		int chunkNumber = 0;
 		try {
 			do {
 				// Get chunk
@@ -73,7 +78,7 @@ public class BackupProtocol extends Thread {
 				chunkNumber++;
 				// Send putChunk msg
 				System.out.println(currentPos + "  " + chunkNumber);
-				putchunkCreate(fileID, chunk, chunkNumber, wantedRepDegree, version);
+				backupChunk(fileID, chunk, chunkNumber, wantedRepDegree, version);
 
 			} while (chunk.length > 0 && checkNChunks(fileID, chunkNumber));
 
@@ -83,7 +88,7 @@ public class BackupProtocol extends Thread {
 				chunkNumber++;
 				fileID.setnChunks(chunkNumber);
 				System.out.println(currentPos + "  " + chunkNumber);
-				putchunkCreate(fileID, new byte[0], chunkNumber, wantedRepDegree, version);
+				backupChunk(fileID, new byte[0], chunkNumber, wantedRepDegree, version);
 			}
 
 		} catch (IOException e) {
@@ -91,17 +96,10 @@ public class BackupProtocol extends Thread {
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
-		System.out.println("End of backupFile");
-	}
-
-	public boolean checkNChunks(FileID fileID, int chunkNumber) {
-		if (fileID.getnChunks() == chunkNumber)
-			return false;
-		return true;
 	}
 
 	// TODO most 5 PUTCHUNK messages per chunk. check about server ID
-	public void putchunkCreate(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version) throws SocketException, InterruptedException {
+	public void backupChunk(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version) throws SocketException, InterruptedException {
 		Message msg = new PutChunkMsg();
 		int nMessagesSent = 0;
 		// Create Chunk
@@ -136,23 +134,7 @@ public class BackupProtocol extends Thread {
 			// send Message
 			peer.getDataChannel().writePacket(msgPacket);
 			nMessagesSent++;
-			long startTime = System.nanoTime();
-			long elapsedTime;
-			ArrayList<Integer> serverWhoAnswered;
-			do {
-				if ((serverWhoAnswered = Peer.getInstance().getAnsweredCommand().get(chunkToSendID)) != null && !serverWhoAnswered.isEmpty()) {
-					synchronized (serverWhoAnswered) {
-						int size = serverWhoAnswered.size();
-						if (chunkToSend.getDesiredRepDegree() == size) {
-							chunkToSend.setActualRepDegree(size);
-							// TODO delete when System.out.println is also
-							// deleted
-							elapsedTime = -1;
-							break;
-						}
-					}
-				}
-			} while ((elapsedTime = System.nanoTime() - startTime) < waitTime);
+			long elapsedTime = waitForStoredMsg(chunkToSend, chunkToSendID, waitTime);
 
 			System.out.println(elapsedTime);
 			System.out.println(nMessagesSent);
@@ -160,6 +142,27 @@ public class BackupProtocol extends Thread {
 			waitTime *= 2;
 		} while (nMessagesSent < 5 && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
 
+	}
+
+	public long waitForStoredMsg(Chunk chunkToSend, ChunkID chunkToSendID, long waitTime) {
+		long startTime = System.nanoTime();
+		long elapsedTime;
+		ArrayList<Integer> serverWhoAnswered;
+		do {
+			if ((serverWhoAnswered = Peer.getInstance().getAnsweredCommand().get(chunkToSendID)) != null && !serverWhoAnswered.isEmpty()) {
+				synchronized (serverWhoAnswered) {
+					int size = serverWhoAnswered.size();
+					if (chunkToSend.getDesiredRepDegree() == size) {
+						chunkToSend.setActualRepDegree(size);
+						// TODO delete when System.out.println is also
+						// deleted
+						elapsedTime = -1;
+						break;
+					}
+				}
+			}
+		} while ((elapsedTime = System.nanoTime() - startTime) < waitTime);
+		return elapsedTime;
 	}
 
 	// 0 and 400 ms. delay
@@ -178,22 +181,20 @@ public class BackupProtocol extends Thread {
 			return;
 		}
 		String fileID = putchunkMSG.getFileId();
+	
 		// Version
 		args[0] = getVersion();
-
 		// SenderID
 		args[1] = peer.getServerID();
-
 		// FileID
 		args[2] = fileID;
-
 		// Chunk No
 		args[3] = Integer.toString(putchunkMSG.getChunkNo());
 		byte msgData[] = msg.getMessageData();
 
 		// TODO good idea?
 		Chunk chunk = new Chunk(new ChunkID(args[2], Integer.parseInt(args[2])), msgData);
-
+		ChunkID id = chunk.getId();
 		ArrayList<ChunkID> chunks;
 		HashMap<String, ArrayList<ChunkID>> storedHash = peer.getStored();
 		// TODO Check if condition makes sense, check here
@@ -208,7 +209,12 @@ public class BackupProtocol extends Thread {
 			}
 		}
 
-		ChunkID id = chunk.getId();
+		writeChunk(dirPath, chunk, id);
+		sendStoredMsg(msg, args);
+
+	}
+
+	public void writeChunk(String dirPath, Chunk chunk, ChunkID id) {
 		// Write Chunk
 		try {
 			FileOutputStream fileWriter = new FileOutputStream(dirPath + File.separator + id.getFileID() + "_" + id.getChunkNumber());
@@ -223,7 +229,9 @@ public class BackupProtocol extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
 
+	public void sendStoredMsg(Message msg, String[] args) {
 		// create message and packets
 		msg.createMessage(null, args);
 		DatagramPacket packet = peer.getControlChannel().createDatagramPacket(msg.getMessageBytes());
@@ -237,6 +245,12 @@ public class BackupProtocol extends Thread {
 		}
 		// send message
 		peer.getControlChannel().writePacket(packet);
+	}
+
+	public boolean checkNChunks(FileID fileID, int chunkNumber) {
+		if (fileID.getnChunks() == chunkNumber)
+			return false;
+		return true;
 	}
 
 	public int checkMessagesReceivedForChunk(ChunkID chunkToSendID) {
