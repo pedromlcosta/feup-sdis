@@ -152,7 +152,7 @@ public class FileHandler {
 			out.close();
 			return storedChunk.getData();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.out.println("Wasn't able to load chunk nr. " + chunkID.getChunkNumber() + " from file id: " + chunkID.getFileID());
 			e.printStackTrace();
 		}
 		// incase of error

@@ -51,6 +51,8 @@ public class Peer implements Invocation {
 
 	public static void main(String[] args) {
 
+		// Load stuff
+	
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				try {
