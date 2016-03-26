@@ -131,14 +131,6 @@ public class BackupProtocol extends Thread {
 				seversAnswers.replace(chunkToSendID, new ArrayList<Integer>());
 		}
 		long waitTime = TimeUnit.SECONDS.toNanos(INITIAL_WAITING_TIME);
-		// Timer t1 = new Timer();
-		// t1.schedule(new TimerTask() {
-		//
-		// @Override
-		// public void run() {
-		// Peer.getInstance().getAnsweredCommand().get(chunkToSend.getId());
-		// }
-		// }, 1000);
 
 		do {
 			// send Message
@@ -170,13 +162,6 @@ public class BackupProtocol extends Thread {
 
 	}
 
-	public int checkMessagesReceivedForChunk(ChunkID chunkToSendID) {
-		ArrayList<Integer> servers = peer.getAnsweredCommand().get(chunkToSendID);
-		if (servers != null)
-			return servers.size();
-		return 0;
-	}
-
 	// 0 and 400 ms. delay
 	public void putChunkReceive(Message putchunkMSG) {
 		Message msg = new Message();
@@ -192,6 +177,7 @@ public class BackupProtocol extends Thread {
 			System.out.println(msg.getMessageToSend());
 			return;
 		}
+		String fileID = putchunkMSG.getFileId();
 		// Version
 		args[0] = getVersion();
 
@@ -199,7 +185,7 @@ public class BackupProtocol extends Thread {
 		args[1] = peer.getServerID();
 
 		// FileID
-		args[2] = putchunkMSG.getFileId();
+		args[2] = fileID;
 
 		// Chunk No
 		args[3] = Integer.toString(putchunkMSG.getChunkNo());
@@ -207,14 +193,19 @@ public class BackupProtocol extends Thread {
 
 		// TODO good idea?
 		Chunk chunk = new Chunk(new ChunkID(args[2], Integer.parseInt(args[2])), msgData);
-		int index;
+
+		ArrayList<ChunkID> chunks;
+		HashMap<String, ArrayList<ChunkID>> storedHash = peer.getStored();
 		// TODO Check if condition makes sense, check here
-		if ((index = peer.getStored().indexOf(chunk.getId())) < 0) {
-			chunk.setDesiredRepDegree(putchunkMSG.getReplicationDeg());
-			chunk.setActualRepDegree(1);
-			peer.addChunk(chunk.getId());
-		} else {
-			peer.getStored().get(index).increaseRepDegree();
+		synchronized (storedHash) {
+			if ((chunks = storedHash.get(fileID)) == null) {
+				chunk.setDesiredRepDegree(putchunkMSG.getReplicationDeg());
+				chunk.setActualRepDegree(1);
+				peer.addChunk(fileID, chunk.getId());
+			} else {
+				chunks.add(chunk.getId());
+				chunk.increaseRepDegree();
+			}
 		}
 
 		ChunkID id = chunk.getId();
@@ -246,6 +237,13 @@ public class BackupProtocol extends Thread {
 		}
 		// send message
 		peer.getControlChannel().writePacket(packet);
+	}
+
+	public int checkMessagesReceivedForChunk(ChunkID chunkToSendID) {
+		ArrayList<Integer> servers = peer.getAnsweredCommand().get(chunkToSendID);
+		if (servers != null)
+			return servers.size();
+		return 0;
 	}
 
 	// Gets and Sets
