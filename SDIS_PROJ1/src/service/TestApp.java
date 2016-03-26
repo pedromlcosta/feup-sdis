@@ -55,8 +55,6 @@ public class TestApp {
 			}
 		}else{
 			
-			System.out.println("Args not valid. Correct usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>. ");
-			System.out.println("<opnd_2> must be empty for the restore, delete and reclaim protocols.");
 			return;
 		}
 			
@@ -81,18 +79,21 @@ public class TestApp {
 
 		if(args.length < 3){ // Min number of args: 3  Max number or args: 4
 			System.out.println("Incorrect number of args.");
+			System.out.println("Correct usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>. ");
 		}else{
 			// Verify peer_ap first
 			if (args[0] == null || !isNumeric(args[0])){
 				System.out.println("<peer_ap> must be a numeric value.");
+				System.out.println("Correct usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>. ");
 				return false;
 			} 
 			
 			String protocol = args[1].toLowerCase();
 
-			if (protocol == "backup"){
+			if (protocol.equals("backup")){
 				if(args.length != 4){
 					System.out.println("Incorrect number of args.");
+					System.out.println("Correct usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>. ");
 					return false;
 				}
 				//if(args[2].notValidFile) ??
@@ -100,33 +101,39 @@ public class TestApp {
 				
 				if(!isNumeric(args[3])){
 					System.out.println("Backup expects <opnd_2> to be a numeric value.");
+					System.out.println("Correct usage: java TestApp <peer_ap> BACKUP <filePath> <repDegree>. ");
 					return false;
 				}else if(Integer.parseInt(args[3])>9 || Integer.parseInt(args[3]) <1){
 					System.out.println("Backup expects <opnd_2> to be a value between 1 and 9.");
+					System.out.println("Correct usage: java TestApp <peer_ap> BACKUP <filePath> <repDegree>. ");
 					return false;
 				}
-			}else if (protocol == "restore"){
+			}else if (protocol.equals("restore")){
 				if(args.length != 3){
 					System.out.println("Incorrect number of args.");
-					return false;
-				}
-				
-				//if(args[2].notValidFile) ??
-			}else if (protocol == "delete"){
-				if(args.length != 3){
-					System.out.println("Incorrect number of args.");
+					System.out.println("Correct usage: java TestApp <peer_ap> RESTORE <filePath>. ");
 					return false;
 				}
 				
 				//if(args[2].notValidFile) ??
-			}else if (protocol == "reclaim"){
+			}else if (protocol.equals("delete")){
 				if(args.length != 3){
 					System.out.println("Incorrect number of args.");
+					System.out.println("Correct usage: java TestApp <peer_ap> DELETE <filePath>. ");
+					return false;
+				}
+				
+				//if(args[2].notValidFile) ??
+			}else if (protocol.equals("reclaim")){
+				if(args.length != 3){
+					System.out.println("Incorrect number of args.");
+					System.out.println("Correct usage: java TestApp <peer_ap> RECLAIM <space>. ");
 					return false;
 				}
 				
 				if(!isNumeric(args[2])){
 					System.out.println("Reclaim expects <opnd_1> to be a numeric value.");
+					System.out.println("Correct usage: java TestApp <peer_ap> RECLAIM <space>. ");
 					return false;
 				}
 				
