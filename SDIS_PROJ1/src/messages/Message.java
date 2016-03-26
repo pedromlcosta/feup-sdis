@@ -4,25 +4,34 @@ package messages;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-//TODO devo mudar quase tudo o que está aqui so ignore this for now
-//TODO stringbuilder
+
 public class Message {
 
-	private static final String GETCHUNK = "GETCHUNK";
-	private static final String CHUNK = "CHUNK";
-	private static final String DELETE = "DELETE";
-	private static final String REMOVED = "REMOVE";
-	private static final String PUTCHUNK = "PUTCHUNK";
-	private static final String STORED = "STORED";
-	private static final String EMPTY_STRING = "";
+	protected static final String GETCHUNK = "GETCHUNK";
+	protected static final String CHUNK = "CHUNK";
+	protected static final String DELETE = "DELETE";
+	protected static final String REMOVED = "REMOVE";
+	protected static final String PUTCHUNK = "PUTCHUNK";
+	protected static final String STORED = "STORED";
+	protected static final String EMPTY_STRING = "";
 
 	public static enum MESSAGE_TYPE {
 		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED
 	}
 
 	protected final String EOL = "\u0013\u0010";
-	protected final String VALIDATE_MSG_Part1 = "^(?:(?:\\w|\\.)* +){";
-	protected final String VALIDATE_MSG_Part2 = "}\\w+ *" + EOL + EOL + ".*";
+
+	protected final String VALIDATE_MESSAGE_TYPE = "^(?:\\w+)";
+	protected final String MORE_THAN_1_SPACE = " +";
+	protected final String ZERO_OR_MORE_SPACES = " *";
+	protected final String VALIDATE_VERSION = "(?:\\d\\.\\d)";
+	protected final String MIDDLE_ARGS = "(?:\\w+)";
+	protected final String CHUNK_NUMBER = "\\d+";// (?:(?:[1-9][0-9]{0,5}|1000000)$)";
+	protected final String DREGREE_ARG = "(?:\\d)";
+	protected final String MSG_END = " *" + EOL + EOL + ".*";
+	// protected final String VALIDATE_MSG_Part1 = "(?:\\w+ +){";
+
+	// protected final String VALIDATE_MSG_Part2 = "}\\w+ *" + EOL + EOL + ".*";
 	protected final String PATTERN = " |" + (EOL + EOL);
 	protected String messageToSend = "";
 
@@ -34,6 +43,7 @@ public class Message {
 	int chunkNo;
 	int replicationDeg;
 	byte[] body;
+	String validateRegex;
 
 	// PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg>
 	// <CRLF><CRLF><Body>
@@ -54,13 +64,15 @@ public class Message {
 
 	}
 
-	public boolean createMessage(MESSAGE_TYPE type, String args[], byte data[]) {
-		createHeader(type, args);
+	// Only "daugther" classes should be used to create
+	public boolean createMessage(byte data[], String... args) {
+		return false;
+	}
 
-		if (validateMsg(messageToSend, args.length)) {
+	public boolean createMessageAux(byte data[]) {
+		if (validateMsg(messageToSend)) {
+			System.out.println("Message Valid");
 			if (data != null) {
-				// System.out.println("Message to send before data: " +
-				// messageToSend);
 				String s = new String(data);
 				System.out.println(data.length);
 				System.out.println(s);
@@ -69,44 +81,43 @@ public class Message {
 			return true;
 		} else {
 			System.out.println("Mensagem nao valida");
-			System.out.println(args.length);
 			// messageToSend = EMPTY_STRING;
 			return false;
 		}
 	}
+	// public boolean createHeader(MESSAGE_TYPE type, String... args) {
+	//
+	// if (args.length > 0) {
+	//
+	// switch (type) {
+	// case GETCHUNK:
+	// return createHeaderAux(args, 4, GETCHUNK);
+	// case CHUNK:
+	// return createHeaderAux(args, 4, CHUNK);
+	// case DELETE:
+	// return createHeaderAux(args, 3, DELETE);
+	// case REMOVED:
+	// return createHeaderAux(args, 4, REMOVED);
+	// case PUTCHUNK:
+	// return createHeaderAux(args, 5, PUTCHUNK);
+	// case STORED:
+	// return createHeaderAux(args, 4, STORED);
+	//
+	// }
+	// }
+	// return false;
+	// }
 
-	public boolean createHeader(MESSAGE_TYPE type, String... args) {
-
-		if (args.length > 0) {
-
-			switch (type) {
-			case GETCHUNK:
-				return createHeaderAux(args, 4, Message.GETCHUNK);
-			case CHUNK:
-				return createHeaderAux(args, 4, CHUNK);
-			case DELETE:
-				return createHeaderAux(args, 3, DELETE);
-			case REMOVED:
-				return createHeaderAux(args, 4, REMOVED);
-			case PUTCHUNK:
-				return createHeaderAux(args, 5, PUTCHUNK);
-			case STORED:
-				return createHeaderAux(args, 4, STORED);
-
-			}
-		}
-		return false;
-	}
-
-	public boolean validateMsg(String s, int nArgs) {
-		String validateRegex = new String(VALIDATE_MSG_Part1 + (nArgs) + VALIDATE_MSG_Part2);
-		System.out.println(s);
+	public boolean validateMsg(String s) {
+		// String validateRegex = new String(VALIDATE_MSG_Part1 +
+		// (nArgsAfterVersion) + VALIDATE_MSG_Part2);
+		System.out.println(validateRegex);
 		Pattern p = Pattern.compile(validateRegex);
 		Matcher m = p.matcher(s);
 		return m.matches();
 	}
 
-	public boolean createHeaderAux(String[] args, int nArgs, String messageType) {
+	public boolean createHeader(String[] args, int nArgs, String messageType) {
 		if (args.length != nArgs) {
 			System.out.println("Args given for this type of message: " + args.length);
 			System.out.println("Args expected: " + nArgs);
@@ -201,14 +212,6 @@ public class Message {
 
 	public static String getStored() {
 		return STORED;
-	}
-
-	public String getVALIDATE_MSG_Part1() {
-		return VALIDATE_MSG_Part1;
-	}
-
-	public String getVALIDATE_MSG_Part2() {
-		return VALIDATE_MSG_Part2;
 	}
 
 	public MESSAGE_TYPE getType() {

@@ -32,7 +32,7 @@ public class Peer implements Invocation {
 	private MCReceiver controlChannel;
 	private MDBReceiver dataChannel;
 	private MDRReceiver restoreChannel;
-	private int serverID;
+	private String serverID;
 	private static Registry rmiRegistry;
 	private static String rmiName;
 	private Dispatcher commandDispatcher = new Dispatcher();
@@ -222,11 +222,11 @@ public class Peer implements Invocation {
 		Peer.instance = instance;
 	}
 
-	public int getServerID() {
+	public String getServerID() {
 		return serverID;
 	}
 
-	public void setServerID(int serverID) {
+	public void setServerID(String serverID) {
 		this.serverID = serverID;
 	}
 	

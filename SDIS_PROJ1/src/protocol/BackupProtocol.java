@@ -21,6 +21,7 @@ import file.FileID;
 import messages.FileHandler;
 import messages.Message;
 import messages.Message.MESSAGE_TYPE;
+import messages.StoredMsg;
 import service.Peer;
 
 public class BackupProtocol extends Thread {
@@ -104,7 +105,7 @@ public class BackupProtocol extends Thread {
 
 	// TODO most 5 PUTCHUNK messages per chunk. check about server ID
 	public void putchunkCreate(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version) throws SocketException, InterruptedException {
-		Message msg = new Message();
+		Message msg = new StoredMsg();
 		int nMessagesSent = 0;
 		// Create Chunk
 		Chunk chunkToSend = new Chunk(file.getID(), chunkNumber, chunkData);
@@ -115,11 +116,11 @@ public class BackupProtocol extends Thread {
 		// createMessage
 		String[] args = new String[5];
 		args[0] = version;
-		args[1] = Integer.toString(peer.getServerID());
+		args[1] = peer.getServerID();
 		args[2] = file.getID();
 		args[3] = Integer.toString(chunkNumber);
 		args[4] = Integer.toString(wantedRepDegree);
-		msg.createMessage(MESSAGE_TYPE.PUTCHUNK, args, chunkData);
+		msg.createMessage(chunkData, args);
 
 		// Send Mensage
 		DatagramPacket msgPacket = peer.getDataChannel().createDatagramPacket(msg.getMessageBytes()); //
@@ -189,7 +190,7 @@ public class BackupProtocol extends Thread {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		if (Integer.parseInt(putchunkMSG.getSenderID()) == peer.getServerID()) {
+		if (putchunkMSG.getSenderID() == peer.getServerID()) {
 			System.out.println("Either the Msg was you tried to use the same server ");
 			System.out.println(msg.getMessageToSend());
 			return;
@@ -198,7 +199,7 @@ public class BackupProtocol extends Thread {
 		args[0] = getVersion();
 
 		// SenderID
-		args[1] = Integer.toString(peer.getServerID());
+		args[1] = peer.getServerID();
 
 		// FileID
 		args[2] = putchunkMSG.getFileId();
@@ -236,7 +237,7 @@ public class BackupProtocol extends Thread {
 		}
 
 		// create message and packets
-		msg.createMessage(MESSAGE_TYPE.STORED, args, null);
+		msg.createMessage(null, args);
 		DatagramPacket packet = peer.getControlChannel().createDatagramPacket(msg.getMessageBytes());
 
 		// get Random Delay

@@ -1,6 +1,7 @@
 package messages;
 
 public class StoredMsg extends Message {
+	private static final int N_ARGS = 4;
 	String ChunkNo;
 
 	public StoredMsg() {
@@ -8,8 +9,8 @@ public class StoredMsg extends Message {
 	}
 
 	public StoredMsg(String[] messageFields) {
-		// TODO check number and such
-		if (messageFields.length < 5) {
+		// type+args
+		if (messageFields.length < (N_ARGS + 1)) {
 			System.out.println("Failed creating Stored message. Not enough fields");
 			return;
 		}
@@ -19,4 +20,12 @@ public class StoredMsg extends Message {
 		chunkNo = Integer.parseInt(messageFields[4]);
 	}
 
+	// STORED <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
+	public boolean createMessage(byte[] data, String... args) {
+
+		createHeader(args, N_ARGS, getStored());
+		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER + MSG_END;
+		return createMessageAux(data);
+
+	}
 }

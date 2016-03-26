@@ -1,14 +1,13 @@
 package main;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 
 import chunk.Chunk;
 import chunk.ChunkID;
 import file.FileID;
+import messages.*;
 
 public class Main {
 
@@ -45,7 +44,7 @@ public class Main {
 		// testeMsg.createMessage(MESSAGE_TYPE.PUTCHUNK, s, new byte[5]);
 		// System.out.println("MSG: " + testeMsg.getMessageToSend());
 		FileID file = new FileID("C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\src\\B1.tmp");
-		System.out.println(file.getID());
+		// System.out.println(file.getID());
 		ChunkID chunkID = new ChunkID(file.getID(), 10, 20, 30);
 		Chunk chunk = new Chunk(chunkID, new byte[64000]);
 		FileOutputStream fileOut = new FileOutputStream("employee.ser");
@@ -70,6 +69,10 @@ public class Main {
 		 * 
 		 * } catch (UnknownHostException e) { e.printStackTrace(); }
 		 */
-		System.out.println("end");
+		Message msg = new DeleteMsg();
+		msg.createMessage(null, "1.0", "HORSHIT", file.getID() );
+		System.out.println(msg.getMessageToSend());
+		// System.out.println(msg.getVALIDATE_MSG_Part1() + "5" +
+		// msg.getVALIDATE_MSG_Part2());
 	}
 }

@@ -14,7 +14,6 @@ import messages.DeleteMsg;
 import messages.FileHandler;
 import messages.GetChunkMsg;
 import messages.Message;
-import messages.Message.MESSAGE_TYPE;
 import messages.PutChunkMsg;
 import messages.RemovedMsg;
 import messages.StoredMsg;
@@ -134,11 +133,11 @@ public class Processor extends Thread {
 				// enviar mensagem com o chunk
 
 				byte[] chunkBody = fileHandler.loadChunkBody(chunkID);
-				String[] args = { "1.0", Integer.toString(Peer.getInstance().getServerID()), chunkID.getFileID(), Integer.toString(chunkID.getChunkNumber()) };
+				String[] args = { "1.0", Peer.getInstance().getServerID(), chunkID.getFileID(), Integer.toString(chunkID.getChunkNumber()) };
 
 				// byte[] chunkBody = new byte[64];
-				Message chunkMsg = new Message();
-				if (chunkMsg.createMessage(MESSAGE_TYPE.CHUNK, args, chunkBody) == true) {
+				Message chunkMsg = new ChunkMsg();
+				if (chunkMsg.createMessage(chunkBody, args) == true) {
 					DatagramPacket packet = restore.createDatagramPacket(chunkMsg.getMessageBytes());
 					restore.writePacket(packet);
 				} else {
@@ -186,6 +185,26 @@ public class Processor extends Thread {
 
 	private void removeHandler() {
 
+	}
+
+	public String getMessageString() {
+		return messageString;
+	}
+
+	public void setMessageString(String messageString) {
+		this.messageString = messageString;
+	}
+
+	public Message getMsg() {
+		return msg;
+	}
+
+	public void setMsg(Message msg) {
+		this.msg = msg;
+	}
+
+	public long getGETCHUNK_WAITING_NANO() {
+		return GETCHUNK_WAITING_NANO;
 	}
 
 }
