@@ -8,13 +8,18 @@ import messages.DeleteMsg;
 import messages.Message;
 import service.Peer;
 
-public class DeleteProtocol {
+public class DeleteProtocol extends Thread {
 
 	private static Peer peer = Peer.getInstance();
 	private static FileID file;
+	private String filePath;
 	private static int MAX_SENT = 5;
 
-	public void startDelete(String filePath) {
+	public DeleteProtocol(String filePath) {
+		this.filePath = filePath;
+	}
+
+	public void run() {
 
 		file = peer.getFilesSent().get(filePath);
 		if (file == null) {
@@ -33,7 +38,7 @@ public class DeleteProtocol {
 		while (nMessagesSent < MAX_SENT) {
 			mc.writePacket(msgPacket);
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(200);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}

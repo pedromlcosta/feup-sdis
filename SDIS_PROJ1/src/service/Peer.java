@@ -15,6 +15,8 @@ import channels.MDRReceiver;
 import chunk.ChunkID;
 import file.FileID;
 import protocol.BackupProtocol;
+import protocol.DeleteProtocol;
+import protocol.ReclaimProtocol;
 import protocol.RestoreProtocol;
 
 //SINGLETON SYNCRONIZE ALL THREADS HAVE ACESS TO IT
@@ -175,6 +177,8 @@ public class Peer implements Invocation {
 	@Override
 	public synchronized String delete(String filePath) throws RemoteException {
 		// Call delete protocol
+		Thread delete = new DeleteProtocol(filePath);
+		delete.start();
 		System.out.println("delete called");
 		return "delete sent";
 	}
@@ -182,6 +186,8 @@ public class Peer implements Invocation {
 	@Override
 	public String reclaim(int reclaimSpace) throws RemoteException {
 		// Call reclaim protocol
+		Thread reclaim = new ReclaimProtocol(reclaimSpace);
+		reclaim.start();
 		System.out.println("reclaim called");
 		return "reclaim sent";
 	}

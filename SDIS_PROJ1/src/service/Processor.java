@@ -1,14 +1,18 @@
 package service;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import channels.MDRReceiver;
 import chunk.Chunk;
 import chunk.ChunkID;
+import extra.Extra;
 import messages.ChunkMsg;
 import messages.DeleteMsg;
 import messages.FileHandler;
@@ -88,7 +92,27 @@ public class Processor extends Thread {
 	}
 
 	private void deleteHandler() {
-		// Rui
+		
+		String fileId = msg.getFileId();
+		String dirPath = "";
+		
+		try {
+			dirPath = Extra.createDirectory(FileHandler.BACKUP_FOLDER_NAME);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
+		
+		for(Iterator<ChunkID> it = Peer.getInstance().getStored().iterator();it.hasNext();){
+			ChunkID chunk = it.next();
+			String idToConfirm = chunk.getFileID();
+			//if chunk belongs to file delete chunk and stored
+			if(fileId.equals(idToConfirm)){
+				File file = new File(dirPath + File.separator + idToConfirm + "_" + chunk.getChunkNumber());
+				file.delete();
+				it.remove();
+			}
+		}
 	}
 
 	private void chunkHandler() {
