@@ -27,13 +27,5 @@ public class GetChunkMsg extends Message {
 		createHeader(args, N_ARGS, getGetchunk());
 		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER + MSG_END;
 		return createMessageAux(data);
-
-		// protected final String VALIDATE_MESSAGE_TYPE = "^(?:\\w+)";
-		// protected final String MORE_THAN_1_SPACE=" +";
-		// protected final String VALIDATE_VERSION = "(?:\\d\\.\\d) +";
-		// protected final String MIDDLE_ARGS = "(?: \\w+)";
-		// protected final String CHUNK_NUMBER = "^([1-9][0-9]{0,5}|1000000)$";
-		// protected final String DREGREE_ARG = "(?:\\d)";
-		// protected final String MSG_END = " *" + EOL + EOL + ".*";
 	}
 }

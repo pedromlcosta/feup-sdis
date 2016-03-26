@@ -4,7 +4,6 @@ package messages;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-
 public class Message {
 
 	protected static final String GETCHUNK = "GETCHUNK";
@@ -19,14 +18,14 @@ public class Message {
 		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED
 	}
 
-	protected final String EOL = "\u0013\u0010";
+	protected final String EOL = "\r\n";
 
 	protected final String VALIDATE_MESSAGE_TYPE = "^(?:\\w+)";
 	protected final String MORE_THAN_1_SPACE = " +";
 	protected final String ZERO_OR_MORE_SPACES = " *";
 	protected final String VALIDATE_VERSION = "(?:\\d\\.\\d)";
 	protected final String MIDDLE_ARGS = "(?:\\w+)";
-	protected final String CHUNK_NUMBER = "\\d+";// (?:(?:[1-9][0-9]{0,5}|1000000)$)";
+	protected final String CHUNK_NUMBER = "\\d{1,6}";
 	protected final String DREGREE_ARG = "(?:\\d)";
 	protected final String MSG_END = " *" + EOL + EOL + ".*";
 	// protected final String VALIDATE_MSG_Part1 = "(?:\\w+ +){";
@@ -45,6 +44,7 @@ public class Message {
 	byte[] body;
 	String validateRegex;
 
+	// TODO check body with string and non ascii
 	// PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg>
 	// <CRLF><CRLF><Body>
 	// STORED <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
@@ -55,8 +55,11 @@ public class Message {
 	public synchronized String[] parseMessage(String Message) {
 		Pattern pattern = Pattern.compile(PATTERN);
 		String[] match = pattern.split(Message, -2);
-		for (String a : match)
+		for (String a : match) {
 			System.out.println("Print: " + a);
+
+		}
+		System.out.println(new String(match[4].getBytes()));
 		return match;
 	}
 
@@ -109,8 +112,7 @@ public class Message {
 	// }
 
 	public boolean validateMsg(String s) {
-		// String validateRegex = new String(VALIDATE_MSG_Part1 +
-		// (nArgsAfterVersion) + VALIDATE_MSG_Part2);
+
 		System.out.println(validateRegex);
 		Pattern p = Pattern.compile(validateRegex);
 		Matcher m = p.matcher(s);

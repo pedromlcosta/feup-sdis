@@ -1,6 +1,5 @@
 package messages;
 
-//PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg> <CRLF><CRLF><Body>
 public class PutChunkMsg extends Message {
 
 	private static final int N_ARGS = 5;
@@ -27,13 +26,15 @@ public class PutChunkMsg extends Message {
 		body = messageFields[6].getBytes();
 	}
 
+	// PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg>
+	// <CRLF><CRLF><Body>
 	public boolean createMessage(byte[] data, String... args) {
 
 		createHeader(args, N_ARGS, getPutchunk());
 		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER + MORE_THAN_1_SPACE + DREGREE_ARG + MSG_END;
 		System.out.println(validateRegex);
-	 
-		return createMessageAux(data );
+
+		return createMessageAux(data);
 
 	}
 }
