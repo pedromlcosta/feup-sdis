@@ -77,7 +77,7 @@ public class TestApp {
 			return false;
 		}
 
-		if(args.length < 3){ // Min number of args: 3  Max number or args: 4
+		if(args.length < 2){ // Min number of args: 3  Max number or args: 4
 			System.out.println("Incorrect number of args.");
 			System.out.println("Correct usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>. ");
 		}else{
@@ -93,7 +93,7 @@ public class TestApp {
 			if (protocol.equals("backup")){
 				if(args.length != 4){
 					System.out.println("Incorrect number of args.");
-					System.out.println("Correct usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>. ");
+					System.out.println("Correct usage: java TestApp <peer_ap> BACKUP <filePath> <repDegree>. ");
 					return false;
 				}
 				//if(args[2].notValidFile) ??
