@@ -34,6 +34,9 @@ public class Processor extends Thread {
 		this.messageString = messageString;
 	}
 
+	public Processor(String header, byte[] body) {
+	}
+
 	public void run() {
 		// HANDLE MESSAGES HERE
 		if (msg != null && messageString != null) {
@@ -92,22 +95,21 @@ public class Processor extends Thread {
 	}
 
 	private void deleteHandler() {
-		
+
 		String fileId = msg.getFileId();
 		String dirPath = "";
-		
+
 		try {
 			dirPath = Extra.createDirectory(FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		
-		
-		for(Iterator<ChunkID> it = Peer.getInstance().getStored().iterator();it.hasNext();){
+
+		for (Iterator<ChunkID> it = Peer.getInstance().getStored().iterator(); it.hasNext();) {
 			ChunkID chunk = it.next();
 			String idToConfirm = chunk.getFileID();
-			//if chunk belongs to file delete chunk and stored
-			if(fileId.equals(idToConfirm)){
+			// if chunk belongs to file delete chunk and stored
+			if (fileId.equals(idToConfirm)) {
 				File file = new File(dirPath + File.separator + idToConfirm + "_" + chunk.getChunkNumber());
 				file.delete();
 				it.remove();

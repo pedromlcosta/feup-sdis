@@ -31,8 +31,8 @@ public class PutChunkMsg extends Message {
 	public boolean createMessage(byte[] data, String... args) {
 
 		createHeader(args, N_ARGS, getPutchunk());
-		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER + MORE_THAN_1_SPACE + DREGREE_ARG + MSG_END;
-		System.out.println(validateRegex);
+		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER
+				+ MORE_THAN_1_SPACE + DREGREE_ARG + MSG_END;
 
 		return createMessageAux(data);
 

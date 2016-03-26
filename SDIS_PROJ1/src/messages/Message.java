@@ -18,16 +18,16 @@ public class Message {
 		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED
 	}
 
-	protected final String EOL = "\r\n";
+	public static final String EOL = "\r\n";
 
-	protected final String VALIDATE_MESSAGE_TYPE = "^(?:\\w+)";
-	protected final String MORE_THAN_1_SPACE = " +";
-	protected final String ZERO_OR_MORE_SPACES = " *";
-	protected final String VALIDATE_VERSION = "(?:\\d\\.\\d)";
-	protected final String MIDDLE_ARGS = "(?:\\w+)";
-	protected final String CHUNK_NUMBER = "\\d{1,6}";
-	protected final String DREGREE_ARG = "(?:\\d)";
-	protected final String MSG_END = " *" + EOL + EOL + ".*";
+	final String VALIDATE_MESSAGE_TYPE = "^(?:\\w+)";
+	final String MORE_THAN_1_SPACE = " +";
+	final String ZERO_OR_MORE_SPACES = " *";
+	final String VALIDATE_VERSION = "(?:\\d\\.\\d)";
+	final String MIDDLE_ARGS = "(?:\\w+)";
+	final String CHUNK_NUMBER = "\\d{1,6}";
+	final String DREGREE_ARG = "(?:\\d)";
+	final String MSG_END = " *" + EOL + EOL + ".*";
 	// protected final String VALIDATE_MSG_Part1 = "(?:\\w+ +){";
 
 	// protected final String VALIDATE_MSG_Part2 = "}\\w+ *" + EOL + EOL + ".*";
@@ -55,10 +55,10 @@ public class Message {
 	public synchronized String[] parseMessage(String Message) {
 		Pattern pattern = Pattern.compile(PATTERN);
 		String[] match = pattern.split(Message, -2);
-		for (String a : match) {
-			System.out.println("Print: " + a);
-
-		}
+		// for (String a : match) {
+		// System.out.println("Print: " + a);
+		//
+		// }
 		System.out.println(new String(match[4].getBytes()));
 		return match;
 	}
@@ -73,12 +73,13 @@ public class Message {
 	}
 
 	public boolean createMessageAux(byte data[]) {
+		System.out.println(messageToSend);
 		if (validateMsg(messageToSend)) {
 			System.out.println("Message Valid");
 			if (data != null) {
-				String s = new String(data);
-				System.out.println(data.length);
-				System.out.println(s);
+				// String s = new String(data);
+				// System.out.println(data.length);
+				// System.out.println(s);
 				messageToSend = messageToSend.concat(new String(data));
 			}
 			return true;

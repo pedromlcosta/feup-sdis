@@ -10,8 +10,6 @@ import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.concurrent.TimeUnit;
 
 import chunk.Chunk;
@@ -20,8 +18,7 @@ import extra.Extra;
 import file.FileID;
 import messages.FileHandler;
 import messages.Message;
-import messages.Message.MESSAGE_TYPE;
-import messages.StoredMsg;
+import messages.PutChunkMsg;
 import service.Peer;
 
 public class BackupProtocol extends Thread {
@@ -105,7 +102,7 @@ public class BackupProtocol extends Thread {
 
 	// TODO most 5 PUTCHUNK messages per chunk. check about server ID
 	public void putchunkCreate(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version) throws SocketException, InterruptedException {
-		Message msg = new StoredMsg();
+		Message msg = new PutChunkMsg();
 		int nMessagesSent = 0;
 		// Create Chunk
 		Chunk chunkToSend = new Chunk(file.getID(), chunkNumber, chunkData);

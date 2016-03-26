@@ -5,6 +5,7 @@ import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
+import java.util.Arrays;
 
 import service.Peer;
 import service.Processor;
@@ -48,21 +49,30 @@ public class ReceiverServer extends Thread {
 			}
 
 			byte[] receivedMessage = receivePacket.getData();
-			String receivedString = new String(receivedMessage);
+			byte[] body = null;
+			String header = null;
+			for (int i = 0; i < receivedMessage.length; i++) {
+				if (receivedMessage[i] == '\r' && receivedMessage[i + 1] == '\n')
+					if (receivedMessage[i + 2] == '\r' && receivedMessage[i + 3] == '\n') {
+						header = new String(Arrays.copyOf(receivedMessage, i));
+						body = Arrays.copyOfRange(receivedMessage, i, receivedMessage.length);
+						break;
+					}
+			}
 			// System.out.println(receivedString.length() + " " +
 			// receivedString.isEmpty() + " L:" + receivedString);
-			if (receivedString.length() > 0) {
-				receivedString = receivedString.substring(0, receivePacket.getLength());
+			if (header.length() > 0) {
+				header = header.substring(0, receivePacket.getLength());
 
-				System.out.println("Server Received: " + receivedString);
+				System.out.println("Server Received: " + header);
 
 				// TODO Check if ReceivedString is valid!!!!!!!!!!
 				// TODO funcao auxiliar que tira string do packet?
 
-				Processor processingThread = new Processor(receivedString);
+				Processor processingThread = new Processor(header, body);
 				processingThread.start();
 
-				receivedString = "";
+				header = "";
 			}
 		}
 	}
