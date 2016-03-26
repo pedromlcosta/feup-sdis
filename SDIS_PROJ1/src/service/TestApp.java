@@ -63,6 +63,14 @@ public class TestApp {
 			
 	}
 	
+	// Restrictions:
+	// java TestApp peer_ap ... -> peer_ap must be a number
+	// Options:
+	// BACKUP file repDeg
+	// RESTORE file
+	// DELETE FILE
+	//
+	
 	static boolean validArgs(String[] args){
 		
 		System.out.println("Validating args...");
