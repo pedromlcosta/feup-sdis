@@ -8,7 +8,6 @@ import java.util.HashMap;
 import messages.FileHandler;
 import messages.GetChunkMsg;
 import messages.Message;
-import messages.Message.MESSAGE_TYPE;
 import channels.MDRReceiver;
 import chunk.Chunk;
 import chunk.ChunkID;

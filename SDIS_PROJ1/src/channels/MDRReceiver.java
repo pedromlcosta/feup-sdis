@@ -7,8 +7,6 @@ import java.util.HashMap;
 
 import chunk.Chunk;
 import chunk.ChunkID;
-import file.FileID;
-import service.Peer;
 
 public class MDRReceiver extends ReceiverServer {
 	
