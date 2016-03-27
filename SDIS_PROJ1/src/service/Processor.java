@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
@@ -13,6 +14,7 @@ import channels.MDRReceiver;
 import chunk.Chunk;
 import chunk.ChunkID;
 import extra.Extra;
+import file.FileID;
 import messages.ChunkMsg;
 import messages.DeleteMsg;
 import messages.FileHandler;
@@ -50,7 +52,7 @@ public class Processor extends Thread {
 
 			switch (messageFields[0]) {
 			case "PUTCHUNK":
-				msg = new PutChunkMsg(messageFields,messageBody);
+				msg = new PutChunkMsg(messageFields, messageBody);
 
 				// Unreserve the now unneeded array space, while the processor
 				// handles the message
@@ -59,13 +61,13 @@ public class Processor extends Thread {
 				putChunkHandler();
 				break;
 			case "STORED":
-				msg = new StoredMsg(messageFields,messageBody);
+				msg = new StoredMsg(messageFields, messageBody);
 
 				messageFields = null;
 				storedHandler();
 				break;
 			case "GETCHUNK":
-				msg = new GetChunkMsg(messageFields,messageBody);
+				msg = new GetChunkMsg(messageFields, messageBody);
 
 				messageFields = null;
 				try {
@@ -77,19 +79,19 @@ public class Processor extends Thread {
 				}
 				break;
 			case "CHUNK":
-				msg = new ChunkMsg(messageFields,messageBody);
+				msg = new ChunkMsg(messageFields, messageBody);
 
 				messageFields = null;
 				chunkHandler();
 				break;
 			case "DELETE":
-				msg = new DeleteMsg(messageFields,messageBody);
+				msg = new DeleteMsg(messageFields, messageBody);
 
 				messageFields = null;
 				deleteHandler();
 				break;
 			case "REMOVED":
-				msg = new RemovedMsg(messageFields,messageBody);
+				msg = new RemovedMsg(messageFields, messageBody);
 
 				messageFields = null;
 				removeHandler();
@@ -112,6 +114,7 @@ public class Processor extends Thread {
 
 	private void deleteHandler() {
 
+		Peer peer = Peer.getInstance();
 		String fileId = msg.getFileId();
 		String dirPath = "";
 
@@ -121,18 +124,19 @@ public class Processor extends Thread {
 			e.printStackTrace();
 		}
 
-		// TODO rui please check this is done well
-		ArrayList<ChunkID> chunks = Peer.getInstance().getStored().get(fileId);
+		ArrayList<ChunkID> chunks = peer.getStored();
 		synchronized (chunks) {
-			if (chunks != null && !chunks.isEmpty())
-				for (ChunkID chunk : chunks) {
-					String idToConfirm = chunk.getFileID();
-					// if chunk belongs to file delete chunk and stored
-					if (fileId.equals(idToConfirm)) {
-						File file = new File(dirPath + File.separator + idToConfirm + "_" + chunk.getChunkNumber());
-						file.delete();
-					}
+			for (Iterator<ChunkID> it = chunks.iterator(); it.hasNext();) {
+				ChunkID chunk = it.next();
+				String idToConfirm = chunk.getFileID();
+				// if chunk belongs to file delete chunk and stored
+				if (fileId.equals(idToConfirm)) {
+					File file = new File(dirPath + File.separator + fileId + "_" + chunk.getChunkNumber());
+					file.delete();
+					it.remove();
+					peer.removeChunkPeers(chunk);
 				}
+			}
 		}
 	}
 
@@ -238,6 +242,11 @@ public class Processor extends Thread {
 			return;
 
 		// update actualRepDegree
+
+		// report loss of chunk
+		peer.removeChunkPeer(tmp, Integer.valueOf(msg.getSenderID()));
+
+		// update actualRepDegree
 		peer.getStored().get(index).decreaseRepDegree();
 
 		int actualRepDegree = peer.getStored().get(index).getActualRepDegree();
@@ -251,7 +260,6 @@ public class Processor extends Thread {
 		try {
 			Thread.sleep(sleepTime);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -264,6 +272,26 @@ public class Processor extends Thread {
 		// peer.backup(filePath, desiredRepDegree);
 		// backupChunk(tmp.getFileID(), byte[] chunkData, tmp.getChunkNumber(),
 		// desiredRepDegree, "1.0");
+
+		// if not received putChunk, launch
+		FileID fileId = new FileID();
+		fileId.setID(tmp.getFileID());
+
+		String dirPath;
+		try {
+			dirPath = Extra.createDirectory(FileHandler.BACKUP_FOLDER_NAME);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+		FileHandler fileHandler = new FileHandler();
+		try {
+			byte[] chunkBody = fileHandler.loadChunkBody(tmp);
+			new BackupProtocol(Peer.getInstance()).backupChunk(fileId, chunkBody, tmp.getChunkNumber(), desiredRepDegree, "1.0");
+		} catch (SocketException | InterruptedException | ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public String getMessageString() {

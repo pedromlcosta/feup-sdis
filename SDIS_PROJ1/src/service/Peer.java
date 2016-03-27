@@ -8,7 +8,6 @@ import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.Map.Entry;
 
 import channels.MCReceiver;
 import channels.MDBReceiver;
@@ -28,7 +27,7 @@ public class Peer implements Invocation {
 		return instance;
 	}
 
-	private HashMap<String, ArrayList<ChunkID>> stored;
+	private ArrayList<ChunkID> stored;
 	// private HashMap<ChunkID, Chunk> stored;
 	private HashMap<String, FileID> filesSent;
 
@@ -45,7 +44,7 @@ public class Peer implements Invocation {
 	HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 
 	public Peer() {
-		stored = new HashMap<String, ArrayList<ChunkID>>();
+		stored = new ArrayList<ChunkID>();
 		filesSent = new HashMap<String, FileID>();
 		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
 	}
@@ -77,19 +76,15 @@ public class Peer implements Invocation {
 
 	// Methods
 
-	public HashMap<String, ArrayList<ChunkID>> getStored() {
+	public ArrayList<ChunkID> getStored() {
 		return stored;
 	}
 
-	public void addChunk(String file, ChunkID id) {
-		ArrayList<ChunkID> chunks;
-		if ((chunks = stored.get(file)) != null) {
-			if (chunks.isEmpty() || !chunks.contains(id))
-				chunks.add(id);
-		}
+	public void addChunk(ChunkID id) {
+		stored.add(id);
 	}
 
-	public void setStored(HashMap<String, ArrayList<ChunkID>> stored) {
+	public void setStored(ArrayList<ChunkID> stored) {
 		this.stored = stored;
 	}
 
@@ -242,12 +237,31 @@ public class Peer implements Invocation {
 	public void setServerID(String serverID) {
 		this.serverID = serverID;
 	}
-
-	public boolean hasChunkStored(String fileID) {
-		return stored.containsKey(fileID);
+	
+	public void removeStoredEntry(String fileId){
+		stored.remove(fileId);
 	}
 	
-	public void sortStored(){
+	public synchronized  void sortStored(){
 		Collections.sort(stored);
+	}
+	
+	public synchronized void removeFilesSentEntry(String filePath){
+		filesSent.remove(filePath);
+	}
+	
+	public synchronized void removeChunkPeers(ChunkID chunk){
+		serverAnsweredCommand.remove(chunk);
+	}
+	
+	public synchronized void removeChunkPeer(ChunkID chunk, Integer peer){
+		ArrayList<Integer> ids = serverAnsweredCommand.get(chunk);
+		if(ids != null){
+			ids.remove(peer);
+		}
+	}
+
+	public boolean hasChunkStored(String fileID) {
+		return false;
 	}
 }

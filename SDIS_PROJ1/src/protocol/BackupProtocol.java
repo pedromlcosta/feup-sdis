@@ -189,17 +189,18 @@ public class BackupProtocol extends Thread {
 		// TODO good idea?
 		Chunk chunk = new Chunk(new ChunkID(args[2], Integer.parseInt(args[2])), msgData);
 		ChunkID id = chunk.getId();
-		ArrayList<ChunkID> chunks;
-		HashMap<String, ArrayList<ChunkID>> storedHash = peer.getStored();
+		int index;
+		ArrayList<ChunkID> storedList = peer.getStored();
 		// TODO Check if condition makes sense, check here
-		synchronized (storedHash) {
-			if ((chunks = storedHash.get(fileID)) == null) {
+		synchronized (storedList) {
+			if ((index = storedList.indexOf(id)) < 0) {
+				// Not in the list so added
 				chunk.setDesiredRepDegree(putchunkMSG.getReplicationDeg());
 				chunk.setActualRepDegree(1);
-				peer.addChunk(fileID, chunk.getId());
+				peer.addChunk(chunk.getId());
 			} else {
-				chunks.add(chunk.getId());
-				chunk.increaseRepDegree();
+				// just need to increment Rep Degree
+				storedList.get(index).increaseRepDegree();
 			}
 		}
 
