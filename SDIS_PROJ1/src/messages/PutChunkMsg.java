@@ -10,9 +10,9 @@ public class PutChunkMsg extends Message {
 		type = MESSAGE_TYPE.PUTCHUNK;
 	}
 
-	public PutChunkMsg(String[] messageFields) {
+	public PutChunkMsg(String[] messageFields, byte[] data) {
 		// type+args+body
-		if (messageFields.length < (N_ARGS + 2)) {
+		if (messageFields.length < (N_ARGS + 1)) {
 			System.out.println("Failed creating PutChunk message. Not enough fields");
 			return;
 		}
@@ -23,7 +23,7 @@ public class PutChunkMsg extends Message {
 									// just name+path+Last Modification FDate
 		chunkNo = Integer.parseInt(messageFields[4]);
 		replicationDeg = Integer.parseInt(messageFields[5]);
-		body = messageFields[6].getBytes();
+		body =data;
 	}
 
 	// PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg>
@@ -32,7 +32,7 @@ public class PutChunkMsg extends Message {
 
 		createHeader(args, N_ARGS, getPutchunk());
 		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER
-				+ MORE_THAN_1_SPACE + DREGREE_ARG + MSG_END;
+				+ MORE_THAN_1_SPACE + DREGREE_ARG + MSG_END_WITH_BODY;
 
 		return createMessageAux(data);
 

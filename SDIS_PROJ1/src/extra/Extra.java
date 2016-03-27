@@ -8,6 +8,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -42,5 +43,15 @@ public class Extra {
 
 		}
 		return path.toString();
+	}
+
+	public static String[] eraseEmpty(String[] toErase) {
+		ArrayList<String> toAdd = new ArrayList<String>();
+
+		for (String ele : toErase) {
+			if (!ele.isEmpty())
+				toAdd.add(ele);
+		}
+		return toAdd.toArray(new String[toAdd.size()]);
 	}
 }

@@ -8,9 +8,9 @@ public class RemovedMsg extends Message {
 		type = MESSAGE_TYPE.REMOVED;
 	}
 
-	public RemovedMsg(String[] messageFields) {
+	public RemovedMsg(String[] messageFields, byte[] data) {
 		// type+args
-		if (messageFields.length < (N_ARGS + 1)) {
+		if (messageFields.length < (N_ARGS  )) {
 			System.out.println("Failed creating Remove message. Not enough fields");
 			return;
 		}
@@ -25,7 +25,7 @@ public class RemovedMsg extends Message {
 
 		createHeader(args, N_ARGS, getRemoved());
 
-		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER + MSG_END;
+		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER + MSG_END_WITHOUT_BODY;
 
 		return createMessageAux(data);
 	}

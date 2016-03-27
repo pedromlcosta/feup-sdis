@@ -8,9 +8,9 @@ public class StoredMsg extends Message {
 		type = MESSAGE_TYPE.STORED;
 	}
 
-	public StoredMsg(String[] messageFields) {
+	public StoredMsg(String[] messageFields, byte[] data) {
 		// type+args
-		if (messageFields.length < (N_ARGS + 1)) {
+		if (messageFields.length < (N_ARGS)) {
 			System.out.println("Failed creating Stored message. Not enough fields");
 			return;
 		}
@@ -24,7 +24,7 @@ public class StoredMsg extends Message {
 	public boolean createMessage(byte[] data, String... args) {
 
 		createHeader(args, N_ARGS, getStored());
-		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER + MSG_END;
+		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER + MSG_END_WITHOUT_BODY;
 		return createMessageAux(data);
 
 	}

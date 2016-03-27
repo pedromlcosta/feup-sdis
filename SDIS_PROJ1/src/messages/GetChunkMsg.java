@@ -9,9 +9,9 @@ public class GetChunkMsg extends Message {
 		type = MESSAGE_TYPE.GETCHUNK;
 	}
 
-	public GetChunkMsg(String[] messageFields) {
+	public GetChunkMsg(String[] messageFields, byte[] data) {
 		// args+body
-		if (messageFields.length < (N_ARGS + 1)) {
+		if (messageFields.length < (N_ARGS  )) {
 			System.out.println("Failed creating GetChunk message. Not enough fields");
 			return;
 		}
@@ -25,7 +25,7 @@ public class GetChunkMsg extends Message {
 	public boolean createMessage(byte[] data, String... args) {
 
 		createHeader(args, N_ARGS, getGetchunk());
-		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER + MSG_END;
+		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER + MSG_END_WITHOUT_BODY;
 		return createMessageAux(data);
 	}
 }

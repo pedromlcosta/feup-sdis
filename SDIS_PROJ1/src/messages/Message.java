@@ -4,6 +4,8 @@ package messages;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import extra.Extra;
+
 public class Message {
 
 	protected static final String GETCHUNK = "GETCHUNK";
@@ -27,12 +29,13 @@ public class Message {
 	final String MIDDLE_ARGS = "(?:\\w+)";
 	final String CHUNK_NUMBER = "\\d{1,6}";
 	final String DREGREE_ARG = "(?:\\d)";
-	final String MSG_END = " *" + EOL + EOL + ".*";
+	final String MSG_END_WITHOUT_BODY = " *" + EOL + EOL;
+	final String MSG_END_WITH_BODY = MSG_END_WITHOUT_BODY + ".*";
 	// protected final String VALIDATE_MSG_Part1 = "(?:\\w+ +){";
 
 	// protected final String VALIDATE_MSG_Part2 = "}\\w+ *" + EOL + EOL + ".*";
-	protected final String PATTERN = " |" + (EOL + EOL);
-	protected String messageToSend = "";
+	public final static String PATTERN = " *";
+	String messageToSend = "";
 
 	// Message attributes
 	MESSAGE_TYPE type;
@@ -52,15 +55,16 @@ public class Message {
 	// CHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
 	// DELETE <Version> <SenderId> <FileId> <CRLF><CRLF>
 	// REMOVED <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
-	public synchronized String[] parseMessage(String Message) {
+	public synchronized String[] parseHeader(String header) {
 		Pattern pattern = Pattern.compile(PATTERN);
-		String[] match = pattern.split(Message, -2);
+		String[] match = pattern.split(header, -2);
+
 		// for (String a : match) {
 		// System.out.println("Print: " + a);
 		//
 		// }
-		System.out.println(new String(match[4].getBytes()));
-		return match;
+
+		return Extra.eraseEmpty(match);
 	}
 
 	public Message() {

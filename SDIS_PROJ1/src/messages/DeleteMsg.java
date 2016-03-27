@@ -8,9 +8,9 @@ public class DeleteMsg extends Message {
 		type = MESSAGE_TYPE.DELETE;
 	}
 
-	public DeleteMsg(String[] messageFields) {
+	public DeleteMsg(String[] messageFields, byte[] data) {
 		// args+body
-		if (messageFields.length < (N_ARGS + 1)) {
+		if (messageFields.length < (N_ARGS )) {
 			System.out.println("Failed creating Stored message. Not enough fields");
 			return;
 		}
@@ -23,7 +23,7 @@ public class DeleteMsg extends Message {
 	public boolean createMessage(byte[] data, String... args) {
 
 		createHeader(args, N_ARGS, getDelete());
-		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MSG_END;
+		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MSG_END_WITHOUT_BODY;
 		return createMessageAux(data);
 
 	}

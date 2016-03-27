@@ -25,9 +25,6 @@ public class BackupProtocol extends Thread {
 
 	private static final int SLEEP_TIME = 401;
 	private static final int INITIAL_WAITING_TIME = 1;
-	// PUTCHUNK message -> MDB channel
-	// STORED message -> MC channel random delay of 0 to 400 ms before sending
-	// message
 	// A peer must never store the chunks of its own files.
 	private Peer peer;
 	private String fileName;
@@ -46,7 +43,6 @@ public class BackupProtocol extends Thread {
 	}
 
 	// TODO check version && multiple case | Check as object or dataMember |
-	// Why? it does not make much sense the run being this
 	public void run() {
 		FileHandler split = new FileHandler();
 		split.changeFileToSplit(fileName);
@@ -82,8 +78,7 @@ public class BackupProtocol extends Thread {
 
 			} while (chunk.length > 0 && checkNChunks(fileID, chunkNumber));
 
-			// Empty body message when the file has a size that is multiple of
-			// the ChunkSize
+			// Empty body when the file has a size multiple of the ChunkSize
 			if (fileID.isMultiple()) {
 				chunkNumber++;
 				fileID.setnChunks(chunkNumber);
@@ -154,8 +149,7 @@ public class BackupProtocol extends Thread {
 					int size = serverWhoAnswered.size();
 					if (chunkToSend.getDesiredRepDegree() == size) {
 						chunkToSend.setActualRepDegree(size);
-						// TODO delete when System.out.println is also
-						// deleted
+						// TODO delete with System.out.println
 						elapsedTime = -1;
 						break;
 					}
@@ -181,7 +175,7 @@ public class BackupProtocol extends Thread {
 			return;
 		}
 		String fileID = putchunkMSG.getFileId();
-	
+
 		// Version
 		args[0] = getVersion();
 		// SenderID

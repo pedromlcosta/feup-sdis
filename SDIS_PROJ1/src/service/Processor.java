@@ -31,38 +31,41 @@ public class Processor extends Thread {
 																					// milliseconds
 	private String messageString;
 	private Message msg;
+	private byte[] messageBody = null;
 
 	public Processor(String messageString) {
 		this.messageString = messageString;
 	}
 
 	public Processor(String header, byte[] body) {
+		this.messageString = header;
+		this.messageBody = body;
 	}
 
 	public void run() {
 		// HANDLE MESSAGES HERE
 		if (msg != null && messageString != null) {
-			String[] messageFields = msg.parseMessage(messageString);
+			String[] messageFields = msg.parseHeader(messageString);
 			messageString = ""; // Empty, so as not to fill unnecessary space
 
 			switch (messageFields[0]) {
 			case "PUTCHUNK":
-				msg = new PutChunkMsg(messageFields);
+				msg = new PutChunkMsg(messageFields,messageBody);
 
 				// Unreserve the now unneeded array space, while the processor
 				// handles the message
 				messageFields = null;
-				reclaimCheck(msg.getFileId(),msg.getChunkNo());
+				reclaimCheck(msg.getFileId(), msg.getChunkNo());
 				putChunkHandler();
 				break;
 			case "STORED":
-				msg = new StoredMsg(messageFields);
+				msg = new StoredMsg(messageFields,messageBody);
 
 				messageFields = null;
 				storedHandler();
 				break;
 			case "GETCHUNK":
-				msg = new GetChunkMsg(messageFields);
+				msg = new GetChunkMsg(messageFields,messageBody);
 
 				messageFields = null;
 				try {
@@ -74,19 +77,19 @@ public class Processor extends Thread {
 				}
 				break;
 			case "CHUNK":
-				msg = new ChunkMsg(messageFields);
+				msg = new ChunkMsg(messageFields,messageBody);
 
 				messageFields = null;
 				chunkHandler();
 				break;
 			case "DELETE":
-				msg = new DeleteMsg(messageFields);
+				msg = new DeleteMsg(messageFields,messageBody);
 
 				messageFields = null;
 				deleteHandler();
 				break;
 			case "REMOVED":
-				msg = new RemovedMsg(messageFields);
+				msg = new RemovedMsg(messageFields,messageBody);
 
 				messageFields = null;
 				removeHandler();
@@ -98,11 +101,11 @@ public class Processor extends Thread {
 	}
 
 	private int reclaimCheck(String fileId, int chunkNo) {
-		
-		ChunkID chunk = new ChunkID(fileId,chunkNo);
+
+		ChunkID chunk = new ChunkID(fileId, chunkNo);
 		int index = waitLookup.indexOf(chunk);
-		
-		if(index != -1)
+
+		if (index != -1)
 			waitLookup.remove(index);
 		return index;
 	}
@@ -117,8 +120,8 @@ public class Processor extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		
-		//TODO rui please check this is done well
+
+		// TODO rui please check this is done well
 		ArrayList<ChunkID> chunks = Peer.getInstance().getStored().get(fileId);
 		synchronized (chunks) {
 			if (chunks != null && !chunks.isEmpty())
@@ -226,23 +229,23 @@ public class Processor extends Thread {
 	}
 
 	private void removeHandler() {
-		
+
 		Peer peer = Peer.getInstance();
-		//check if chunkId exist in database
+		// check if chunkId exist in database
 		ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
 		int index = peer.getStored().indexOf(tmp);
-		if(index==-1)
+		if (index == -1)
 			return;
-		
-		//update actualRepDegree
+
+		// update actualRepDegree
 		peer.getStored().get(index).decreaseRepDegree();
-		
+
 		int actualRepDegree = peer.getStored().get(index).getActualRepDegree();
 		int desiredRepDegree = peer.getStored().get(index).getDesiredRepDegree();
-		
-		if(desiredRepDegree < actualRepDegree)
+
+		if (desiredRepDegree < actualRepDegree)
 			return;
-		//sleep between 0 to 400 ms
+		// sleep between 0 to 400 ms
 		waitLookup.add(tmp);
 		int sleepTime = new Random().nextInt(MAX_WAIT);
 		try {
@@ -251,15 +254,16 @@ public class Processor extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
-		//if launch is -1, mean that chunk has already gone through putChunk
-		int launch = reclaimCheck(tmp.getFileID(),tmp.getChunkNumber());
-		if(launch==-1)
+
+		// if launch is -1, mean that chunk has already gone through putChunk
+		int launch = reclaimCheck(tmp.getFileID(), tmp.getChunkNumber());
+		if (launch == -1)
 			return;
-		
-		//if not received putChunk, launch
-		//peer.backup(filePath, desiredRepDegree);
-		//backupChunk(tmp.getFileID(), byte[] chunkData, tmp.getChunkNumber(), desiredRepDegree, "1.0");
+
+		// if not received putChunk, launch
+		// peer.backup(filePath, desiredRepDegree);
+		// backupChunk(tmp.getFileID(), byte[] chunkData, tmp.getChunkNumber(),
+		// desiredRepDegree, "1.0");
 	}
 
 	public String getMessageString() {
@@ -280,6 +284,26 @@ public class Processor extends Thread {
 
 	public long getGETCHUNK_WAITING_NANO() {
 		return GETCHUNK_WAITING_NANO;
+	}
+
+	public static ArrayList<ChunkID> getWaitLookup() {
+		return waitLookup;
+	}
+
+	public static void setWaitLookup(ArrayList<ChunkID> waitLookup) {
+		Processor.waitLookup = waitLookup;
+	}
+
+	public byte[] getMessageBody() {
+		return messageBody;
+	}
+
+	public void setMessageBody(byte[] messageBody) {
+		this.messageBody = messageBody;
+	}
+
+	public static int getMaxWait() {
+		return MAX_WAIT;
 	}
 
 }
