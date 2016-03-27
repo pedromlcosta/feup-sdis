@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
@@ -13,6 +14,7 @@ import channels.MDRReceiver;
 import chunk.Chunk;
 import chunk.ChunkID;
 import extra.Extra;
+import file.FileID;
 import messages.ChunkMsg;
 import messages.DeleteMsg;
 import messages.FileHandler;
@@ -109,6 +111,7 @@ public class Processor extends Thread {
 
 	private void deleteHandler() {
 
+		Peer peer = Peer.getInstance();
 		String fileId = msg.getFileId();
 		String dirPath = "";
 
@@ -118,19 +121,20 @@ public class Processor extends Thread {
 			e.printStackTrace();
 		}
 		
-		//TODO rui please check this is done well
-		ArrayList<ChunkID> chunks = Peer.getInstance().getStored().get(fileId);
+		ArrayList<ChunkID> chunks = peer.getStored();
 		synchronized (chunks) {
-			if (chunks != null && !chunks.isEmpty())
-				for (ChunkID chunk : chunks) {
-					String idToConfirm = chunk.getFileID();
-					// if chunk belongs to file delete chunk and stored
-					if (fileId.equals(idToConfirm)) {
-						File file = new File(dirPath + File.separator + idToConfirm + "_" + chunk.getChunkNumber());
-						file.delete();
-					}
-				}
-		}
+			for(Iterator<ChunkID> it = chunks.iterator();it.hasNext();){
+				ChunkID chunk = it.next();
+				 String idToConfirm = chunk.getFileID();
+				 //if chunk belongs to file delete chunk and stored
+				 if(fileId.equals(idToConfirm)){
+				 	File file = new File(dirPath + File.separator + fileId + "_" + chunk.getChunkNumber());
+				 	file.delete();
+				 	it.remove();
+				 	peer.removeChunkPeers(chunk);
+				 	}
+				 }
+			}
 	}
 
 	private void chunkHandler() {
@@ -234,6 +238,9 @@ public class Processor extends Thread {
 		if(index==-1)
 			return;
 		
+		//report loss of chunk
+		peer.removeChunkPeer(tmp, Integer.valueOf(msg.getSenderID()));
+		
 		//update actualRepDegree
 		peer.getStored().get(index).decreaseRepDegree();
 		
@@ -248,7 +255,6 @@ public class Processor extends Thread {
 		try {
 			Thread.sleep(sleepTime);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		
@@ -258,8 +264,24 @@ public class Processor extends Thread {
 			return;
 		
 		//if not received putChunk, launch
-		//peer.backup(filePath, desiredRepDegree);
-		//backupChunk(tmp.getFileID(), byte[] chunkData, tmp.getChunkNumber(), desiredRepDegree, "1.0");
+		FileID fileId = new FileID();
+		fileId.setID(tmp.getFileID());
+		
+		String dirPath;
+		try {
+			dirPath = Extra.createDirectory(FileHandler.BACKUP_FOLDER_NAME);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		FileHandler fileHandler = new FileHandler();	
+		try {
+			byte[] chunkBody = fileHandler.loadChunkBody(tmp);
+			new BackupProtocol(Peer.getInstance()).backupChunk(fileId,chunkBody, tmp.getChunkNumber(), desiredRepDegree, "1.0");
+		} catch (SocketException | InterruptedException | ClassNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 	public String getMessageString() {

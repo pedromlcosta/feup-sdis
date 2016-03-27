@@ -18,6 +18,9 @@ public class FileID {
 	private boolean multiple = false;
 	private ArrayList<Chunk> fileChunks = new ArrayList<Chunk>();
 	
+	public FileID(){
+		
+	}
 	
 	public FileID(String fileName) {
 		// TODO multiple Nchunks bellow

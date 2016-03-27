@@ -3,6 +3,7 @@ package protocol;
 import java.net.DatagramPacket;
 
 import channels.MCReceiver;
+import chunk.ChunkID;
 import file.FileID;
 import messages.DeleteMsg;
 import messages.Message;
@@ -45,6 +46,13 @@ public class DeleteProtocol extends Thread {
 			nMessagesSent++;
 		}
 		
-		//TODO remove file from filesSent?
+		
+		//delete
+		peer.removeFilesSentEntry(filePath);	
+		ChunkID chunk;
+		for(int i=0; i < file.getnChunks(); i++){
+			chunk = new ChunkID(file.getID(),i);
+			peer.removeChunkPeers(chunk);
+		}
 	}
 }

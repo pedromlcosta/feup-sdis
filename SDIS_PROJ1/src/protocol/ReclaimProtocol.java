@@ -34,27 +34,27 @@ public class ReclaimProtocol extends Thread {
 			e.printStackTrace();
 		}
 		
-		Iterator<ChunkID> it= Peer.getInstance().getStored().iterator();
+		Iterator<ChunkID> it = Peer.getInstance().getStored().iterator();
 		
-		while(this.amountReclaimed < this.reclaimSpace){
-			if(it.hasNext()){
-				ChunkID chunk = it.next();
-				File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
-				
-				// create message
-				Message msg = new DeleteMsg();
+		while(this.amountReclaimed < this.reclaimSpace && it.hasNext()){
+			ChunkID chunk = it.next();
+			File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
+			
+			// create message
+			Message msg = new DeleteMsg();
 
-				String[] args = { "1.0",  peer.getServerID(), chunk.getFileID(), Integer.toString(chunk.getChunkNumber())};
-				msg.createMessage(null, args);
+			String[] args = { "1.0",  peer.getServerID(), chunk.getFileID(), Integer.toString(chunk.getChunkNumber())};
+			msg.createMessage(null, args);
 
-				MCReceiver mc = peer.getControlChannel();
-				DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
-				mc.writePacket(msgPacket);
+			MCReceiver mc = peer.getControlChannel();
+			DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
+			mc.writePacket(msgPacket);
+			
+			file.delete();
+			it.remove();
+			peer.removeChunkPeers(chunk);
 				
-				file.delete();
-				
-				//TODO do wait for others peers response here?
-			}
+			this.amountReclaimed += file.length();
 		}
 	}
 }
