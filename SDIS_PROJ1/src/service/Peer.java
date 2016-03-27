@@ -237,31 +237,31 @@ public class Peer implements Invocation {
 	public void setServerID(String serverID) {
 		this.serverID = serverID;
 	}
-	
-	public void removeStoredEntry(String fileId){
+
+	public void removeStoredEntry(String fileId) {
 		stored.remove(fileId);
 	}
-	
-	public synchronized  void sortStored(){
+
+	public synchronized void sortStored() {
 		Collections.sort(stored);
 	}
-	
-	public synchronized void removeFilesSentEntry(String filePath){
+
+	public synchronized void removeFilesSentEntry(String filePath) {
 		filesSent.remove(filePath);
 	}
-	
-	public synchronized void removeChunkPeers(ChunkID chunk){
+
+	public synchronized void removeChunkPeers(ChunkID chunk) {
 		serverAnsweredCommand.remove(chunk);
 	}
-	
-	public synchronized void removeChunkPeer(ChunkID chunk, Integer peer){
+
+	public synchronized void removeChunkPeer(ChunkID chunk, Integer peer) {
 		ArrayList<Integer> ids = serverAnsweredCommand.get(chunk);
-		if(ids != null){
+		if (ids != null) {
 			ids.remove(peer);
 		}
 	}
 
-	public boolean hasChunkStored(String fileID) {
-		return false;
+	public boolean hasChunkStored(ChunkID id) {
+		return stored.contains(id);
 	}
 }

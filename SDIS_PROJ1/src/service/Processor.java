@@ -166,7 +166,7 @@ public class Processor extends Thread {
 		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
 		MDRReceiver restore = Peer.getInstance().getRestoreChannel();
 		FileHandler fileHandler = new FileHandler();
-		if (Peer.getInstance().hasChunkStored(chunkID.getFileID())) {
+		if (Peer.getInstance().hasChunkStored(chunkID)) {
 
 			// Start waiting for chunks with this ID
 			restore.expectingForeignChunk(chunkID, true);

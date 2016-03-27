@@ -59,11 +59,6 @@ public class Message {
 		Pattern pattern = Pattern.compile(PATTERN);
 		String[] match = pattern.split(header, -2);
 
-		// for (String a : match) {
-		// System.out.println("Print: " + a);
-		//
-		// }
-
 		return Extra.eraseEmpty(match);
 	}
 
