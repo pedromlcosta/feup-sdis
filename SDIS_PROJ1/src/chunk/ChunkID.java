@@ -2,7 +2,7 @@ package chunk;
 
 import java.io.Serializable;
 
-public class ChunkID implements Serializable {
+public class ChunkID implements Serializable, Comparable<ChunkID> {
 	/**
 	 * 
 	 */
@@ -72,10 +72,25 @@ public class ChunkID implements Serializable {
 		actualRepDegree++;
 
 	}
+	
+	public void decreaseRepDegree() {
+		actualRepDegree--;
+
+	}
 
 	public String toString() {
 		return "\nFileID: " + this.fileID + " \nChunkNumber: " + this.chunkNumber + "\nDesired Degree: " + this.desiredRepDegree
 				+ "\nActual Degree: " + this.actualRepDegree + "\n";
+	}
+
+	@Override
+	public int compareTo(ChunkID chunk) {
+		
+		Integer spareRepDegree = this.actualRepDegree - this.desiredRepDegree;
+		Integer chunkSpareRepDegree = chunk.actualRepDegree - chunk.desiredRepDegree;
+		
+		return -spareRepDegree.compareTo(chunkSpareRepDegree);
+		
 	}
 
 }

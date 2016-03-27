@@ -25,6 +25,8 @@ import protocol.BackupProtocol;
 
 public class Processor extends Thread {
 
+	private static final int MAX_WAIT = 400;
+	private static ArrayList<ChunkID> waitLookup = new ArrayList<ChunkID>();
 	private final long GETCHUNK_WAITING_NANO = TimeUnit.MILLISECONDS.toNanos(400); // In
 																					// milliseconds
 	private String messageString;
@@ -50,6 +52,7 @@ public class Processor extends Thread {
 				// Unreserve the now unneeded array space, while the processor
 				// handles the message
 				messageFields = null;
+				reclaimCheck(msg.getFileId(),msg.getChunkNo());
 				putChunkHandler();
 				break;
 			case "STORED":
@@ -94,6 +97,16 @@ public class Processor extends Thread {
 		}
 	}
 
+	private int reclaimCheck(String fileId, int chunkNo) {
+		
+		ChunkID chunk = new ChunkID(fileId,chunkNo);
+		int index = waitLookup.indexOf(chunk);
+		
+		if(index != -1)
+			waitLookup.remove(index);
+		return index;
+	}
+
 	private void deleteHandler() {
 
 		String fileId = msg.getFileId();
@@ -101,8 +114,8 @@ public class Processor extends Thread {
 
 		try {
 			dirPath = Extra.createDirectory(FileHandler.BACKUP_FOLDER_NAME);
-		} catch (IOException e1) {
-			e1.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 
 		for (Iterator<ChunkID> it = Peer.getInstance().getStored().iterator(); it.hasNext();) {
@@ -210,7 +223,40 @@ public class Processor extends Thread {
 	}
 
 	private void removeHandler() {
-
+		
+		Peer peer = Peer.getInstance();
+		//check if chunkId exist in database
+		ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
+		int index = peer.getStored().indexOf(tmp);
+		if(index==-1)
+			return;
+		
+		//update actualRepDegree
+		peer.getStored().get(index).decreaseRepDegree();
+		
+		int actualRepDegree = peer.getStored().get(index).getActualRepDegree();
+		int desiredRepDegree = peer.getStored().get(index).getDesiredRepDegree();
+		
+		if(desiredRepDegree < actualRepDegree)
+			return;
+		//sleep between 0 to 400 ms
+		waitLookup.add(tmp);
+		int sleepTime = new Random().nextInt(MAX_WAIT);
+		try {
+			Thread.sleep(sleepTime);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		//if launch is -1, mean that chunk has already gone through putChunk
+		int launch = reclaimCheck(tmp.getFileID(),tmp.getChunkNumber());
+		if(launch==-1)
+			return;
+		
+		//if not received putChunk, launch
+		//peer.backup(filePath, desiredRepDegree);
+		//backupChunk(tmp.getFileID(), byte[] chunkData, tmp.getChunkNumber(), desiredRepDegree, "1.0");
 	}
 
 	public String getMessageString() {

@@ -42,6 +42,9 @@ public class DeleteProtocol extends Thread {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
+			nMessagesSent++;
 		}
+		
+		//TODO remove file from filesSent?
 	}
 }
