@@ -54,4 +54,17 @@ public class Extra {
 		}
 		return toAdd.toArray(new String[toAdd.size()]);
 	}
+	
+	public static boolean isNumeric(String str)  
+	{  
+	  try  
+	  {  
+	    double i = Integer.parseInt(str);  
+	  }  
+	  catch(NumberFormatException nfe)  
+	  {  
+	    return false;  
+	  }  
+	  return true;  
+	}
 }

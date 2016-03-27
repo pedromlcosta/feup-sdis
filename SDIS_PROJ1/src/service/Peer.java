@@ -1,5 +1,6 @@
 package service;
 
+import java.net.InetAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -13,6 +14,7 @@ import channels.MCReceiver;
 import channels.MDBReceiver;
 import channels.MDRReceiver;
 import chunk.ChunkID;
+import extra.Extra;
 import file.FileID;
 import protocol.BackupProtocol;
 import protocol.DeleteProtocol;
@@ -44,6 +46,11 @@ public class Peer implements Invocation {
 	HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 
 	public Peer() {
+		
+		controlChannel = new MCReceiver();
+		dataChannel = new MDBReceiver();
+		restoreChannel = new MDRReceiver();
+		
 		stored = new ArrayList<ChunkID>();
 		filesSent = new HashMap<String, FileID>();
 		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
@@ -55,25 +62,62 @@ public class Peer implements Invocation {
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
-				try {
-					System.out.println("YES");
-
+				try{
 					rmiRegistry.unbind(rmiName);
 					// UnicastRemoteObject.unexportObject(instance,true);
-				} catch (RemoteException | NotBoundException e) {
+				} catch (RemoteException  | NotBoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					System.out.println("Problem unbinding");
+				} catch (Exception e){
+					
 				}
 			}
 		});
 
-		System.out.println("Hi");
-		rmiName = args[0];
+		// Validate args and associate them with the variables
+		
+		if (!validArgs(args)){
+			return;
+		}
+		
+		try{
+			rmiName = args[0];
+			Peer.getInstance().serverID = args[0];
+			Peer.getInstance().controlChannel.setAddr(InetAddress.getByName(args[1]));
+			Peer.getInstance().controlChannel.setPort(Integer.parseInt(args[2]));
+			Peer.getInstance().dataChannel.setAddr(InetAddress.getByName(args[3]));
+			Peer.getInstance().dataChannel.setPort(Integer.parseInt(args[4]));
+			Peer.getInstance().restoreChannel.setAddr(InetAddress.getByName(args[5]));
+			Peer.getInstance().restoreChannel.setPort(Integer.parseInt(args[6]));
+		}catch(Exception e){
+			System.out.println("Invalid Args. Ports must be between 1 and 9999 and IP must be a valid multicast address.");
+			return;
+		}
+		
+		
 		registerRMI();
 
 	}
 
+	public static boolean validArgs(String[] args){
+		
+		if(args.length != 7){
+			System.out.println("Incorrect number of args.");
+			System.out.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port>");
+			return false;
+		}
+		
+		if(!Extra.isNumeric(args[0]) || !Extra.isNumeric(args[2]) || !Extra.isNumeric(args[4]) || !Extra.isNumeric(args[6])){
+			System.out.println("Server ID and ports must be valid numbers");
+			System.out.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port>");
+			return false;
+		}
+		
+		return true;
+		
+	}
+	
 	// Methods
 
 	public ArrayList<ChunkID> getStored() {

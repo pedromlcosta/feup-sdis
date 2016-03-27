@@ -5,6 +5,10 @@ import java.net.InetAddress;
 
 public class MDBReceiver extends ReceiverServer {
 
+	public MDBReceiver(){
+		
+	}
+	
 	public MDBReceiver(String[] args) throws NumberFormatException, IOException {
 		super();
 	}

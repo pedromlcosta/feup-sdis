@@ -16,6 +16,10 @@ public class MDRReceiver extends ReceiverServer {
 	private volatile HashMap<String, ArrayList<Chunk> > restoreChunksReceived = new  HashMap<String, ArrayList<Chunk> >();
 	private volatile HashMap<ChunkID, Boolean> foreignChunksReceived = new HashMap<ChunkID, Boolean>();
 	
+	public MDRReceiver(){
+		
+	}
+	
 	public MDRReceiver(String[] args) throws NumberFormatException, IOException {
 		super();
 	}

@@ -182,7 +182,7 @@ public class ReceiverServer extends Thread {
 		return addr;
 	}
 
-	public void setAddr(InetAddress addr) {
+	public void setAddr(InetAddress addr) throws Exception{
 		this.addr = addr;
 	}
 
@@ -190,7 +190,7 @@ public class ReceiverServer extends Thread {
 		return port;
 	}
 
-	public void setPort(int port) {
+	public void setPort(int port) throws Exception{
 		this.port = port;
 	}
 
