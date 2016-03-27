@@ -34,7 +34,7 @@ public class Message {
 	// protected final String VALIDATE_MSG_Part1 = "(?:\\w+ +){";
 
 	// protected final String VALIDATE_MSG_Part2 = "}\\w+ *" + EOL + EOL + ".*";
-	public final static String PATTERN = " *";
+	public final static String PATTERN = " ";
 	String messageToSend = "";
 
 	// Message attributes
@@ -45,6 +45,7 @@ public class Message {
 	int chunkNo;
 	int replicationDeg;
 	byte[] body;
+
 	String validateRegex;
 
 	// TODO check body with string and non ascii
@@ -58,6 +59,8 @@ public class Message {
 	public synchronized String[] parseHeader(String header) {
 		Pattern pattern = Pattern.compile(PATTERN);
 		String[] match = pattern.split(header, -2);
+		for (String a : Extra.eraseEmpty(match))
+			System.out.println("Print: " + a);
 
 		return Extra.eraseEmpty(match);
 	}
@@ -88,34 +91,13 @@ public class Message {
 			return false;
 		}
 	}
-	// public boolean createHeader(MESSAGE_TYPE type, String... args) {
-	//
-	// if (args.length > 0) {
-	//
-	// switch (type) {
-	// case GETCHUNK:
-	// return createHeaderAux(args, 4, GETCHUNK);
-	// case CHUNK:
-	// return createHeaderAux(args, 4, CHUNK);
-	// case DELETE:
-	// return createHeaderAux(args, 3, DELETE);
-	// case REMOVED:
-	// return createHeaderAux(args, 4, REMOVED);
-	// case PUTCHUNK:
-	// return createHeaderAux(args, 5, PUTCHUNK);
-	// case STORED:
-	// return createHeaderAux(args, 4, STORED);
-	//
-	// }
-	// }
-	// return false;
-	// }
 
 	public boolean validateMsg(String s) {
 
 		System.out.println(validateRegex);
 		Pattern p = Pattern.compile(validateRegex);
 		Matcher m = p.matcher(s);
+		System.out.println(s);
 		return m.matches();
 	}
 
@@ -151,25 +133,25 @@ public class Message {
 		this.setMessageToSend("");
 	}
 
-	// From here there are only gets and sets
-	// TODO 2 EOL are needed
 	public byte[] getMessageData() {
-		Pattern pattern = Pattern.compile(EOL + EOL);
-		String[] match = pattern.split(getMessageToSend(), -2);
-
-		return match[1].getBytes();
-
+		return body;
 	}
 
+	// TODO check
 	public byte[] getMessageBytes() {
 
-		if (messageToSend != null)
-			return messageToSend.getBytes();
-		else {
-			System.out.println("MESSAGE NULL");
-			System.out.println(messageToSend);
-			return null;
+		byte[] headerBytes = messageToSend.getBytes();
+		byte[] message;
+		if (body != null) {
+			message = new byte[body.length + headerBytes.length];
+			System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
+			System.arraycopy(body, 0, message, headerBytes.length, body.length);
+		} else {
+			message = new byte[headerBytes.length];
+			System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
 		}
+
+		return message;
 	}
 
 	public String getEOL() {

@@ -10,7 +10,7 @@ public class RemovedMsg extends Message {
 
 	public RemovedMsg(String[] messageFields, byte[] data) {
 		// type+args
-		if (messageFields.length < (N_ARGS  )) {
+		if (messageFields.length < (N_ARGS)) {
 			System.out.println("Failed creating Remove message. Not enough fields");
 			return;
 		}
@@ -18,14 +18,20 @@ public class RemovedMsg extends Message {
 		senderID = messageFields[2];
 		fileId = messageFields[3];
 		chunkNo = Integer.parseInt(messageFields[4]);
+		body = null;
 	}
 
 	// REMOVED <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
 	public boolean createMessage(byte[] data, String... args) {
-
+		// Does not have a body
+		if (data != null) {
+			System.out.println("Mensagem nao valida");
+			return false;
+		}
 		createHeader(args, N_ARGS, getRemoved());
 
-		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER + MSG_END_WITHOUT_BODY;
+		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER
+				+ MSG_END_WITHOUT_BODY;
 
 		return createMessageAux(data);
 	}

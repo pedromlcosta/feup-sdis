@@ -12,7 +12,7 @@ public class PutChunkMsg extends Message {
 
 	public PutChunkMsg(String[] messageFields, byte[] data) {
 		// type+args+body
-		if (messageFields.length < (N_ARGS + 1)) {
+		if (messageFields.length != (N_ARGS + 1)) {
 			System.out.println("Failed creating PutChunk message. Not enough fields");
 			return;
 		}
@@ -23,7 +23,7 @@ public class PutChunkMsg extends Message {
 									// just name+path+Last Modification FDate
 		chunkNo = Integer.parseInt(messageFields[4]);
 		replicationDeg = Integer.parseInt(messageFields[5]);
-		body =data;
+		body = data;
 	}
 
 	// PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg>

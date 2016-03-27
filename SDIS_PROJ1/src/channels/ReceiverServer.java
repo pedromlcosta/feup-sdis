@@ -55,10 +55,11 @@ public class ReceiverServer extends Thread {
 				if (receivedMessage[i] == '\r' && receivedMessage[i + 1] == '\n')
 					if (receivedMessage[i + 2] == '\r' && receivedMessage[i + 3] == '\n') {
 						header = new String(Arrays.copyOf(receivedMessage, i));
-						body = Arrays.copyOfRange(receivedMessage, i, receivedMessage.length);
+						body = Arrays.copyOfRange(receivedMessage, i + 4, receivedMessage.length);
 						break;
 					}
 			}
+
 			// System.out.println(receivedString.length() + " " +
 			// receivedString.isEmpty() + " L:" + receivedString);
 			if (header.length() > 0) {
@@ -182,7 +183,7 @@ public class ReceiverServer extends Thread {
 		return addr;
 	}
 
-	public void setAddr(InetAddress addr) throws Exception{
+	public void setAddr(InetAddress addr) throws Exception {
 		this.addr = addr;
 	}
 
@@ -190,7 +191,7 @@ public class ReceiverServer extends Thread {
 		return port;
 	}
 
-	public void setPort(int port) throws Exception{
+	public void setPort(int port) throws Exception {
 		this.port = port;
 	}
 
