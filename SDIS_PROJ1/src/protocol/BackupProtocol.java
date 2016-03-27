@@ -43,6 +43,9 @@ public class BackupProtocol extends Thread {
 	}
 
 	// TODO check version && multiple case | Check as object or dataMember |
+	/**
+	 * 
+	 */
 	public void run() {
 		FileHandler split = new FileHandler();
 		split.changeFileToSplit(fileName);
@@ -61,6 +64,11 @@ public class BackupProtocol extends Thread {
 		System.out.println("End of backupFile");
 	}
 
+	/**
+	 * 
+	 * @param split
+	 * @param fileID
+	 */
 	public void backupFile(FileHandler split, FileID fileID) {
 		byte[] chunk;
 		int currentPos;
@@ -94,6 +102,16 @@ public class BackupProtocol extends Thread {
 	}
 
 	// TODO most 5 PUTCHUNK messages per chunk. check about server ID
+	/**
+	 * 
+	 * @param file
+	 * @param chunkData
+	 * @param chunkNumber
+	 * @param wantedRepDegree
+	 * @param version
+	 * @throws SocketException
+	 * @throws InterruptedException
+	 */
 	public void backupChunk(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version) throws SocketException, InterruptedException {
 		Message msg = new PutChunkMsg();
 		int nMessagesSent = 0;
@@ -139,6 +157,13 @@ public class BackupProtocol extends Thread {
 
 	}
 
+	/**
+	 * 
+	 * @param chunkToSend
+	 * @param chunkToSendID
+	 * @param waitTime
+	 * @return
+	 */
 	public long waitForStoredMsg(Chunk chunkToSend, ChunkID chunkToSendID, long waitTime) {
 		long startTime = System.nanoTime();
 		long elapsedTime;
@@ -160,12 +185,16 @@ public class BackupProtocol extends Thread {
 	}
 
 	// 0 and 400 ms. delay
+	/**
+	 * 
+	 * @param putchunkMSG
+	 */
 	public void putChunkReceive(Message putchunkMSG) {
 		Message msg = new Message();
 		String dirPath = "";
 		String args[] = new String[4];
 		try {
-			dirPath = Extra.createDirectory(FileHandler.BACKUP_FOLDER_NAME);
+			dirPath = Extra.createDirectory(Peer.getInstance().getWorkingDirPath() + File.pathSeparator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -209,6 +238,12 @@ public class BackupProtocol extends Thread {
 
 	}
 
+	/**
+	 * 
+	 * @param dirPath
+	 * @param chunk
+	 * @param id
+	 */
 	public void writeChunk(String dirPath, Chunk chunk, ChunkID id) {
 		// Write Chunk
 		try {
@@ -226,6 +261,11 @@ public class BackupProtocol extends Thread {
 		}
 	}
 
+	/**
+	 * 
+	 * @param msg
+	 * @param args
+	 */
 	public void sendStoredMsg(Message msg, String[] args) {
 		// create message and packets
 		msg.createMessage(null, args);
@@ -242,6 +282,12 @@ public class BackupProtocol extends Thread {
 		peer.getControlChannel().writePacket(packet);
 	}
 
+	/**
+	 * 
+	 * @param fileID
+	 * @param chunkNumber
+	 * @return
+	 */
 	public boolean checkNChunks(FileID fileID, int chunkNumber) {
 		if (fileID.getnChunks() == chunkNumber)
 			return false;

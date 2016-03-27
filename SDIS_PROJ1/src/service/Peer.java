@@ -1,5 +1,7 @@
 package service;
 
+import java.io.File;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -15,6 +17,7 @@ import channels.MDRReceiver;
 import chunk.ChunkID;
 import extra.Extra;
 import file.FileID;
+import messages.FileHandler;
 import protocol.BackupProtocol;
 import protocol.DeleteProtocol;
 import protocol.ReclaimProtocol;
@@ -37,6 +40,7 @@ public class Peer implements Invocation {
 	private static Registry rmiRegistry;
 	private static String rmiName;
 	private Dispatcher commandDispatcher = new Dispatcher();
+	private String workingDirPath = System.getProperty("user.dir");
 	// TODO change names and check structures
 	// TODO servers that replay to command
 	// TODO check connection between channel an peers
@@ -49,6 +53,14 @@ public class Peer implements Invocation {
 
 		data = new PeerData();
 
+	}
+
+	public void createPeerFolder() {
+		try {
+			workingDirPath = Extra.createDirectory(getWorkingDirPath() + File.pathSeparator + serverID);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 	}
 
 	public static void main(String[] args) {
@@ -299,4 +311,21 @@ public class Peer implements Invocation {
 	public boolean hasChunkStored(ChunkID id) {
 		return data.getStored().contains(id);
 	}
+
+	public PeerData getData() {
+		return data;
+	}
+
+	public void setData(PeerData data) {
+		this.data = data;
+	}
+
+	public String getWorkingDirPath() {
+		return workingDirPath;
+	}
+
+	public void setWorkingDirPath(String workingDirPath) {
+		this.workingDirPath = workingDirPath;
+	}
+
 }
