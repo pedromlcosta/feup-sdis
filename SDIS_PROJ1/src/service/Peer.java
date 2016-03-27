@@ -28,7 +28,7 @@ public class Peer implements Invocation {
 		return instance;
 	}
 
-	private ArrayList<ChunkID> stored;
+	private HashMap<String, ArrayList<ChunkID>> stored;
 	// private HashMap<ChunkID, Chunk> stored;
 	private HashMap<String, FileID> filesSent;
 
@@ -45,7 +45,7 @@ public class Peer implements Invocation {
 	HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 
 	public Peer() {
-		stored = new ArrayList<ChunkID>();
+		stored = new HashMap<String, ArrayList<ChunkID>>();
 		filesSent = new HashMap<String, FileID>();
 		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
 	}
@@ -53,7 +53,7 @@ public class Peer implements Invocation {
 	public static void main(String[] args) {
 
 		// Load stuff
-	
+
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				try {
@@ -77,15 +77,19 @@ public class Peer implements Invocation {
 
 	// Methods
 
-	public ArrayList<ChunkID> getStored() {
+	public HashMap<String, ArrayList<ChunkID>> getStored() {
 		return stored;
 	}
 
-	public void addChunk(ChunkID id) {
-		stored.add(id);
+	public void addChunk(String file, ChunkID id) {
+		ArrayList<ChunkID> chunks;
+		if ((chunks = stored.get(file)) != null) {
+			if (chunks.isEmpty() || !chunks.contains(id))
+				chunks.add(id);
+		}
 	}
 
-	public void setStored(ArrayList<ChunkID> stored) {
+	public void setStored(HashMap<String, ArrayList<ChunkID>> stored) {
 		this.stored = stored;
 	}
 
@@ -238,9 +242,9 @@ public class Peer implements Invocation {
 	public void setServerID(String serverID) {
 		this.serverID = serverID;
 	}
-	
-	public boolean hasChunkStored(ChunkID chunkID){
-		return stored.contains(chunkID);
+
+	public boolean hasChunkStored(String fileID) {
+		return stored.containsKey(fileID);
 	}
 	
 	public void sortStored(){

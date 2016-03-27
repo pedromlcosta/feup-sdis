@@ -117,16 +117,19 @@ public class Processor extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		for (Iterator<ChunkID> it = Peer.getInstance().getStored().iterator(); it.hasNext();) {
-			ChunkID chunk = it.next();
-			String idToConfirm = chunk.getFileID();
-			// if chunk belongs to file delete chunk and stored
-			if (fileId.equals(idToConfirm)) {
-				File file = new File(dirPath + File.separator + idToConfirm + "_" + chunk.getChunkNumber());
-				file.delete();
-				it.remove();
-			}
+		
+		//TODO rui please check this is done well
+		ArrayList<ChunkID> chunks = Peer.getInstance().getStored().get(fileId);
+		synchronized (chunks) {
+			if (chunks != null && !chunks.isEmpty())
+				for (ChunkID chunk : chunks) {
+					String idToConfirm = chunk.getFileID();
+					// if chunk belongs to file delete chunk and stored
+					if (fileId.equals(idToConfirm)) {
+						File file = new File(dirPath + File.separator + idToConfirm + "_" + chunk.getChunkNumber());
+						file.delete();
+					}
+				}
 		}
 	}
 
@@ -156,7 +159,7 @@ public class Processor extends Thread {
 		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
 		MDRReceiver restore = Peer.getInstance().getRestoreChannel();
 		FileHandler fileHandler = new FileHandler();
-		if (Peer.getInstance().hasChunkStored(chunkID)) {
+		if (Peer.getInstance().hasChunkStored(chunkID.getFileID())) {
 
 			// Start waiting for chunks with this ID
 			restore.expectingForeignChunk(chunkID, true);
