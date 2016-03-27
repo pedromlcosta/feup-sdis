@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
+import extra.Extra;
+
 public class TestApp {
 
 	public static void main(String[] args) throws IOException {
@@ -82,7 +84,7 @@ public class TestApp {
 			System.out.println("Correct usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>. ");
 		}else{
 			// Verify peer_ap first
-			if (args[0] == null || !isNumeric(args[0])){
+			if (args[0] == null || !Extra.isNumeric(args[0])){
 				System.out.println("<peer_ap> must be a numeric value.");
 				System.out.println("Correct usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>. ");
 				return false;
@@ -99,7 +101,7 @@ public class TestApp {
 				//if(args[2].notValidFile) ??
 				
 				
-				if(!isNumeric(args[3])){
+				if(!Extra.isNumeric(args[3])){
 					System.out.println("Backup expects <opnd_2> to be a numeric value.");
 					System.out.println("Correct usage: java TestApp <peer_ap> BACKUP <filePath> <repDegree>. ");
 					return false;
@@ -131,7 +133,7 @@ public class TestApp {
 					return false;
 				}
 				
-				if(!isNumeric(args[2])){
+				if(!Extra.isNumeric(args[2])){
 					System.out.println("Reclaim expects <opnd_1> to be a numeric value.");
 					System.out.println("Correct usage: java TestApp <peer_ap> RECLAIM <space>. ");
 					return false;
@@ -147,17 +149,5 @@ public class TestApp {
 		return true;
 	}
 	
-	public static boolean isNumeric(String str)  
-	{  
-	  try  
-	  {  
-	    double i = Integer.parseInt(str);  
-	  }  
-	  catch(NumberFormatException nfe)  
-	  {  
-	    return false;  
-	  }  
-	  return true;  
-	}
 	
 }

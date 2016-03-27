@@ -6,6 +6,10 @@ import java.net.InetAddress;
 
 public class MCReceiver extends ReceiverServer {
 
+	public MCReceiver(){
+		
+	}
+	
 	public MCReceiver(String[] args) throws NumberFormatException, IOException {
 		super();
 	}

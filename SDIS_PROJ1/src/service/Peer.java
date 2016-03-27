@@ -1,18 +1,19 @@
 package service;
 
+import java.net.InetAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 
 import channels.MCReceiver;
 import channels.MDBReceiver;
 import channels.MDRReceiver;
 import chunk.ChunkID;
+import extra.Extra;
 import file.FileID;
 import protocol.BackupProtocol;
 import protocol.DeleteProtocol;
@@ -27,9 +28,7 @@ public class Peer implements Invocation {
 		return instance;
 	}
 
-	private ArrayList<ChunkID> stored;
-	// private HashMap<ChunkID, Chunk> stored;
-	private HashMap<String, FileID> filesSent;
+	private PeerData data;
 
 	private MCReceiver controlChannel;
 	private MDBReceiver dataChannel;
@@ -41,12 +40,15 @@ public class Peer implements Invocation {
 	// TODO change names and check structures
 	// TODO servers that replay to command
 	// TODO check connection between channel an peers
-	HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 
 	public Peer() {
-		stored = new ArrayList<ChunkID>();
-		filesSent = new HashMap<String, FileID>();
-		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
+
+		controlChannel = new MCReceiver();
+		dataChannel = new MDBReceiver();
+		restoreChannel = new MDRReceiver();
+
+		data = new PeerData();
+
 	}
 
 	public static void main(String[] args) {
@@ -56,52 +58,88 @@ public class Peer implements Invocation {
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				try {
-					System.out.println("YES");
-
 					rmiRegistry.unbind(rmiName);
 					// UnicastRemoteObject.unexportObject(instance,true);
 				} catch (RemoteException | NotBoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
 					System.out.println("Problem unbinding");
+				} catch (Exception e) {
+
 				}
 			}
 		});
 
-		System.out.println("Hi");
-		rmiName = args[0];
+		// Validate args and associate them with the variables
+
+		if (!validArgs(args)) {
+			return;
+		}
+
+		try {
+			rmiName = args[0];
+			Peer.getInstance().serverID = args[0];
+			Peer.getInstance().controlChannel.setAddr(InetAddress.getByName(args[1]));
+			Peer.getInstance().controlChannel.setPort(Integer.parseInt(args[2]));
+			Peer.getInstance().dataChannel.setAddr(InetAddress.getByName(args[3]));
+			Peer.getInstance().dataChannel.setPort(Integer.parseInt(args[4]));
+			Peer.getInstance().restoreChannel.setAddr(InetAddress.getByName(args[5]));
+			Peer.getInstance().restoreChannel.setPort(Integer.parseInt(args[6]));
+		} catch (Exception e) {
+			System.out.println("Invalid Args. Ports must be between 1 and 9999 and IP must be a valid multicast address.");
+			return;
+		}
+
 		registerRMI();
+
+	}
+
+	public static boolean validArgs(String[] args) {
+
+		if (args.length != 7) {
+			System.out.println("Incorrect number of args.");
+			System.out.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port>");
+			return false;
+		}
+
+		if (!Extra.isNumeric(args[0]) || !Extra.isNumeric(args[2]) || !Extra.isNumeric(args[4]) || !Extra.isNumeric(args[6])) {
+			System.out.println("Server ID and ports must be valid numbers");
+			System.out.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port>");
+			return false;
+		}
+
+		return true;
 
 	}
 
 	// Methods
 
 	public ArrayList<ChunkID> getStored() {
-		return stored;
+		return data.getStored();
 	}
 
 	public void addChunk(ChunkID id) {
-		stored.add(id);
+		data.addChunk(id);
 	}
 
 	public void setStored(ArrayList<ChunkID> stored) {
-		this.stored = stored;
+		data.setStored(stored);
 	}
 
 	public HashMap<String, FileID> getFilesSent() {
-		return filesSent;
+		return data.getFilesSent();
 	}
 
 	public void setFilesSent(HashMap<String, FileID> filesSent) {
-		this.filesSent = filesSent;
+		data.setFilesSent(filesSent);
 	}
 
 	public HashMap<ChunkID, ArrayList<Integer>> getAnsweredCommand() {
-		return serverAnsweredCommand;
+		return data.getServerAnsweredCommand();
 	}
 
 	public void setAnsweredCommand(HashMap<ChunkID, ArrayList<Integer>> answeredCommand) {
-		this.serverAnsweredCommand = answeredCommand;
+		data.setServerAnsweredCommand(answeredCommand);
 	}
 
 	public MCReceiver getControlChannel() {
@@ -219,11 +257,11 @@ public class Peer implements Invocation {
 	}
 
 	public HashMap<ChunkID, ArrayList<Integer>> getServerAnsweredCommand() {
-		return serverAnsweredCommand;
+		return data.getServerAnsweredCommand();
 	}
 
 	public void setServerAnsweredCommand(HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand) {
-		this.serverAnsweredCommand = serverAnsweredCommand;
+		data.setServerAnsweredCommand(serverAnsweredCommand);
 	}
 
 	public static void setInstance(Peer instance) {
@@ -239,29 +277,26 @@ public class Peer implements Invocation {
 	}
 
 	public void removeStoredEntry(String fileId) {
-		stored.remove(fileId);
+		data.removeStoredEntry(fileId);
 	}
 
 	public synchronized void sortStored() {
-		Collections.sort(stored);
+		data.sortStored();
 	}
 
 	public synchronized void removeFilesSentEntry(String filePath) {
-		filesSent.remove(filePath);
+		data.removeFilesSentEntry(filePath);
 	}
 
 	public synchronized void removeChunkPeers(ChunkID chunk) {
-		serverAnsweredCommand.remove(chunk);
+		data.removeChunkPeers(chunk);
 	}
 
 	public synchronized void removeChunkPeer(ChunkID chunk, Integer peer) {
-		ArrayList<Integer> ids = serverAnsweredCommand.get(chunk);
-		if (ids != null) {
-			ids.remove(peer);
-		}
+		data.removeChunkPeer(chunk, peer);
 	}
 
 	public boolean hasChunkStored(ChunkID id) {
-		return stored.contains(id);
+		return data.getStored().contains(id);
 	}
 }
