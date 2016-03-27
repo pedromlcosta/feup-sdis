@@ -10,6 +10,11 @@ import file.FileID;
 
 public class PeerData implements Serializable{
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3129093348473298612L;
+
 	private ArrayList<ChunkID> stored;
 	private HashMap<String, FileID> filesSent;
 	private HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
@@ -21,6 +26,31 @@ public class PeerData implements Serializable{
 		filesSent = new HashMap<String, FileID>();
 		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
 	}
+	
+	// GETTERS AND SETTERS
+	
+		public ArrayList<ChunkID> getStored() {
+			return stored;
+		}
+		public HashMap<ChunkID, ArrayList<Integer>> getServerAnsweredCommand() {
+			return serverAnsweredCommand;
+		}
+		public void setServerAnsweredCommand(
+				HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand) {
+			this.serverAnsweredCommand = serverAnsweredCommand;
+		}
+		public void setStored(ArrayList<ChunkID> stored) {
+			this.stored = stored;
+		}
+		public HashMap<String, FileID> getFilesSent() {
+			return filesSent;
+		}
+		public void setFilesSent(HashMap<String, FileID> filesSent) {
+			this.filesSent = filesSent;
+		}
+		
+	// SERIAL FUNCTIONS
+		
 	
 	// OTHER FUNCTIONS
 	
@@ -51,32 +81,12 @@ public class PeerData implements Serializable{
 		}
 	}
 
-	public boolean hasChunkStored(String fileID) {
-		return false;
+	public boolean hasChunkStored(ChunkID chunkID) {
+		return stored.contains(chunkID);
 	}
 	
 	
 	
-	// GETTERS AND SETTERS
 	
-	public ArrayList<ChunkID> getStored() {
-		return stored;
-	}
-	public HashMap<ChunkID, ArrayList<Integer>> getServerAnsweredCommand() {
-		return serverAnsweredCommand;
-	}
-	public void setServerAnsweredCommand(
-			HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand) {
-		this.serverAnsweredCommand = serverAnsweredCommand;
-	}
-	public void setStored(ArrayList<ChunkID> stored) {
-		this.stored = stored;
-	}
-	public HashMap<String, FileID> getFilesSent() {
-		return filesSent;
-	}
-	public void setFilesSent(HashMap<String, FileID> filesSent) {
-		this.filesSent = filesSent;
-	}
 
 }
