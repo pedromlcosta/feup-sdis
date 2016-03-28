@@ -19,6 +19,7 @@ import file.FileID;
 import messages.FileHandler;
 import messages.Message;
 import messages.PutChunkMsg;
+import messages.StoredMsg;
 import service.Peer;
 
 public class BackupProtocol extends Thread {
@@ -204,19 +205,16 @@ public class BackupProtocol extends Thread {
 	 * @param putchunkMSG
 	 */
 	public void putChunkReceive(Message putchunkMSG) {
-		Message msg = new Message();
+		Message msg = new StoredMsg();
 		String dirPath = "";
 		String args[] = new String[4];
 		try {
-			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.pathSeparator + FileHandler.BACKUP_FOLDER_NAME);
+			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
+			System.out.println(dirPath);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		if (Integer.parseInt(putchunkMSG.getSenderID()) == peer.getServerID()) {
-			System.out.println("Either the Msg was you tried to use the same server ");
-			System.out.println(msg.getMessageToSend());
-			return;
-		}
+
 		String fileID = putchunkMSG.getFileId();
 
 		// Version
@@ -227,10 +225,11 @@ public class BackupProtocol extends Thread {
 		args[2] = fileID;
 		// Chunk No
 		args[3] = Integer.toString(putchunkMSG.getChunkNo());
-		byte msgData[] = msg.getMessageData();
+		byte msgData[] = putchunkMSG.getMessageData();
 
 		// TODO good idea?
-		Chunk chunk = new Chunk(new ChunkID(args[2], Integer.parseInt(args[2])), msgData);
+		Chunk chunk = new Chunk(new ChunkID(fileID, putchunkMSG.getChunkNo()), msgData);
+		chunk.setDesiredRepDegree(putchunkMSG.getReplicationDeg());
 		ChunkID id = chunk.getId();
 		int index;
 		ArrayList<ChunkID> storedList = peer.getStored();
