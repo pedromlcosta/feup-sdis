@@ -43,7 +43,7 @@ public class ReclaimProtocol extends Thread {
 			// create message
 			Message msg = new DeleteMsg();
 
-			String[] args = { "1.0",  peer.getServerID(), chunk.getFileID(), Integer.toString(chunk.getChunkNumber())};
+			String[] args = { "1.0",  Integer.toString(peer.getServerID()), chunk.getFileID(), Integer.toString(chunk.getChunkNumber())};
 			msg.createMessage(null, args);
 
 			MCReceiver mc = peer.getControlChannel();

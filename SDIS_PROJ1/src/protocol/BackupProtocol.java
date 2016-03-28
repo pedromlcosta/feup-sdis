@@ -124,7 +124,7 @@ public class BackupProtocol extends Thread {
 		// createMessage
 		String[] args = new String[5];
 		args[0] = version;
-		args[1] = peer.getServerID();
+		args[1] = Integer.toString(peer.getServerID());
 		args[2] = file.getID();
 		args[3] = Integer.toString(chunkNumber);
 		args[4] = Integer.toString(wantedRepDegree);
@@ -194,11 +194,11 @@ public class BackupProtocol extends Thread {
 		String dirPath = "";
 		String args[] = new String[4];
 		try {
-			dirPath = Extra.createDirectory(Peer.getInstance().getPeerID() + File.pathSeparator + FileHandler.BACKUP_FOLDER_NAME);
+			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.pathSeparator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		if (putchunkMSG.getSenderID() == peer.getServerID()) {
+		if (Integer.parseInt(putchunkMSG.getSenderID()) == peer.getServerID()) {
 			System.out.println("Either the Msg was you tried to use the same server ");
 			System.out.println(msg.getMessageToSend());
 			return;
@@ -208,7 +208,7 @@ public class BackupProtocol extends Thread {
 		// Version
 		args[0] = getVersion();
 		// SenderID
-		args[1] = peer.getServerID();
+		args[1] = Integer.toString(peer.getServerID());
 		// FileID
 		args[2] = fileID;
 		// Chunk No

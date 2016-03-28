@@ -32,7 +32,7 @@ public class DeleteProtocol extends Thread {
 		Message msg = new DeleteMsg();
 		int nMessagesSent = 0;
 
-		msg.createMessage(null, "1.0", peer.getServerID(), file.getID());
+		msg.createMessage(null, "1.0", Integer.toString(peer.getServerID()), file.getID());
 
 		MCReceiver mc = peer.getControlChannel();
 		DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
