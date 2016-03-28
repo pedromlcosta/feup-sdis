@@ -110,7 +110,10 @@ public class Peer implements Invocation {
 			Peer.getInstance().restoreChannel.joinMulticastGroup();
 			Peer.getInstance().restoreChannel.createSocket();
 			Peer.getInstance().createPeerFolder();
-		} catch (Exception e) {
+		}catch(IOException e){
+			System.out.println("Couldn't bind IP:ports to peer");
+		}catch (Exception e) {
+			e.printStackTrace();
 			System.out.println("Invalid Args. Ports must be between 1 and 9999 and IP must be a valid multicast address.");
 			return;
 		}
