@@ -47,6 +47,7 @@ public class BackupProtocol extends Thread {
 	 * 
 	 */
 	public void run() {
+		System.out.println(fileName);
 		FileHandler split = new FileHandler();
 		split.changeFileToSplit(fileName);
 		FileID fileID = new FileID(fileName);
@@ -70,6 +71,7 @@ public class BackupProtocol extends Thread {
 	 * @param fileID
 	 */
 	public void backupFile(FileHandler split, FileID fileID) {
+		System.out.println("Backup Stuff");
 		byte[] chunk;
 		int currentPos;
 		int chunkNumber = 0;
@@ -80,8 +82,8 @@ public class BackupProtocol extends Thread {
 				currentPos = chunk.length;
 				// update Chunk Number
 				chunkNumber++;
+				System.out.println("Chunk Number: " + chunkNumber);
 				// Send putChunk msg
-				System.out.println(currentPos + "  " + chunkNumber);
 				backupChunk(fileID, chunk, chunkNumber, wantedRepDegree, version);
 
 			} while (chunk.length > 0 && checkNChunks(fileID, chunkNumber));
@@ -101,6 +103,18 @@ public class BackupProtocol extends Thread {
 		}
 	}
 
+	/**
+	 * 
+	 * @param fileID
+	 * @param chunkNumber
+	 * @return
+	 */
+	public boolean checkNChunks(FileID fileID, int chunkNumber) {
+		if (fileID.getnChunks() == chunkNumber)
+			return false;
+		return true;
+	}
+
 	// TODO most 5 PUTCHUNK messages per chunk. check about server ID
 	/**
 	 * 
@@ -113,6 +127,7 @@ public class BackupProtocol extends Thread {
 	 * @throws InterruptedException
 	 */
 	public void backupChunk(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version) throws SocketException, InterruptedException {
+		System.out.println("Backup Chunk");
 		Message msg = new PutChunkMsg();
 		int nMessagesSent = 0;
 		// Create Chunk
@@ -132,29 +147,28 @@ public class BackupProtocol extends Thread {
 
 		// Send Mensage
 		DatagramPacket msgPacket = peer.getDataChannel().createDatagramPacket(msg.getMessageBytes()); //
-
 		// TODO when should we clean ArrayList to avoid having "false positives"
 		HashMap<ChunkID, ArrayList<Integer>> seversAnswers = peer.getAnsweredCommand();
 		synchronized (seversAnswers) {
 			if (seversAnswers.containsKey(chunkToSendID)) { // Place
+				System.out.println("Adding chunk");
 				seversAnswers.put(chunkToSendID, new ArrayList<Integer>());
 			} else // Replace
 				seversAnswers.replace(chunkToSendID, new ArrayList<Integer>());
 		}
 		long waitTime = TimeUnit.SECONDS.toNanos(INITIAL_WAITING_TIME);
-
 		do {
+			System.out.println("Wait for STORED");
 			// send Message
 			peer.getDataChannel().writePacket(msgPacket);
 			nMessagesSent++;
-			long elapsedTime = waitForStoredMsg(chunkToSend, chunkToSendID, waitTime);
+			waitForStoredMsg(chunkToSend, chunkToSendID, waitTime);
 
-			System.out.println(elapsedTime);
-			System.out.println(nMessagesSent);
+			System.out.println("N Message: " + nMessagesSent + " N stored chunks: " + chunkToSend.getActualRepDegree());
 
 			waitTime *= 2;
 		} while (nMessagesSent < 5 && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
-
+		System.out.println("End Backup Of Chunk");
 	}
 
 	/**
@@ -280,18 +294,6 @@ public class BackupProtocol extends Thread {
 		}
 		// send message
 		peer.getControlChannel().writePacket(packet);
-	}
-
-	/**
-	 * 
-	 * @param fileID
-	 * @param chunkNumber
-	 * @return
-	 */
-	public boolean checkNChunks(FileID fileID, int chunkNumber) {
-		if (fileID.getnChunks() == chunkNumber)
-			return false;
-		return true;
 	}
 
 	public int checkMessagesReceivedForChunk(ChunkID chunkToSendID) {

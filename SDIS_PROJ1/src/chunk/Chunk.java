@@ -50,7 +50,7 @@ public class Chunk implements Serializable {
 	}
 
 	public int getActualRepDegree() {
-		return this.id.getDesiredRepDegree();
+		return this.id.getActualRepDegree();
 	}
 
 	public void setDesiredRepDegree(int replicationDeg) {
