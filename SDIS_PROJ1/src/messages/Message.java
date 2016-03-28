@@ -93,11 +93,8 @@ public class Message {
 	}
 
 	public boolean validateMsg(String s) {
-
-		System.out.println(validateRegex);
 		Pattern p = Pattern.compile(validateRegex);
 		Matcher m = p.matcher(s);
-		System.out.println(s);
 		return m.matches();
 	}
 
