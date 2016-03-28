@@ -46,8 +46,11 @@ public class Peer implements Invocation {
 	public Peer() {
 
 		controlChannel = new MCReceiver();
+		controlChannel.start();
 		dataChannel = new MDBReceiver();
+		dataChannel.start();
 		restoreChannel = new MDRReceiver();
+		restoreChannel.start();
 
 		data = new PeerData();
 
