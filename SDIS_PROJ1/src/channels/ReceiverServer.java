@@ -78,12 +78,10 @@ public class ReceiverServer extends Thread {
 		}
 	}
 
-	public void createSocket() {
-		try {
-			this.socket = new MulticastSocket(port);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void createSocket() throws IOException{
+	
+		this.socket = new MulticastSocket(port);
+		
 	}
 
 	public DatagramPacket createDatagramPacket(byte[] buffer) {
