@@ -12,6 +12,7 @@ public class Chunk implements Serializable {
 	private byte data[];
 
 	public Chunk(String fileID, int number, byte[] data) {
+		System.out.println(fileID + "\n " + number);
 		this.data = data;
 		this.id = new ChunkID(fileID, number);
 	}
@@ -63,7 +64,10 @@ public class Chunk implements Serializable {
 	}
 
 	public String toString() {
-		return "ID: " + this.id + "Length Of Data: " + this.data.length;
+		if (data != null)
+			return "ID: " + this.id + "Length Of Data: " + this.data.length;
+
+		return "ID: " + this.id + "Data is null";
 	}
 
 }

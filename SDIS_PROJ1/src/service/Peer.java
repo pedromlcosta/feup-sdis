@@ -46,12 +46,8 @@ public class Peer implements Invocation {
 	public Peer() {
 
 		controlChannel = new MCReceiver();
-		controlChannel.start();
 		dataChannel = new MDBReceiver();
-		dataChannel.start();
 		restoreChannel = new MDRReceiver();
-		restoreChannel.start();
-
 		data = new PeerData();
 
 	}
@@ -98,24 +94,30 @@ public class Peer implements Invocation {
 			// TODO CHANGED FOR TESTING
 			rmiName = args[0];
 			Peer.getInstance().serverID = Integer.parseInt(args[0]);
-			Peer.getInstance().controlChannel.setAddr(InetAddress.getByName(args[1]));
-			Peer.getInstance().controlChannel.setPort(Integer.parseInt(args[2]));
-			Peer.getInstance().controlChannel.joinMulticastGroup();
-			Peer.getInstance().controlChannel.createSocket();
 
-			Peer.getInstance().dataChannel.setAddr(InetAddress.getByName(args[3]));
-			Peer.getInstance().dataChannel.setPort(Integer.parseInt(args[4]));
-			Peer.getInstance().dataChannel.joinMulticastGroup();
-			Peer.getInstance().dataChannel.createSocket();
+			Peer.getInstance().getControlChannel().setAddr(InetAddress.getByName(args[1]));
+			Peer.getInstance().getControlChannel().setPort(Integer.parseInt(args[2]));
+			Peer.getInstance().getControlChannel().createSocket();
+			Peer.getInstance().getControlChannel().joinMulticastGroup();
 
-			Peer.getInstance().restoreChannel.setAddr(InetAddress.getByName(args[5]));
-			Peer.getInstance().restoreChannel.setPort(Integer.parseInt(args[6]));
-			Peer.getInstance().restoreChannel.joinMulticastGroup();
-			Peer.getInstance().restoreChannel.createSocket();
+			Peer.getInstance().getDataChannel().setAddr(InetAddress.getByName(args[3]));
+			Peer.getInstance().getDataChannel().setPort(Integer.parseInt(args[4]));
+			Peer.getInstance().getDataChannel().createSocket();
+			Peer.getInstance().getDataChannel().joinMulticastGroup();
+
+			Peer.getInstance().getRestoreChannel().setAddr(InetAddress.getByName(args[5]));
+			Peer.getInstance().getRestoreChannel().setPort(Integer.parseInt(args[6]));
+			Peer.getInstance().getRestoreChannel().createSocket();
+			Peer.getInstance().getRestoreChannel().joinMulticastGroup();
+
 			Peer.getInstance().createPeerFolder();
-		}catch(IOException e){
+
+			Peer.getInstance().getRestoreChannel().start();
+			Peer.getInstance().getDataChannel().start();
+			Peer.getInstance().getControlChannel().start();
+		} catch (IOException e) {
 			System.out.println("Couldn't bind IP:ports to peer");
-		}catch (Exception e) {
+		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Invalid Args. Ports must be between 1 and 9999 and IP must be a valid multicast address.");
 			return;

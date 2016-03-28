@@ -7,6 +7,8 @@ import java.net.MulticastSocket;
 import java.net.SocketTimeoutException;
 import java.util.Arrays;
 
+import chunk.Chunk;
+import messages.Message;
 import service.Peer;
 import service.Processor;
 
@@ -17,7 +19,7 @@ public class ReceiverServer extends Thread {
 	private int serverID;
 	private InetAddress addr;
 	private int port;
-	private byte[] buf = new byte[256];
+	private byte[] buf = new byte[Chunk.getChunkSize() + 512];
 	private Peer user;
 
 	public ReceiverServer() {
@@ -38,9 +40,10 @@ public class ReceiverServer extends Thread {
 
 	@Override
 	public void run() {
-		System.out.println("OLLLA");
+		System.out.println("Started Running the thread");
 		while (!quitFlag) {
-			System.out.println("Started Running the thread");
+			System.out.println("New run");
+
 			DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
 			try {
 				socket.receive(receivePacket);
@@ -59,29 +62,28 @@ public class ReceiverServer extends Thread {
 						break;
 					}
 			}
-
-			// System.out.println(receivedString.length() + " " +
-			// receivedString.isEmpty() + " L:" + receivedString);
-			if (header.length() > 0) {
-				header = header.substring(0, receivePacket.getLength());
-
+			if (header != null && header.length() > 0) {
+				System.out.println(header.length() + "  " + buf.length);
+				header = header.substring(0, header.length());
 				System.out.println("Server Received: " + header);
 
-				// TODO Check if ReceivedString is valid!!!!!!!!!!
-				// TODO funcao auxiliar que tira string do packet?
+				String[] headerArgs = Message.parseHeader(header);
 
-				Processor processingThread = new Processor(header, body);
-				processingThread.start();
-
+				// TODO ignore messages sent by server
+				if (Integer.parseInt(headerArgs[2]) == Peer.getInstance().getServerID()) {
+					System.out.println("same server");
+				} else {
+					new Processor(headerArgs, body).start();
+				}
 				header = "";
+				body = null;
+				buf = new byte[Chunk.getChunkSize() + 512];
 			}
 		}
 	}
 
-	public void createSocket() throws IOException{
-	
+	public void createSocket() throws IOException {
 		this.socket = new MulticastSocket(port);
-		
 	}
 
 	public DatagramPacket createDatagramPacket(byte[] buffer) {
@@ -142,7 +144,6 @@ public class ReceiverServer extends Thread {
 
 	public void writePacket(DatagramPacket p) {
 		try {
-			System.out.println(this.socket);
 			this.socket.send(p);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -153,8 +154,6 @@ public class ReceiverServer extends Thread {
 	public void readPacket(DatagramPacket p) {
 		try {
 			this.socket.receive(p);
-		} catch (SocketTimeoutException e) {
-			System.out.println("Error TimeOut");
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Error readPacket");

@@ -56,7 +56,8 @@ public class Message {
 	// CHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
 	// DELETE <Version> <SenderId> <FileId> <CRLF><CRLF>
 	// REMOVED <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
-	public synchronized String[] parseHeader(String header) {
+	// made static
+	public static synchronized String[] parseHeader(String header) {
 		Pattern pattern = Pattern.compile(PATTERN);
 		String[] match = pattern.split(header, -2);
 		for (String a : Extra.eraseEmpty(match))
@@ -131,6 +132,10 @@ public class Message {
 	}
 
 	public byte[] getMessageData() {
+		if (body != null)
+			System.out.println("GET DATA BEING CALLED: " + body.length);
+		else
+			System.out.println("BODY IS NULL");
 		return body;
 	}
 

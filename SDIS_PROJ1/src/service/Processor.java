@@ -31,11 +31,19 @@ public class Processor extends Thread {
 	private final long GETCHUNK_WAITING_NANO = TimeUnit.MILLISECONDS.toNanos(400); // In
 																					// milliseconds
 	private String messageString;
+	// TODO either this or turn parseHeader Static
 	private Message msg;
 	private byte[] messageBody = null;
+	private String[] messageFields = null;
 
 	public Processor(String messageString) {
 		this.messageString = messageString;
+	}
+
+	// Criado por causa das mudanças no receiver e evitar fazer o parseHeader 2x
+	public Processor(String[] headerArgs, byte[] body) {
+		this.messageFields = headerArgs;
+		this.messageBody = body;
 	}
 
 	public Processor(String header, byte[] body) {
@@ -45,10 +53,14 @@ public class Processor extends Thread {
 
 	public void run() {
 		// HANDLE MESSAGES HERE
-		if (msg != null && messageString != null) {
-			String[] messageFields = msg.parseHeader(messageString);
+		System.out.println("Running processor");
+		// TODO msg != null &&
+		if (messageString != null || messageFields != null) {
+			// legacy reasons (in case some function uses this one)
+			if (messageFields == null)
+				messageFields = Message.parseHeader(messageString);
 			messageString = ""; // Empty, so as not to fill unnecessary space
-
+			System.out.println(messageFields[0]);
 			switch (messageFields[0]) {
 			case "PUTCHUNK":
 				msg = new PutChunkMsg(messageFields, messageBody);
@@ -212,21 +224,19 @@ public class Processor extends Thread {
 
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
 		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand().get(chunkID);
+		if (answered == null) {
+			answered = new ArrayList<Integer>();
+			Peer.getInstance().getAnsweredCommand().put(chunkID, answered);
+		}
 		synchronized (answered) {
 			int senderID = Integer.parseInt(this.msg.getSenderID());
-			if (answered == null) {
-				answered = new ArrayList<Integer>();
 
-				Peer.getInstance().getAnsweredCommand().put(chunkID, answered);
-
-			}
 			if (answered.isEmpty() || !answered.contains(senderID))
 				answered.add(senderID);
 		}
 	}
 
 	private void putChunkHandler() {
-		System.out.println("Putchunk");
 		new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg);
 		// Filipe -> putchunk call the function it needs to handle the putuch
 	}

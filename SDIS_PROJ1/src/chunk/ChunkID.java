@@ -24,6 +24,7 @@ public class ChunkID implements Serializable, Comparable<ChunkID> {
 		this.actualRepDegree = actualRepDegree;
 	}
 
+	 
 	public int getChunkNumber() {
 		return chunkNumber;
 	}
