@@ -16,12 +16,13 @@ public class FileID {
 	private int homeServer;
 	private String ID;
 	private boolean multiple = false;
+	// TODO anyone uses this?
 	private ArrayList<Chunk> fileChunks = new ArrayList<Chunk>();
-	
-	public FileID(){
-		
+
+	public FileID() {
+
 	}
-	
+
 	public FileID(String fileName) {
 		// TODO multiple Nchunks bellow
 		File file = new File(fileName);
@@ -44,8 +45,9 @@ public class FileID {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-//		System.out.println(
-//				"FileID create\nFileSize: " + file.length() + "\n" + "Nchunks: " + this.nChunks + "\n ID: " + this.ID);
+		// System.out.println(
+		// "FileID create\nFileSize: " + file.length() + "\n" + "Nchunks: " +
+		// this.nChunks + "\n ID: " + this.ID);
 	}
 
 	public int getnChunks() {

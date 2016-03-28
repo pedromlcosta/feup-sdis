@@ -1,6 +1,5 @@
 package service;
 
-import java.io.File;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.rmi.NotBoundException;
@@ -17,7 +16,6 @@ import channels.MDRReceiver;
 import chunk.ChunkID;
 import extra.Extra;
 import file.FileID;
-import messages.FileHandler;
 import protocol.BackupProtocol;
 import protocol.DeleteProtocol;
 import protocol.ReclaimProtocol;
@@ -36,11 +34,11 @@ public class Peer implements Invocation {
 	private MCReceiver controlChannel;
 	private MDBReceiver dataChannel;
 	private MDRReceiver restoreChannel;
-	private String serverID;
+	private Integer serverID;
 	private static Registry rmiRegistry;
 	private static String rmiName;
 	private Dispatcher commandDispatcher = new Dispatcher();
-	private String workingDirPath = System.getProperty("user.dir");
+	private String folderPath;
 	// TODO change names and check structures
 	// TODO servers that replay to command
 	// TODO check connection between channel an peers
@@ -57,7 +55,7 @@ public class Peer implements Invocation {
 
 	public void createPeerFolder() {
 		try {
-			workingDirPath = Extra.createDirectory(getWorkingDirPath() + File.pathSeparator + serverID);
+			folderPath = Extra.createDirectory(Integer.toString(serverID));
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -65,13 +63,18 @@ public class Peer implements Invocation {
 
 	public static void main(String[] args) {
 
+		System.out.println("Teste");
 		// Load stuff
+		for (String a : args)
+			System.out.println(a);
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				try {
 					rmiRegistry.unbind(rmiName);
-					// UnicastRemoteObject.unexportObject(instance,true);
+
+					// UnicastRemoteObject.unexportObject(instance, true);
+
 				} catch (RemoteException | NotBoundException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -89,14 +92,16 @@ public class Peer implements Invocation {
 		}
 
 		try {
+			// TODO CHANGED FOR TESTING
 			rmiName = args[0];
-			Peer.getInstance().serverID = args[0];
+			Peer.getInstance().serverID = Integer.parseInt(args[0]);
 			Peer.getInstance().controlChannel.setAddr(InetAddress.getByName(args[1]));
 			Peer.getInstance().controlChannel.setPort(Integer.parseInt(args[2]));
 			Peer.getInstance().dataChannel.setAddr(InetAddress.getByName(args[3]));
 			Peer.getInstance().dataChannel.setPort(Integer.parseInt(args[4]));
 			Peer.getInstance().restoreChannel.setAddr(InetAddress.getByName(args[5]));
 			Peer.getInstance().restoreChannel.setPort(Integer.parseInt(args[6]));
+			Peer.getInstance().createPeerFolder();
 		} catch (Exception e) {
 			System.out.println("Invalid Args. Ports must be between 1 and 9999 and IP must be a valid multicast address.");
 			return;
@@ -109,7 +114,7 @@ public class Peer implements Invocation {
 	public static boolean validArgs(String[] args) {
 
 		if (args.length != 7) {
-			System.out.println("Incorrect number of args.");
+			System.out.println("Incorrect number of args." + " You gave: " + args.length);
 			System.out.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port>");
 			return false;
 		}
@@ -185,7 +190,6 @@ public class Peer implements Invocation {
 			Invocation stub = (Invocation) UnicastRemoteObject.exportObject(instance, 0);
 
 			// Register object to rmi registry
-
 			rmiRegistry = LocateRegistry.getRegistry();
 			/*
 			 * try{ rmiRegistry = LocateRegistry.createRegistry(1099);
@@ -280,11 +284,11 @@ public class Peer implements Invocation {
 		Peer.instance = instance;
 	}
 
-	public String getServerID() {
+	public Integer getServerID() {
 		return serverID;
 	}
 
-	public void setServerID(String serverID) {
+	public void setServerID(Integer serverID) {
 		this.serverID = serverID;
 	}
 
@@ -320,12 +324,12 @@ public class Peer implements Invocation {
 		this.data = data;
 	}
 
-	public String getWorkingDirPath() {
-		return workingDirPath;
+	public String getFolderPath() {
+		return folderPath;
 	}
 
-	public void setWorkingDirPath(String workingDirPath) {
-		this.workingDirPath = workingDirPath;
+	public void setFolderPath(String workingDirPath) {
+		this.folderPath = workingDirPath;
 	}
 
 }

@@ -181,7 +181,7 @@ public class Processor extends Thread {
 				// enviar mensagem com o chunk
 
 				byte[] chunkBody = fileHandler.loadChunkBody(chunkID);
-				String[] args = { "1.0", Peer.getInstance().getServerID(), chunkID.getFileID(), Integer.toString(chunkID.getChunkNumber()) };
+				String[] args = { "1.0", Integer.toString(Peer.getInstance().getServerID()), chunkID.getFileID(), Integer.toString(chunkID.getChunkNumber()) };
 
 				// byte[] chunkBody = new byte[64];
 				Message chunkMsg = new ChunkMsg();

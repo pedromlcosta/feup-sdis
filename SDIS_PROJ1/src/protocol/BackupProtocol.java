@@ -194,7 +194,7 @@ public class BackupProtocol extends Thread {
 		String dirPath = "";
 		String args[] = new String[4];
 		try {
-			dirPath = Extra.createDirectory(Peer.getInstance().getWorkingDirPath() + File.pathSeparator + FileHandler.BACKUP_FOLDER_NAME);
+			dirPath = Extra.createDirectory(Peer.getInstance().getPeerID() + File.pathSeparator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}

@@ -15,53 +15,52 @@ public class TestApp {
 		String filePath;
 		int reclaimSpace;
 		int desiredRepDeg;
-		
+
 		// Check if arguments are valid
 		boolean valid = validArgs(args);
-		
-		if (valid){
+
+		if (valid) {
 			try {
-				
 				remoteName = args[0];
 				subProtocol = args[1].toLowerCase();
 				filePath = args[2];
 				desiredRepDeg = Integer.parseInt(args[3]);
-				
+
 				Registry registry = LocateRegistry.getRegistry("localhost");
 				Invocation stub = (Invocation) registry.lookup(remoteName);
 
 				String response = null;
 
-				switch(subProtocol){
-					case "backup":
-						response = stub.backup(filePath, desiredRepDeg);
-						break;
-					case "restore":
-						response = stub.restore(filePath);
-						break;
-					case "delete":
-						response = stub.delete(filePath);
-						break;
-					case "reclaim":
-						reclaimSpace = Integer.parseInt(args[2]);
-						response = stub.reclaim(reclaimSpace);
-						break;
+				switch (subProtocol) {
+				case "backup":
+					response = stub.backup(filePath, desiredRepDeg);
+					break;
+				case "restore":
+					response = stub.restore(filePath);
+					break;
+				case "delete":
+					response = stub.delete(filePath);
+					break;
+				case "reclaim":
+					reclaimSpace = Integer.parseInt(args[2]);
+					response = stub.reclaim(reclaimSpace);
+					break;
 				}
-				
+
 				System.out.println("response: " + response);
-				
+
 			} catch (Exception e) {
 				System.err.println("Client exception: " + e.toString());
-				//e.printStackTrace();
+				// e.printStackTrace();
 				System.out.println("No host with that remoteName exists");
 			}
-		}else{
-			
+		} else {
+
 			return;
 		}
-			
+
 	}
-	
+
 	// Restrictions:
 	// java TestApp peer_ap ... -> peer_ap must be a number
 	// Options:
@@ -69,85 +68,81 @@ public class TestApp {
 	// RESTORE file
 	// DELETE file
 	// RECLAIM space
-	
-	static boolean validArgs(String[] args){
-		
+
+	static boolean validArgs(String[] args) {
+
 		System.out.println("Validating args...");
-		
-		if(args.length == 0){
+
+		if (args.length == 0) {
 			System.out.println("No args found.");
 			return false;
 		}
 
-		if(args.length < 2){ // Min number of args: 3  Max number or args: 4
+		if (args.length < 2) { // Min number of args: 3 Max number or args: 4
 			System.out.println("Incorrect number of args.");
 			System.out.println("Correct usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>. ");
-		}else{
+		} else {
 			// Verify peer_ap first
-			if (args[0] == null || !Extra.isNumeric(args[0])){
+			if (args[0] == null || !Extra.isNumeric(args[0])) {
 				System.out.println("<peer_ap> must be a numeric value.");
 				System.out.println("Correct usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>. ");
 				return false;
-			} 
-			
+			}
+
 			String protocol = args[1].toLowerCase();
 
-			if (protocol.equals("backup")){
-				if(args.length != 4){
+			if (protocol.equals("backup")) {
+				if (args.length != 4) {
 					System.out.println("Incorrect number of args.");
 					System.out.println("Correct usage: java TestApp <peer_ap> BACKUP <filePath> <repDegree>. ");
 					return false;
 				}
-				//if(args[2].notValidFile) ??
-				
-				
-				if(!Extra.isNumeric(args[3])){
+				// if(args[2].notValidFile) ??
+
+				if (!Extra.isNumeric(args[3])) {
 					System.out.println("Backup expects <opnd_2> to be a numeric value.");
 					System.out.println("Correct usage: java TestApp <peer_ap> BACKUP <filePath> <repDegree>. ");
 					return false;
-				}else if(Integer.parseInt(args[3])>9 || Integer.parseInt(args[3]) <1){
+				} else if (Integer.parseInt(args[3]) > 9 || Integer.parseInt(args[3]) < 1) {
 					System.out.println("Backup expects <opnd_2> to be a value between 1 and 9.");
 					System.out.println("Correct usage: java TestApp <peer_ap> BACKUP <filePath> <repDegree>. ");
 					return false;
 				}
-			}else if (protocol.equals("restore")){
-				if(args.length != 3){
+			} else if (protocol.equals("restore")) {
+				if (args.length != 3) {
 					System.out.println("Incorrect number of args.");
 					System.out.println("Correct usage: java TestApp <peer_ap> RESTORE <filePath>. ");
 					return false;
 				}
-				
-				//if(args[2].notValidFile) ??
-			}else if (protocol.equals("delete")){
-				if(args.length != 3){
+
+				// if(args[2].notValidFile) ??
+			} else if (protocol.equals("delete")) {
+				if (args.length != 3) {
 					System.out.println("Incorrect number of args.");
 					System.out.println("Correct usage: java TestApp <peer_ap> DELETE <filePath>. ");
 					return false;
 				}
-				
-				//if(args[2].notValidFile) ??
-			}else if (protocol.equals("reclaim")){
-				if(args.length != 3){
+
+				// if(args[2].notValidFile) ??
+			} else if (protocol.equals("reclaim")) {
+				if (args.length != 3) {
 					System.out.println("Incorrect number of args.");
 					System.out.println("Correct usage: java TestApp <peer_ap> RECLAIM <space>. ");
 					return false;
 				}
-				
-				if(!Extra.isNumeric(args[2])){
+
+				if (!Extra.isNumeric(args[2])) {
 					System.out.println("Reclaim expects <opnd_1> to be a numeric value.");
 					System.out.println("Correct usage: java TestApp <peer_ap> RECLAIM <space>. ");
 					return false;
 				}
-				
-			}else{
+
+			} else {
 				System.out.println("<protocol> must be one of the following: Backup, restore, delete or reclaim.");
 			}
 		}
 
-		
-		
 		return true;
 	}
-	
-	
+
 }

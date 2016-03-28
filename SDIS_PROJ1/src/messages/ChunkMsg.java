@@ -3,6 +3,7 @@ package messages;
 public class ChunkMsg extends Message {
 
 	private static final int N_ARGS = 4;
+	@SuppressWarnings("unused")
 	private String ChunkNo;
 
 	public ChunkMsg() {
@@ -30,4 +31,9 @@ public class ChunkMsg extends Message {
 		return createMessageAux(data);
 
 	}
+
+	public static int getnArgs() {
+		return N_ARGS;
+	}
+	
 }

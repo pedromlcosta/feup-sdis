@@ -13,6 +13,8 @@ import java.util.ArrayList;
 import javax.xml.bind.DatatypeConverter;
 
 public class Extra {
+	private static String workingDirPath = System.getProperty("user.dir");
+
 	public Extra() {
 	}
 
@@ -35,8 +37,7 @@ public class Extra {
 	// TODO check if it is what we want Always relative to the place the
 	// function is called
 	public static String createDirectory(String dirName) throws IOException {
-		String currentDir = new File(".").getCanonicalPath();
-		Path path = Paths.get(currentDir + File.separator + dirName);
+		Path path = Paths.get(workingDirPath + File.separator + dirName);
 
 		if (!(Files.exists(path) && Files.isDirectory(path))) {
 			Files.createDirectory(path);
@@ -54,17 +55,23 @@ public class Extra {
 		}
 		return toAdd.toArray(new String[toAdd.size()]);
 	}
-	
-	public static boolean isNumeric(String str)  
-	{  
-	  try  
-	  {  
-	    double i = Integer.parseInt(str);  
-	  }  
-	  catch(NumberFormatException nfe)  
-	  {  
-	    return false;  
-	  }  
-	  return true;  
+
+	// TODO without the double i, it should still work
+	public static boolean isNumeric(String str) {
+		try {
+			Integer.parseInt(str);
+		} catch (NumberFormatException nfe) {
+			return false;
+		}
+		return true;
 	}
+
+	public static String getWorkingDirPath() {
+		return workingDirPath;
+	}
+
+	public static void setWorkingDirPath(String workingDirPath) {
+		Extra.workingDirPath = workingDirPath;
+	}
+
 }
