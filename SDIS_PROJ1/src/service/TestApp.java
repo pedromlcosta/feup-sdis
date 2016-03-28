@@ -21,7 +21,7 @@ public class TestApp {
 		
 		if (valid){
 			try {
-				/*
+				
 				remoteName = args[0];
 				subProtocol = args[1].toLowerCase();
 				filePath = args[2];
@@ -49,7 +49,7 @@ public class TestApp {
 				}
 				
 				System.out.println("response: " + response);
-				*/
+				
 			} catch (Exception e) {
 				System.err.println("Client exception: " + e.toString());
 				//e.printStackTrace();
