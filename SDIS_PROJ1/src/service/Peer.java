@@ -52,12 +52,8 @@ public class Peer implements Invocation {
 
 	}
 
-	public void createPeerFolder() {
-		try {
-			folderPath = Extra.createDirectory(Integer.toString(serverID));
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
+	public void createPeerFolder() throws IOException {
+		folderPath = Extra.createDirectory(Integer.toString(serverID));
 	}
 
 	public static void main(String[] args) {
@@ -93,7 +89,7 @@ public class Peer implements Invocation {
 		try {
 			// TODO CHANGED FOR TESTING
 			rmiName = args[0];
-			Peer.getInstance().serverID = Integer.parseInt(args[0]);
+			Peer.getInstance().setServerID(Integer.parseInt(args[0]));
 
 			Peer.getInstance().getControlChannel().setAddr(InetAddress.getByName(args[1]));
 			Peer.getInstance().getControlChannel().setPort(Integer.parseInt(args[2]));

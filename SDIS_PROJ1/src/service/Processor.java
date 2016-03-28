@@ -223,6 +223,7 @@ public class Processor extends Thread {
 		// guardar no Peer?
 
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
+		// TODO check this part
 		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand().get(chunkID);
 		if (answered == null) {
 			answered = new ArrayList<Integer>();
