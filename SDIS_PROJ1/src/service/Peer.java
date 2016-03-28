@@ -97,10 +97,18 @@ public class Peer implements Invocation {
 			Peer.getInstance().serverID = Integer.parseInt(args[0]);
 			Peer.getInstance().controlChannel.setAddr(InetAddress.getByName(args[1]));
 			Peer.getInstance().controlChannel.setPort(Integer.parseInt(args[2]));
+			Peer.getInstance().controlChannel.joinMulticastGroup();
+			Peer.getInstance().controlChannel.createSocket();
+
 			Peer.getInstance().dataChannel.setAddr(InetAddress.getByName(args[3]));
 			Peer.getInstance().dataChannel.setPort(Integer.parseInt(args[4]));
+			Peer.getInstance().dataChannel.joinMulticastGroup();
+			Peer.getInstance().dataChannel.createSocket();
+
 			Peer.getInstance().restoreChannel.setAddr(InetAddress.getByName(args[5]));
 			Peer.getInstance().restoreChannel.setPort(Integer.parseInt(args[6]));
+			Peer.getInstance().restoreChannel.joinMulticastGroup();
+			Peer.getInstance().restoreChannel.createSocket();
 			Peer.getInstance().createPeerFolder();
 		} catch (Exception e) {
 			System.out.println("Invalid Args. Ports must be between 1 and 9999 and IP must be a valid multicast address.");
@@ -214,8 +222,7 @@ public class Peer implements Invocation {
 		// e os metodos para enviar para os canais que queremos as cenas
 
 		// Call backup protocol through dispatcher
-		//Thread backup = new BackupProtocol(filePath, desiredRepDegree, "1.0", Peer.getInstance());
-		//backup.start();
+		new BackupProtocol(filePath, desiredRepDegree, "1.0", Peer.getInstance()).start();
 		System.out.println("backup called");
 		return "backup sent";
 	}

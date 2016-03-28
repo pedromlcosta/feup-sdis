@@ -38,7 +38,7 @@ public class ReceiverServer extends Thread {
 
 	@Override
 	public void run() {
-
+		System.out.println("OLLLA");
 		while (!quitFlag) {
 			System.out.println("Started Running the thread");
 			DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
@@ -75,6 +75,14 @@ public class ReceiverServer extends Thread {
 
 				header = "";
 			}
+		}
+	}
+
+	public void createSocket() {
+		try {
+			this.socket = new MulticastSocket(port);
+		} catch (IOException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -136,6 +144,7 @@ public class ReceiverServer extends Thread {
 
 	public void writePacket(DatagramPacket p) {
 		try {
+			System.out.println(this.socket);
 			this.socket.send(p);
 			System.out.println("Packet sent");
 		} catch (IOException e) {
