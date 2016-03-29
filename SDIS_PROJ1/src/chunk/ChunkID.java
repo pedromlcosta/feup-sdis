@@ -33,6 +33,16 @@ public class ChunkID implements Serializable, Comparable<ChunkID> {
 		this.chunkNumber = chunkNumber;
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + chunkNumber;
+		result = prime * result + ((fileID == null) ? 0 : fileID.hashCode());
+		return result;
+	}
+
+	@Override
 	public boolean equals(Object obj) {
 		if (!(obj instanceof ChunkID))
 			return false;

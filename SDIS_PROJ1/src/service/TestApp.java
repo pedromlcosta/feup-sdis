@@ -14,7 +14,6 @@ public class TestApp {
 		String subProtocol;
 		String filePath;
 		int reclaimSpace;
-		int desiredRepDeg;
 
 		// Check if arguments are valid
 		boolean valid = validArgs(args);
@@ -24,7 +23,6 @@ public class TestApp {
 				remoteName = args[0];
 				subProtocol = args[1].toLowerCase();
 				filePath = args[2];
-				desiredRepDeg = Integer.parseInt(args[3]);
 
 				Registry registry = LocateRegistry.getRegistry("localhost");
 				Invocation stub = (Invocation) registry.lookup(remoteName);
@@ -33,7 +31,7 @@ public class TestApp {
 
 				switch (subProtocol) {
 				case "backup":
-					response = stub.backup(filePath, desiredRepDeg);
+					response = stub.backup(filePath, Integer.parseInt(args[3]));
 					break;
 				case "restore":
 					response = stub.restore(filePath);
