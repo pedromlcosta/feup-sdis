@@ -133,7 +133,7 @@ public class Peer implements Invocation {
 			//e.printStackTrace();                           // Remove these stack traces after
 			//There wasn't a file, so we're creating one now!
 			try {
-				peer.getData().savePeerData();
+				peer.saveData();
 			} catch (FileNotFoundException e1) {
 				e1.printStackTrace();
 			} catch (IOException e1) {
@@ -373,6 +373,10 @@ public class Peer implements Invocation {
 		this.data = data.loadPeerData();
 	}
 
+	public void saveData() throws FileNotFoundException, IOException {
+		data.savePeerData();
+	}
+	
 	public String getFolderPath() {
 		return folderPath;
 	}
@@ -380,5 +384,7 @@ public class Peer implements Invocation {
 	public void setFolderPath(String workingDirPath) {
 		this.folderPath = workingDirPath;
 	}
+
+	
 
 }
