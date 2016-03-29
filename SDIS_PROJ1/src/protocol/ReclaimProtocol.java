@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.Iterator;
 
-import messages.DeleteMsg;
+import messages.RemovedMsg;
 import messages.FileHandler;
 import messages.Message;
 import service.Peer;
@@ -26,14 +26,18 @@ public class ReclaimProtocol extends Thread {
 	
 	public void run(){
 		
+		System.out.println("Why you no run?");
 		String dirPath = "";
 
 		try {
-			dirPath = Extra.createDirectory(FileHandler.BACKUP_FOLDER_NAME);
+			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		
+		System.out.println("Before sort:"+peer.getStored());
+		peer.sortStored();
+		System.out.println("After sort:"+peer.getStored());
 		Iterator<ChunkID> it = Peer.getInstance().getStored().iterator();
 		
 		while(this.amountReclaimed < this.reclaimSpace && it.hasNext()){
@@ -41,7 +45,7 @@ public class ReclaimProtocol extends Thread {
 			File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
 			
 			// create message
-			Message msg = new DeleteMsg();
+			Message msg = new RemovedMsg();
 
 			String[] args = { "1.0",  Integer.toString(peer.getServerID()), chunk.getFileID(), Integer.toString(chunk.getChunkNumber())};
 			msg.createMessage(null, args);

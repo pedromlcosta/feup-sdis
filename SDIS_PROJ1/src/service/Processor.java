@@ -126,7 +126,7 @@ public class Processor extends Thread {
 	}
 
 	private void deleteHandler() {
-
+		
 		Peer peer = Peer.getInstance();
 		String fileId = msg.getFileId();
 		String dirPath = "";
@@ -253,6 +253,8 @@ public class Processor extends Thread {
 		// Filipe places the message in a queue? that will be read by the
 		// protocole handling the putcunk Message creation // concorrent?
 		// guardar no Peer?
+		
+		Peer peer = Peer.getInstance();
 
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
 		// TODO check this part
@@ -264,8 +266,12 @@ public class Processor extends Thread {
 		synchronized (answered) {
 			int senderID = Integer.parseInt(this.msg.getSenderID());
 
-			if (answered.isEmpty() || !answered.contains(senderID))
+			if (answered.isEmpty() || !answered.contains(senderID)){
 				answered.add(senderID);
+				int index = peer.getStored().indexOf(chunkID);
+				if(index != -1)
+					peer.getStored().get(index).increaseRepDegree();
+			}
 		}
 	}
 
