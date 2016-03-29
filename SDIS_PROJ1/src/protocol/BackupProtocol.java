@@ -210,13 +210,16 @@ public class BackupProtocol extends Thread {
 		Message msg = new StoredMsg();
 		String dirPath = "";
 		String args[] = new String[4];
+		String fileID = putchunkMSG.getFileId();
+		if (Peer.getInstance().getFilesSent().get(fileID) != null) {
+			System.out.println("backingup Own file");
+			return;
+		}
 		try {
 			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-
-		String fileID = putchunkMSG.getFileId();
 
 		// Version
 		args[0] = getVersion();
