@@ -30,7 +30,7 @@ public class BackupProtocol extends Thread {
 	private Peer peer;
 	private String fileName;
 	private int wantedRepDegree;
-	private String version;
+	private String version = "1.0";
 
 	public BackupProtocol(String fileName, int wantedRepDegree, String version, Peer instance) {
 		this.fileName = fileName;
@@ -210,7 +210,6 @@ public class BackupProtocol extends Thread {
 		String args[] = new String[4];
 		try {
 			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
-			System.out.println(dirPath);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -226,7 +225,7 @@ public class BackupProtocol extends Thread {
 		// Chunk No
 		args[3] = Integer.toString(putchunkMSG.getChunkNo());
 		byte msgData[] = putchunkMSG.getMessageData();
-
+		 
 		// TODO good idea?
 		Chunk chunk = new Chunk(new ChunkID(fileID, putchunkMSG.getChunkNo()), msgData);
 		chunk.setDesiredRepDegree(putchunkMSG.getReplicationDeg());
