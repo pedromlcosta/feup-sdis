@@ -58,9 +58,20 @@ public class BackupProtocol extends Thread {
 		// already in the hashmap
 		HashMap<String, FileID> sentFiles = peer.getFilesSent();
 		synchronized (sentFiles) {
+			// TODO FILES ALREADY SENT
 			if (sentFiles.containsKey(fileName))
 				return;
 			sentFiles.put(fileName, fileID);
+			// Save alterations to peer data
+			try {
+				peer.saveData();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 		backupFile(split, fileID);
 		System.out.println("End of backupFile");
@@ -247,6 +258,16 @@ public class BackupProtocol extends Thread {
 			} else {
 				// just need to increment Rep Degree
 				storedList.get(index).increaseRepDegree();
+			}
+			// Save alterations to peer data
+			try {
+				peer.saveData();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
 		}
 

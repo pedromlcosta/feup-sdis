@@ -10,15 +10,18 @@ public class Main {
 
 		System.out.println(System.getProperty("user.dir"));
 		String dirPath = "C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\2\\backup\\";
-		FileInputStream fileWriter = new FileInputStream(dirPath + "61BAB190A1ABF5DB7579059DDC49A9E2E7A42ECB6D82D1F34FABD40C3944C844_1");
-		ObjectInputStream out = new ObjectInputStream(fileWriter);
+		FileOutputStream file = new FileOutputStream("1.pdf");
+		ObjectInputStream out = null;
 		// TODO OR out.writeObject(chunk.getData());
-		Chunk c = (Chunk) out.readObject();
-		FileOutputStream file = new FileOutputStream("t12.png");
-		file.write(c.getData());
+		for (int i = 1; i < 42; i++) {
+			FileInputStream fileWriter = new FileInputStream(dirPath + "968F8C59A0F6016B2BDD5D969F474BF6EF55F14A148B0666DD667A43CA1139FF_" + i);
+			out = new ObjectInputStream(fileWriter);
+			Chunk c = (Chunk) out.readObject();
+
+			file.write(c.getData());
+		}
 		file.close();
 		out.close();
-		System.out.println(c);
 		System.out.println("END");
 	}
 }
