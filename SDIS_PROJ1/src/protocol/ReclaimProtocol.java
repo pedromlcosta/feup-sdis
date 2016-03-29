@@ -1,6 +1,7 @@
 package protocol;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.Iterator;
@@ -35,30 +36,45 @@ public class ReclaimProtocol extends Thread {
 			e.printStackTrace();
 		}
 		
-		System.out.println("Before sort:"+peer.getStored());
 		peer.sortStored();
-		System.out.println("After sort:"+peer.getStored());
-		Iterator<ChunkID> it = Peer.getInstance().getStored().iterator();
-		
-		while(this.amountReclaimed < this.reclaimSpace && it.hasNext()){
-			ChunkID chunk = it.next();
-			File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
+		synchronized (peer.getStored()){
+			Iterator<ChunkID> it = Peer.getInstance().getStored().iterator();
 			
-			// create message
-			Message msg = new RemovedMsg();
-
-			String[] args = { "1.0",  Integer.toString(peer.getServerID()), chunk.getFileID(), Integer.toString(chunk.getChunkNumber())};
-			msg.createMessage(null, args);
-
-			MCReceiver mc = peer.getControlChannel();
-			DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
-			mc.writePacket(msgPacket);
+			int testRound = 0;
 			
-			file.delete();
-			it.remove();
-			peer.removeChunkPeers(chunk);
+			while(this.amountReclaimed < this.reclaimSpace && it.hasNext()){
+				ChunkID chunk = it.next();
+				System.out.println("chunkTest:"+testRound+","+chunk);
+				File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
 				
-			this.amountReclaimed += file.length();
+				// create message
+				Message msg = new RemovedMsg();
+	
+				String[] args = { "1.0",  Integer.toString(peer.getServerID()), chunk.getFileID(), Integer.toString(chunk.getChunkNumber())};
+				msg.createMessage(null, args);
+	
+				MCReceiver mc = peer.getControlChannel();
+				DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
+				mc.writePacket(msgPacket);
+				
+				this.amountReclaimed += file.length();
+				
+				file.delete();
+				it.remove();
+				peer.removeChunkPeers(chunk);
+					
+				testRound++;
+			}
+		}
+		// Save alterations to peer data
+		try {
+			peer.saveData();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 	}
 }

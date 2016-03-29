@@ -134,9 +134,7 @@ public class Processor extends Thread {
 		String dirPath = "";
 
 		try {
-			dirPath = Extra
-					.createDirectory(Integer.toString(peer.getServerID())
-							+ File.separator + FileHandler.BACKUP_FOLDER_NAME);
+			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -148,8 +146,7 @@ public class Processor extends Thread {
 				String idToConfirm = chunk.getFileID();
 				// if chunk belongs to file delete chunk and stored
 				if (fileId.equals(idToConfirm)) {
-					File file = new File(dirPath + File.separator + fileId
-							+ "_" + chunk.getChunkNumber());
+					File file = new File(dirPath + File.separator + fileId + "_" + chunk.getChunkNumber());
 					file.delete();
 					it.remove();
 					peer.removeChunkPeers(chunk);
