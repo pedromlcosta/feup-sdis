@@ -73,7 +73,7 @@ public class RestoreProtocol extends Thread {
 		}
 		Message msg = new GetChunkMsg();
 
-		for (int i = 0; i < file.getnChunks(); i++) {
+		for (int i = 1; i <= file.getnChunks(); i++) {
 			String[] args = { "1.0",  Integer.toString(peer.getServerID()), file.getID(), Integer.toString(i) };
 
 			if (msg.createMessage(null, args) == false) {

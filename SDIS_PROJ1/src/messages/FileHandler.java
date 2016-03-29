@@ -143,21 +143,16 @@ public class FileHandler {
 	}
 
 	// TODO check this part
-	public byte[] loadChunkBody(ChunkID chunkID) throws ClassNotFoundException {
+	public byte[] loadChunkBody(ChunkID chunkID) throws ClassNotFoundException, IOException {
 		String path;
-		try {
-			path = Extra.createDirectory(BACKUP_FOLDER_NAME);
-			FileInputStream fileOut = new FileInputStream(path + File.pathSeparator + chunkID.getFileID() + "_" + chunkID.getChunkNumber());
-			ObjectInputStream out = new ObjectInputStream(fileOut);
-			Chunk storedChunk = (Chunk) out.readObject();
-			out.close();
-			return storedChunk.getData();
-		} catch (IOException e) {
-			System.out.println("Wasn't able to load chunk nr. " + chunkID.getChunkNumber() + " from file id: " + chunkID.getFileID());
-			e.printStackTrace();
-		}
-		// incase of error
-		return new byte[0];
+		
+		path = Extra.createDirectory(BACKUP_FOLDER_NAME);
+		FileInputStream fileOut = new FileInputStream(path + File.separator + chunkID.getFileID() + "_" + chunkID.getChunkNumber());
+		ObjectInputStream out = new ObjectInputStream(fileOut);
+		Chunk storedChunk = (Chunk) out.readObject();
+		out.close();
+		return storedChunk.getData();
+
 	}
 
 }

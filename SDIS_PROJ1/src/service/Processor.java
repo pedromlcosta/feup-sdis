@@ -201,7 +201,14 @@ public class Processor extends Thread {
 				
 				System.out.println("No foreign chunk received! Going to send a chunk!");
 
-				byte[] chunkBody = fileHandler.loadChunkBody(chunkID);
+				byte[] chunkBody = new byte[0];
+				try{
+					chunkBody = fileHandler.loadChunkBody(chunkID);
+				}catch(IOException e){
+					System.out.println("Wasn't able to load chunk nr. " + chunkID.getChunkNumber() + " from file id: " + chunkID.getFileID());
+					chunkBody = new byte[0];
+				}
+				
 				String[] args = { "1.0", Integer.toString(Peer.getInstance().getServerID()), chunkID.getFileID(), Integer.toString(chunkID.getChunkNumber()) };
 
 				// byte[] chunkBody = new byte[64];
@@ -221,13 +228,15 @@ public class Processor extends Thread {
 			restore.expectingForeignChunk(chunkID, false);
 
 		}else{
+			/*
 			System.out.println("Stored size: " + Peer.getInstance().getData().getStored().size());
 			
 			for(int i = 0; i< Peer.getInstance().getData().getStored().size(); i++){
-				System.out.println("Chunk nr. " + Peer.getInstance().getData().getStored().get(i).getChunkNumber());
+				System.out.println("Chunk nr. " + Peer.getInstance().getData().getStored().get(i).getChunkNumber() +" with fileID: " + Peer.getInstance().getData().getStored().get(i).getFileID());
 			}
 
-			
+			System.out.println("And our chunkID we were comparing to has chunk nr. " + chunkID.getChunkNumber()+ " and fileID " + chunkID.getFileID() );
+			*/
 			System.out.println("Dont have it stored, sorry!");
 		}
 
@@ -310,11 +319,23 @@ public class Processor extends Thread {
 		}
 
 		FileHandler fileHandler = new FileHandler();
+		
+		// MUDEI ISTO, POR CAUSA DOS THROWS, VÊ SE CONTINUA CERTO. ASSINADO: COSTA
+		
+		byte[] chunkBody = new byte[0];
 		try {
-			byte[] chunkBody = fileHandler.loadChunkBody(tmp);
+			chunkBody = fileHandler.loadChunkBody(tmp);
+		} catch (SocketException | ClassNotFoundException e) {
+			e.printStackTrace();
+		}catch(IOException e){
+			//If fails, chunkBody will be empty
+			System.out.println("Wasn't able to load chunk nr. " + tmp.getChunkNumber() + " from file id: " + fileId);
+			chunkBody = new byte[0];
+		}
+		
+		try {
 			new BackupProtocol(Peer.getInstance()).backupChunk(fileId, chunkBody, tmp.getChunkNumber(), desiredRepDegree, "1.0");
-		} catch (SocketException | InterruptedException | ClassNotFoundException e) {
-			// TODO Auto-generated catch block
+		} catch (SocketException | InterruptedException e) {
 			e.printStackTrace();
 		}
 	}

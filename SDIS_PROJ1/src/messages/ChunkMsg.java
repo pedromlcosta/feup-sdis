@@ -13,7 +13,7 @@ public class ChunkMsg extends Message {
 	public ChunkMsg(String[] messageFields, byte[] data) {
 		// message args+type+body
 		if (messageFields.length < (N_ARGS + 1)) {
-			System.out.println("Failed creating Stored message. Not enough fields");
+			System.out.println("Failed creating Chunk message. Not enough fields");
 			return;
 		}
 		version = messageFields[1];
