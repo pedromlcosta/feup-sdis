@@ -9,6 +9,7 @@ import java.io.ObjectInputStream;
 import java.io.RandomAccessFile;
 import java.util.Arrays;
 
+import service.Peer;
 import chunk.Chunk;
 import chunk.ChunkID;
 import extra.Extra;
@@ -32,6 +33,10 @@ public class FileHandler {
 
 	public void closeInputStream() throws IOException {
 		fileReader.close();
+	}
+	
+	public void closeOutputStream() throws IOException {
+		fileWriter.close();
 	}
 
 	public void closeRandomAcess() throws IOException {
@@ -119,16 +124,19 @@ public class FileHandler {
 
 		File f = new File(filePath);
 
-		if (!f.exists() && !f.isDirectory()) {
+		//if (!f.exists() && !f.isDirectory()) {
 			try {
+				System.out.println("Going to open the stream for " + filePath);
 				fileWriter = new FileOutputStream(filePath);
+				System.out.println("Just opened the stream for " + filePath);
 				return true;
 			} catch (FileNotFoundException e) {
+				System.out.println("here");
 				e.printStackTrace();
 			}
-		} else {
-			return false;
-		}
+		//} else {
+			//return false;
+		//}
 
 		return false;
 	}
@@ -145,11 +153,13 @@ public class FileHandler {
 	// TODO check this part
 	public byte[] loadChunkBody(ChunkID chunkID) throws ClassNotFoundException, IOException {
 		String path;
+		String serverID = Integer.toString(Peer.getInstance().getServerID());
 		
-		path = Extra.createDirectory(BACKUP_FOLDER_NAME);
+		path = Extra.createDirectory(serverID + File.separator + BACKUP_FOLDER_NAME);
 		FileInputStream fileOut = new FileInputStream(path + File.separator + chunkID.getFileID() + "_" + chunkID.getChunkNumber());
 		ObjectInputStream out = new ObjectInputStream(fileOut);
 		Chunk storedChunk = (Chunk) out.readObject();
+		fileOut.close();
 		out.close();
 		return storedChunk.getData();
 

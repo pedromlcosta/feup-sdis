@@ -163,7 +163,9 @@ public class Processor extends Thread {
 		// Received a chunk and was expecting it for a restore
 		if (restoreChannel.expectingRestoreChunks(chunkID.getFileID())) {
 			restoreChannel.addRestoreChunk(chunkID.getFileID(), new Chunk(chunkID, msg.getBody()));
+			System.out.println("receveid an expected chunk!");
 		} else { // Received a chunk whose file wasn't being restored
+			System.out.println("receveid a foreign chunk!");
 			restoreChannel.receivedForeignChunk(chunkID);
 		}
 
@@ -182,8 +184,7 @@ public class Processor extends Thread {
 		MDRReceiver restore = Peer.getInstance().getRestoreChannel();
 		FileHandler fileHandler = new FileHandler();
 		
-		
-		
+
 		if (Peer.getInstance().hasChunkStored(chunkID)) {
 
 			// Start waiting for chunks with this ID
@@ -205,6 +206,8 @@ public class Processor extends Thread {
 				try{
 					chunkBody = fileHandler.loadChunkBody(chunkID);
 				}catch(IOException e){
+					e.getMessage();
+					e.printStackTrace();
 					System.out.println("Wasn't able to load chunk nr. " + chunkID.getChunkNumber() + " from file id: " + chunkID.getFileID());
 					chunkBody = new byte[0];
 				}
