@@ -27,7 +27,6 @@ public class ReclaimProtocol extends Thread {
 	
 	public void run(){
 		
-		System.out.println("Why you no run?");
 		String dirPath = "";
 
 		try {
@@ -40,11 +39,8 @@ public class ReclaimProtocol extends Thread {
 		synchronized (peer.getStored()){
 			Iterator<ChunkID> it = Peer.getInstance().getStored().iterator();
 			
-			int testRound = 0;
-			
 			while(this.amountReclaimed < this.reclaimSpace && it.hasNext()){
 				ChunkID chunk = it.next();
-				System.out.println("chunkTest:"+testRound+","+chunk);
 				File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
 				
 				// create message
@@ -62,8 +58,6 @@ public class ReclaimProtocol extends Thread {
 				file.delete();
 				it.remove();
 				peer.removeChunkPeers(chunk);
-					
-				testRound++;
 			}
 		}
 		// Save alterations to peer data

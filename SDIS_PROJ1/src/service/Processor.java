@@ -77,7 +77,6 @@ public class Processor extends Thread {
 				break;
 			case "STORED":
 				msg = new StoredMsg(messageFields, messageBody);
-
 				messageFields = null;
 				storedHandler();
 				break;
@@ -105,9 +104,8 @@ public class Processor extends Thread {
 				messageFields = null;
 				deleteHandler();
 				break;
-			case "REMOVED":
+			case "REMOVE":
 				msg = new RemovedMsg(messageFields, messageBody);
-
 				messageFields = null;
 				removeHandler();
 				break;
@@ -242,7 +240,7 @@ public class Processor extends Thread {
 					restore.writePacket(packet);
 				} else {
 					System.out
-							.println("Wasn't able to create and send chunk message");
+					.println("Wasn't able to create and send chunk message");
 				}
 
 			} else {
@@ -312,12 +310,14 @@ public class Processor extends Thread {
 
 	private void removeHandler() {
 
+		System.out.println("Remove start\n\n\n\n");
 		Peer peer = Peer.getInstance();
 		// check if chunkId exist in database
 		ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
 		int index = peer.getStored().indexOf(tmp);
 		if (index == -1)
 			return;
+		
 
 		// update actualRepDegree
 
@@ -328,10 +328,11 @@ public class Processor extends Thread {
 		peer.getStored().get(index).decreaseRepDegree();
 
 		int actualRepDegree = peer.getStored().get(index).getActualRepDegree();
-		int desiredRepDegree = peer.getStored().get(index)
-				.getDesiredRepDegree();
+		int desiredRepDegree = peer.getStored().get(index).getDesiredRepDegree();
+		
+		System.out.println("Actual:"+actualRepDegree+", Desired:"+desiredRepDegree);
 
-		if (desiredRepDegree < actualRepDegree)
+		if (desiredRepDegree <= actualRepDegree)
 			return;
 		// sleep between 0 to 400 ms
 		waitLookup.add(tmp);
@@ -351,17 +352,7 @@ public class Processor extends Thread {
 		FileID fileId = new FileID();
 		fileId.setID(tmp.getFileID());
 
-		String dirPath;
-		try {
-			dirPath = Extra.createDirectory(FileHandler.BACKUP_FOLDER_NAME);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-
 		FileHandler fileHandler = new FileHandler();
-
-		// MUDEI ISTO, POR CAUSA DOS THROWS, VÊ SE CONTINUA CERTO. ASSINADO:
-		// COSTA
 
 		byte[] chunkBody = new byte[0];
 		try {
@@ -370,14 +361,12 @@ public class Processor extends Thread {
 			e.printStackTrace();
 		} catch (IOException e) {
 			// If fails, chunkBody will be empty
-			System.out.println("Wasn't able to load chunk nr. "
-					+ tmp.getChunkNumber() + " from file id: " + fileId);
+			System.out.println("Wasn't able to load chunk nr. " + tmp.getChunkNumber() + " from file id: " + fileId);
 			chunkBody = new byte[0];
 		}
 
 		try {
-			new BackupProtocol(Peer.getInstance()).backupChunk(fileId,
-					chunkBody, tmp.getChunkNumber(), desiredRepDegree, "1.0");
+			new BackupProtocol(Peer.getInstance()).backupChunk(fileId, chunkBody, tmp.getChunkNumber(), desiredRepDegree, "1.0");
 		} catch (SocketException | InterruptedException e) {
 			e.printStackTrace();
 		}

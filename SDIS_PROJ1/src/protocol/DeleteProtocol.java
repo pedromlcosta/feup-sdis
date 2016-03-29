@@ -1,7 +1,5 @@
 package protocol;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.net.DatagramPacket;
 
 import channels.MCReceiver;
@@ -34,12 +32,10 @@ public class DeleteProtocol extends Thread {
 		Message msg = new DeleteMsg();
 		int nMessagesSent = 0;
 
-		msg.createMessage(null, "1.0", Integer.toString(peer.getServerID()),
-				file.getID());
+		msg.createMessage(null, "1.0", Integer.toString(peer.getServerID()), file.getID());
 
 		MCReceiver mc = peer.getControlChannel();
-		DatagramPacket msgPacket = mc.createDatagramPacket(msg
-				.getMessageBytes());
+		DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
 		while (nMessagesSent < MAX_SENT) {
 			mc.writePacket(msgPacket);
 			try {
@@ -49,27 +45,14 @@ public class DeleteProtocol extends Thread {
 			}
 			nMessagesSent++;
 		}
-
-		// delete
-		synchronized (peer.getStored()) {
-			peer.removeFilesSentEntry(filePath);
-
-			ChunkID chunk;
-			for (int i = 0; i < file.getnChunks(); i++) {
-				chunk = new ChunkID(file.getID(), i + 1);
-				peer.removeChunkPeers(chunk);
-			}
-		}
-
-		// Save alterations to peer data
-		try {
-			peer.saveData();
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		
+		//delete
+		peer.removeFilesSentEntry(filePath);
+		
+		ChunkID chunk;
+		for(int i=0; i < file.getnChunks(); i++){
+			chunk = new ChunkID(file.getID(),i+1);
+			peer.removeChunkPeers(chunk);
 		}
 	}
 }
