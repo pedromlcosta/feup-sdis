@@ -11,6 +11,7 @@ import chunk.Chunk;
 import extra.Extra;
 
 public class FileID {
+	private long fileSize;
 	private int nChunks;
 	private int desiredRepDegree;
 	private int homeServer;
@@ -28,7 +29,7 @@ public class FileID {
 		File file = new File(fileName);
 		String absPath = file.getAbsolutePath();
 		Path path = file.toPath();
-		long fileSize = file.length();
+		fileSize = file.length();
 		// TODO case where fileSize multiple of ChunkSize
 		this.nChunks = (int) Math.ceil((1.0 * fileSize) / Chunk.getChunkSize());
 		// each file must have at least 1 chunck
@@ -50,8 +51,24 @@ public class FileID {
 		// this.nChunks + "\n ID: " + this.ID);
 	}
 
+	public long getFileSize() {
+		return fileSize;
+	}
+
+	public void setFileSize(long fileSize) {
+		this.fileSize = fileSize;
+	}
+	
 	public int getnChunks() {
 		return nChunks;
+	}
+
+	public ArrayList<Chunk> getFileChunks() {
+		return fileChunks;
+	}
+
+	public void setFileChunks(ArrayList<Chunk> fileChunks) {
+		this.fileChunks = fileChunks;
 	}
 
 	public void setnChunks(int nChunks) {

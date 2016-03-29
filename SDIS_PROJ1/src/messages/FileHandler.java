@@ -143,7 +143,10 @@ public class FileHandler {
 
 	public void writeToFile(byte[] fileData) throws IOException {
 		fileWriter.write(fileData);
-		// writePos++;
+	}
+	
+	public void writeToFile(byte[] fileData, int len) throws IOException {
+		fileWriter.write(fileData, 0, len);
 	}
 
 	public void openOutStream() {

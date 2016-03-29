@@ -91,7 +91,12 @@ public class RestoreProtocol extends Thread {
 			try {
 				// Wait for message and write it
 				Chunk chunk = waitForChunk(fileID);
-				fileHandler.writeToFile(chunk.getData());
+				if(i != file.getnChunks())
+					fileHandler.writeToFile(chunk.getData());    // if it is the last chunk, write only the part needed?
+				else{
+					System.out.println("File Size: " + file.getFileSize() + " and this chunk:" + (int)file.getFileSize()%64000);
+					fileHandler.writeToFile(chunk.getData(), (int)file.getFileSize()%64000);
+				}
 			} catch (InterruptedException e) {
 				System.out.println("Thead sleep interrupted.");
 				//e.printStackTrace();
