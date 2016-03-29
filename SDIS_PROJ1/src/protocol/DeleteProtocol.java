@@ -22,8 +22,7 @@ public class DeleteProtocol extends Thread {
 
 	public void run() {
 
-		FileID id = new FileID(filePath);
-		file = peer.getFilesSent().get(id.getID());
+		file = peer.getFilesSent().get(filePath);
 		if (file == null) {
 			System.out.println(filePath + " not found");
 			return;
@@ -48,7 +47,7 @@ public class DeleteProtocol extends Thread {
 		}
 		
 		//delete
-		peer.removeFilesSentEntry(id.getID());
+		peer.removeFilesSentEntry(filePath);
 		
 		ChunkID chunk;
 		for(int i=0; i < file.getnChunks(); i++){
