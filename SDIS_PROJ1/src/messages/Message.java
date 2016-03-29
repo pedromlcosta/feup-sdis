@@ -60,9 +60,9 @@ public class Message {
 	public static synchronized String[] parseHeader(String header) {
 		Pattern pattern = Pattern.compile(PATTERN);
 		String[] match = pattern.split(header, -2);
-		for (String a : Extra.eraseEmpty(match)) {
-			// System.out.println("Print: " + a);
-		}
+		// for (String a : Extra.eraseEmpty(match)) {
+		// System.out.println("Print: " + a);
+		// }
 
 		return Extra.eraseEmpty(match);
 	}
@@ -77,7 +77,7 @@ public class Message {
 	}
 
 	public boolean createMessageAux() {
-		System.out.println(messageToSend);
+		// System.out.println(messageToSend);
 		if (validateMsg(messageToSend)) {
 			System.out.println("Message Valid");
 
@@ -127,10 +127,10 @@ public class Message {
 	}
 
 	public byte[] getMessageData() {
-		if (body != null)
-			System.out.println("GET DATA BEING CALLED: " + body.length);
-		else
-			System.out.println("BODY IS NULL");
+		// if (body != null)
+		// System.out.println("GET DATA BEING CALLED: " + body.length);
+		// else
+		// System.out.println("BODY IS NULL");
 		return body;
 	}
 
@@ -143,13 +143,13 @@ public class Message {
 			message = new byte[body.length + headerBytes.length];
 			System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
 			System.arraycopy(body, 0, message, headerBytes.length, body.length);
-			System.out.println("BODY HAS: " + body.length);
+			// System.out.println("BODY HAS: " + body.length);
 		} else {
 			message = new byte[headerBytes.length];
-			System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
+			// System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
 		}
-		System.out.println("HEADER HAS: " + headerBytes.length);
-		System.out.println("MESSAGE HAS : " + message.length);
+		// System.out.println("HEADER HAS: " + headerBytes.length);
+		// System.out.println("MESSAGE HAS : " + message.length);
 		return message;
 	}
 

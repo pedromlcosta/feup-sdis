@@ -61,7 +61,7 @@ public class ReceiverServer extends Thread {
 						// packet.getLength otherwise he would always use the
 						// max size of the buf
 						body = Arrays.copyOfRange(receivedMessage, i + 4, receivePacket.getLength());
-						System.out.println("Packet received:\n header with: " + i + " And the body will go from: " + (i + 4) + " to: " + receivePacket.getLength());
+					//	System.out.println("Packet received:\n header with: " + i + " And the body will go from: " + (i + 4) + " to: " + receivePacket.getLength());
 						break;
 					}
 			}
