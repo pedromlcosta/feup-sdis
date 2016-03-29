@@ -2,6 +2,7 @@ package service;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.NotSerializableException;
 import java.net.InetAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -139,6 +140,8 @@ public class Peer implements Invocation {
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
+		}catch (NotSerializableException e){
+			System.out.println("wtf is going on here?");
 		}catch(IOException e){
 			System.out.println(e.getMessage());
 			e.printStackTrace();

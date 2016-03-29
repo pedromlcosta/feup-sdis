@@ -25,7 +25,7 @@ import service.Peer;
 public class BackupProtocol extends Thread {
 
 	private static final int SLEEP_TIME = 401;
-	private static final int INITIAL_WAITING_TIME = 1;
+	private static final double INITIAL_WAITING_TIME = 0.1;
 	// A peer must never store the chunks of its own files.
 	private Peer peer;
 	private String fileName;
@@ -170,7 +170,7 @@ public class BackupProtocol extends Thread {
 			} else // Replace
 				seversAnswers.replace(chunkToSendID, new ArrayList<Integer>());
 		}
-		long waitTime = TimeUnit.SECONDS.toNanos(INITIAL_WAITING_TIME);
+		double waitTime = TimeUnit.SECONDS.toNanos((long) INITIAL_WAITING_TIME);
 		do {
 			System.out.println("Wait for STORED");
 			// send Message
@@ -192,7 +192,7 @@ public class BackupProtocol extends Thread {
 	 * @param waitTime
 	 * @return
 	 */
-	public long waitForStoredMsg(Chunk chunkToSend, ChunkID chunkToSendID, long waitTime) {
+	public long waitForStoredMsg(Chunk chunkToSend, ChunkID chunkToSendID, double waitTime) {
 		long startTime = System.nanoTime();
 		long elapsedTime;
 		ArrayList<Integer> serverWhoAnswered;
@@ -375,7 +375,7 @@ public class BackupProtocol extends Thread {
 		this.version = version;
 	}
 
-	public static int getInitialWaitingTime() {
+	public static double getInitialWaitingTime() {
 		return INITIAL_WAITING_TIME;
 	}
 
