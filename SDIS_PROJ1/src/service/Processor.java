@@ -1,6 +1,7 @@
 package service;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.SocketException;
@@ -28,8 +29,9 @@ public class Processor extends Thread {
 
 	private static final int MAX_WAIT = 400;
 	private static ArrayList<ChunkID> waitLookup = new ArrayList<ChunkID>();
-	private final long GETCHUNK_WAITING_NANO = TimeUnit.MILLISECONDS.toNanos(400); // In
-																					// milliseconds
+	private final long GETCHUNK_WAITING_NANO = TimeUnit.MILLISECONDS
+			.toNanos(400); // In
+							// milliseconds
 	private String messageString;
 	// TODO either this or turn parseHeader Static
 	private Message msg;
@@ -60,9 +62,9 @@ public class Processor extends Thread {
 			if (messageFields == null)
 				messageFields = Message.parseHeader(messageString);
 			messageString = ""; // Empty, so as not to fill unnecessary space
-			
-			//System.out.println(messageFields[0]);
-			
+
+			// System.out.println(messageFields[0]);
+
 			switch (messageFields[0]) {
 			case "PUTCHUNK":
 				msg = new PutChunkMsg(messageFields, messageBody);
@@ -126,13 +128,15 @@ public class Processor extends Thread {
 	}
 
 	private void deleteHandler() {
-		
+
 		Peer peer = Peer.getInstance();
 		String fileId = msg.getFileId();
 		String dirPath = "";
 
 		try {
-			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
+			dirPath = Extra
+					.createDirectory(Integer.toString(peer.getServerID())
+							+ File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -144,13 +148,26 @@ public class Processor extends Thread {
 				String idToConfirm = chunk.getFileID();
 				// if chunk belongs to file delete chunk and stored
 				if (fileId.equals(idToConfirm)) {
-					File file = new File(dirPath + File.separator + fileId + "_" + chunk.getChunkNumber());
+					File file = new File(dirPath + File.separator + fileId
+							+ "_" + chunk.getChunkNumber());
 					file.delete();
 					it.remove();
 					peer.removeChunkPeers(chunk);
 				}
 			}
 		}
+
+		// Save alterations to peer data
+		try {
+			peer.saveData();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
 		File file = new File(dirPath);
 		Extra.recursiveDelete(file);
 	}
@@ -162,7 +179,8 @@ public class Processor extends Thread {
 
 		// Received a chunk and was expecting it for a restore
 		if (restoreChannel.expectingRestoreChunks(chunkID.getFileID())) {
-			restoreChannel.addRestoreChunk(chunkID.getFileID(), new Chunk(chunkID, msg.getBody()));
+			restoreChannel.addRestoreChunk(chunkID.getFileID(), new Chunk(
+					chunkID, msg.getBody()));
 			System.out.println("receveid an expected chunk!");
 		} else { // Received a chunk whose file wasn't being restored
 			System.out.println("receveid a foreign chunk!");
@@ -183,7 +201,6 @@ public class Processor extends Thread {
 		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
 		MDRReceiver restore = Peer.getInstance().getRestoreChannel();
 		FileHandler fileHandler = new FileHandler();
-		
 
 		if (Peer.getInstance().hasChunkStored(chunkID)) {
 
@@ -199,47 +216,61 @@ public class Processor extends Thread {
 			// Check if any chunks expected arrived while sleeping
 			if (!restore.wasForeignChunkReceived(chunkID)) {
 				// enviar mensagem com o chunk
-				
-				System.out.println("No foreign chunk received! Going to send a chunk!");
+
+				System.out
+						.println("No foreign chunk received! Going to send a chunk!");
 
 				byte[] chunkBody = new byte[0];
-				try{
+				try {
 					chunkBody = fileHandler.loadChunkBody(chunkID);
-				}catch(IOException e){
+				} catch (IOException e) {
 					e.getMessage();
 					e.printStackTrace();
-					System.out.println("Wasn't able to load chunk nr. " + chunkID.getChunkNumber() + " from file id: " + chunkID.getFileID());
+					System.out.println("Wasn't able to load chunk nr. "
+							+ chunkID.getChunkNumber() + " from file id: "
+							+ chunkID.getFileID());
 					chunkBody = new byte[0];
 				}
-				
-				String[] args = { "1.0", Integer.toString(Peer.getInstance().getServerID()), chunkID.getFileID(), Integer.toString(chunkID.getChunkNumber()) };
+
+				String[] args = { "1.0",
+						Integer.toString(Peer.getInstance().getServerID()),
+						chunkID.getFileID(),
+						Integer.toString(chunkID.getChunkNumber()) };
 
 				// byte[] chunkBody = new byte[64];
 				Message chunkMsg = new ChunkMsg();
 				if (chunkMsg.createMessage(chunkBody, args) == true) {
-					DatagramPacket packet = restore.createDatagramPacket(chunkMsg.getMessageBytes());
+					DatagramPacket packet = restore
+							.createDatagramPacket(chunkMsg.getMessageBytes());
 					restore.writePacket(packet);
 				} else {
-					System.out.println("Wasn't able to create and send chunk message");
+					System.out
+							.println("Wasn't able to create and send chunk message");
 				}
 
-			}else{
+			} else {
 				System.out.println("Received foreign chunk???");
 			}
 
 			// Stop waiting for chunks with this ID
 			restore.expectingForeignChunk(chunkID, false);
 
-		}else{
+		} else {
 			/*
-			System.out.println("Stored size: " + Peer.getInstance().getData().getStored().size());
-			
-			for(int i = 0; i< Peer.getInstance().getData().getStored().size(); i++){
-				System.out.println("Chunk nr. " + Peer.getInstance().getData().getStored().get(i).getChunkNumber() +" with fileID: " + Peer.getInstance().getData().getStored().get(i).getFileID());
-			}
-
-			System.out.println("And our chunkID we were comparing to has chunk nr. " + chunkID.getChunkNumber()+ " and fileID " + chunkID.getFileID() );
-			*/
+			 * System.out.println("Stored size: " +
+			 * Peer.getInstance().getData().getStored().size());
+			 * 
+			 * for(int i = 0; i<
+			 * Peer.getInstance().getData().getStored().size(); i++){
+			 * System.out.println("Chunk nr. " +
+			 * Peer.getInstance().getData().getStored().get(i).getChunkNumber()
+			 * +" with fileID: " +
+			 * Peer.getInstance().getData().getStored().get(i).getFileID()); }
+			 * 
+			 * System.out.println(
+			 * "And our chunkID we were comparing to has chunk nr. " +
+			 * chunkID.getChunkNumber()+ " and fileID " + chunkID.getFileID() );
+			 */
 			System.out.println("Dont have it stored, sorry!");
 		}
 
@@ -253,12 +284,14 @@ public class Processor extends Thread {
 		// Filipe places the message in a queue? that will be read by the
 		// protocole handling the putcunk Message creation // concorrent?
 		// guardar no Peer?
-		
+
 		Peer peer = Peer.getInstance();
 
-		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
+		ChunkID chunkID = new ChunkID(this.msg.getFileId(),
+				this.msg.getChunkNo());
 		// TODO check this part
-		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand().get(chunkID);
+		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand()
+				.get(chunkID);
 		if (answered == null) {
 			answered = new ArrayList<Integer>();
 			Peer.getInstance().getAnsweredCommand().put(chunkID, answered);
@@ -266,10 +299,10 @@ public class Processor extends Thread {
 		synchronized (answered) {
 			int senderID = Integer.parseInt(this.msg.getSenderID());
 
-			if (answered.isEmpty() || !answered.contains(senderID)){
+			if (answered.isEmpty() || !answered.contains(senderID)) {
 				answered.add(senderID);
 				int index = peer.getStored().indexOf(chunkID);
-				if(index != -1)
+				if (index != -1)
 					peer.getStored().get(index).increaseRepDegree();
 			}
 		}
@@ -298,7 +331,8 @@ public class Processor extends Thread {
 		peer.getStored().get(index).decreaseRepDegree();
 
 		int actualRepDegree = peer.getStored().get(index).getActualRepDegree();
-		int desiredRepDegree = peer.getStored().get(index).getDesiredRepDegree();
+		int desiredRepDegree = peer.getStored().get(index)
+				.getDesiredRepDegree();
 
 		if (desiredRepDegree < actualRepDegree)
 			return;
@@ -328,22 +362,25 @@ public class Processor extends Thread {
 		}
 
 		FileHandler fileHandler = new FileHandler();
-		
-		// MUDEI ISTO, POR CAUSA DOS THROWS, VÊ SE CONTINUA CERTO. ASSINADO: COSTA
-		
+
+		// MUDEI ISTO, POR CAUSA DOS THROWS, VÊ SE CONTINUA CERTO. ASSINADO:
+		// COSTA
+
 		byte[] chunkBody = new byte[0];
 		try {
 			chunkBody = fileHandler.loadChunkBody(tmp);
 		} catch (SocketException | ClassNotFoundException e) {
 			e.printStackTrace();
-		}catch(IOException e){
-			//If fails, chunkBody will be empty
-			System.out.println("Wasn't able to load chunk nr. " + tmp.getChunkNumber() + " from file id: " + fileId);
+		} catch (IOException e) {
+			// If fails, chunkBody will be empty
+			System.out.println("Wasn't able to load chunk nr. "
+					+ tmp.getChunkNumber() + " from file id: " + fileId);
 			chunkBody = new byte[0];
 		}
-		
+
 		try {
-			new BackupProtocol(Peer.getInstance()).backupChunk(fileId, chunkBody, tmp.getChunkNumber(), desiredRepDegree, "1.0");
+			new BackupProtocol(Peer.getInstance()).backupChunk(fileId,
+					chunkBody, tmp.getChunkNumber(), desiredRepDegree, "1.0");
 		} catch (SocketException | InterruptedException e) {
 			e.printStackTrace();
 		}
