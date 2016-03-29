@@ -76,7 +76,6 @@ public class Processor extends Thread {
 				break;
 			case "STORED":
 				msg = new StoredMsg(messageFields, messageBody);
-
 				messageFields = null;
 				storedHandler();
 				break;
@@ -104,9 +103,8 @@ public class Processor extends Thread {
 				messageFields = null;
 				deleteHandler();
 				break;
-			case "REMOVED":
+			case "REMOVE":
 				msg = new RemovedMsg(messageFields, messageBody);
-
 				messageFields = null;
 				removeHandler();
 				break;
@@ -233,6 +231,7 @@ public class Processor extends Thread {
 					restore.writePacket(packet);
 				} else {
 					System.out.println("Wasn't able to create and send chunk message");
+					System.out.println("Wasn't able to create and send chunk message");
 				}
 
 			} else {
@@ -300,6 +299,7 @@ public class Processor extends Thread {
 
 	private void removeHandler() {
 
+		System.out.println("Remove start\n\n\n\n");
 		Peer peer = Peer.getInstance();
 		// check if chunkId exist in database
 		ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
@@ -317,8 +317,9 @@ public class Processor extends Thread {
 
 		int actualRepDegree = peer.getStored().get(index).getActualRepDegree();
 		int desiredRepDegree = peer.getStored().get(index).getDesiredRepDegree();
-		System.out.println("DEGREEE ACTUAL: " + actualRepDegree + " AND DESIRED: " + desiredRepDegree);
-		if (desiredRepDegree < actualRepDegree)
+		System.out.println("Actual:" + actualRepDegree + ", Desired:" + desiredRepDegree);
+
+		if (desiredRepDegree <= actualRepDegree)
 			return;
 		// sleep between 0 to 400 ms
 		waitLookup.add(tmp);
@@ -345,9 +346,6 @@ public class Processor extends Thread {
 		}
 
 		FileHandler fileHandler = new FileHandler();
-
-		// MUDEI ISTO, POR CAUSA DOS THROWS, VÊ SE CONTINUA CERTO. ASSINADO:
-		// COSTA
 
 		byte[] chunkBody = new byte[0];
 		try {

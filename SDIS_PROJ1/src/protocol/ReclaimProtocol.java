@@ -24,10 +24,9 @@ public class ReclaimProtocol extends Thread {
 		this.reclaimSpace = reclaimSpace;
 		this.amountReclaimed = 0;
 	}
-
-	public void run() {
-
-		System.out.println("Why you no run?");
+	
+	public void run(){
+		
 		String dirPath = "";
 
 		try {
@@ -35,36 +34,30 @@ public class ReclaimProtocol extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
+		
 		peer.sortStored();
-		synchronized (peer.getStored()) {
+		synchronized (peer.getStored()){
 			Iterator<ChunkID> it = Peer.getInstance().getStored().iterator();
-
-			int testRound = 0;
-
-			while (this.amountReclaimed < this.reclaimSpace && it.hasNext()) {
+			
+			while(this.amountReclaimed < this.reclaimSpace && it.hasNext()){
 				ChunkID chunk = it.next();
-				System.out.println("chunkTest:" + testRound + "," + chunk);
 				File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
-
+				
 				// create message
 				Message msg = new RemovedMsg();
-
-				String[] args = { "1.0", Integer.toString(peer.getServerID()), chunk.getFileID(), Integer.toString(chunk.getChunkNumber()) };
+	
+				String[] args = { "1.0",  Integer.toString(peer.getServerID()), chunk.getFileID(), Integer.toString(chunk.getChunkNumber())};
 				msg.createMessage(null, args);
-
+	
 				MCReceiver mc = peer.getControlChannel();
 				DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
 				mc.writePacket(msgPacket);
-
+				
 				this.amountReclaimed += file.length();
-
+				
 				file.delete();
 				it.remove();
 				peer.removeChunkPeers(chunk);
-
-				testRound++;
-				System.out.println("Removing Space");
 			}
 		}
 		// Save alterations to peer data
