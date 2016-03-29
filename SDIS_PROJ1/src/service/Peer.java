@@ -226,7 +226,7 @@ public class Peer implements Invocation {
 		// e os metodos para enviar para os canais que queremos as cenas
 
 		// Call backup protocol through dispatcher
-
+		System.out.println(desiredRepDegree);
 		new BackupProtocol(filePath, desiredRepDegree, "1.0", Peer.getInstance()).start();
 
 		System.out.println("backup called");
@@ -246,6 +246,7 @@ public class Peer implements Invocation {
 	@Override
 	public synchronized String delete(String filePath) throws RemoteException {
 		// Call delete protocol
+		System.out.println("Before calling delete");
 		Thread delete = new DeleteProtocol(filePath);
 		delete.start();
 		System.out.println("delete called");

@@ -132,7 +132,7 @@ public class Processor extends Thread {
 		String dirPath = "";
 
 		try {
-			dirPath = Extra.createDirectory(FileHandler.BACKUP_FOLDER_NAME);
+			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -151,6 +151,8 @@ public class Processor extends Thread {
 				}
 			}
 		}
+		File file = new File(dirPath);
+		Extra.recursiveDelete(file);
 	}
 
 	private void chunkHandler() {
@@ -295,11 +297,6 @@ public class Processor extends Thread {
 		int launch = reclaimCheck(tmp.getFileID(), tmp.getChunkNumber());
 		if (launch == -1)
 			return;
-
-		// if not received putChunk, launch
-		// peer.backup(filePath, desiredRepDegree);
-		// backupChunk(tmp.getFileID(), byte[] chunkData, tmp.getChunkNumber(),
-		// desiredRepDegree, "1.0");
 
 		// if not received putChunk, launch
 		FileID fileId = new FileID();

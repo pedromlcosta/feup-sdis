@@ -73,5 +73,19 @@ public class Extra {
 	public static void setWorkingDirPath(String workingDirPath) {
 		Extra.workingDirPath = workingDirPath;
 	}
-
+	
+	public static void recursiveDelete(File file) {
+        
+		if (!file.exists())
+            return;
+        
+		if (file.isDirectory()) {
+            for (File f : file.listFiles())
+                recursiveDelete(f);
+            
+            if(file.list().length == 0)
+    			file.delete();
+        }
+		
+    }
 }
