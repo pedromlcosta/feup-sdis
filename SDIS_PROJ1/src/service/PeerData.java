@@ -1,11 +1,20 @@
 package service;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
+import messages.FileHandler;
 import chunk.ChunkID;
+import extra.Extra;
 import file.FileID;
 
 public class PeerData implements Serializable {
@@ -15,16 +24,77 @@ public class PeerData implements Serializable {
 	 */
 	private static final long serialVersionUID = 3129093348473298612L;
 
+	
 	private ArrayList<ChunkID> stored;
 	private HashMap<String, FileID> filesSent;
 	private HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 	private final static long DISK_SIZE = 64000 * 1000000;
+	private static String dataPath = ""; 
+	private static final String fileName = "PeerData.dat";
+
 	// CONSTRUCTOR
 
 	public PeerData() {
 		stored = new ArrayList<ChunkID>();
 		filesSent = new HashMap<String, FileID>();
 		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
+	}
+
+	// SERIAL FUNCTIONS
+	public void savePeerData() throws FileNotFoundException,
+			IOException {
+
+		String dirPath = "";
+
+		try {
+			dirPath = Extra.createDirectory(dataPath);
+		} catch (IOException e1) {
+			throw new IOException(e1.getMessage() + " Couldn't create directory.");
+		}
+
+		FileOutputStream fileOut = new FileOutputStream(dirPath + File.separator + fileName);
+		ObjectOutputStream objOut = new ObjectOutputStream(fileOut);
+
+		objOut.writeObject(this);
+		fileOut.close();
+		objOut.close();
+
+	}
+
+	public PeerData loadPeerData() throws FileNotFoundException, IOException,
+			ClassNotFoundException {
+
+		String dirPath = "";
+
+		try {
+			dirPath = Extra.createDirectory(dataPath);
+		} catch (IOException e1) {
+			throw new IOException(e1.getMessage() + " Couldn't create directory: " + dirPath);
+		}
+
+		// Read from disk using FileInputStream   -> may throw file not found exception ->
+		FileInputStream fileIn = null;
+		
+		fileIn = new FileInputStream(dirPath+ File.separator + fileName);
+		
+
+		// Read object using ObjectInputStream
+		ObjectInputStream objIn = new ObjectInputStream(fileIn);
+
+		// Read an object
+		Object obj = objIn.readObject();
+
+		fileIn.close();
+		objIn.close();
+
+		if (obj instanceof PeerData) {
+			PeerData data = (PeerData) obj;
+			System.out.println("Finished loading PeerData");
+			return data;
+		} else {
+			throw new ClassNotFoundException("Object read from PeerData.dat isn't a valid PeerData object.");
+		}
+
 	}
 
 	// GETTERS AND SETTERS
@@ -37,7 +107,8 @@ public class PeerData implements Serializable {
 		return serverAnsweredCommand;
 	}
 
-	public void setServerAnsweredCommand(HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand) {
+	public void setServerAnsweredCommand(
+			HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand) {
 		this.serverAnsweredCommand = serverAnsweredCommand;
 	}
 
@@ -52,8 +123,6 @@ public class PeerData implements Serializable {
 	public void setFilesSent(HashMap<String, FileID> filesSent) {
 		this.filesSent = filesSent;
 	}
-
-	// SERIAL FUNCTIONS
 
 	// OTHER FUNCTIONS
 
@@ -94,6 +163,19 @@ public class PeerData implements Serializable {
 
 	public static long getDiskSize() {
 		return DISK_SIZE;
+	}
+
+	public static String getDataPath() {
+		return dataPath;
+	}
+	
+	public static void setDataPath(String path) {
+		dataPath = path;
+	}
+
+	public static void setDataPath(Integer serverID) {
+		PeerData.dataPath = Integer.toString(serverID)
+					+ File.separator + "PeerData";
 	}
 
 }

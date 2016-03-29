@@ -1,5 +1,6 @@
 package service;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.rmi.NotBoundException;
@@ -58,8 +59,8 @@ public class Peer implements Invocation {
 
 	public static void main(String[] args) {
 
-		System.out.println("Teste");
-		// Load stuff
+		Peer peer = Peer.getInstance();
+		
 		for (String a : args)
 			System.out.println(a);
 
@@ -87,35 +88,64 @@ public class Peer implements Invocation {
 		}
 
 		try {
-			// TODO CHANGED FOR TESTING
+
 			rmiName = args[0];
-			Peer.getInstance().setServerID(Integer.parseInt(args[0]));
+			peer.setServerID(Integer.parseInt(args[0]));
+			peer.getData();
+			
 
-			Peer.getInstance().getControlChannel().setAddr(InetAddress.getByName(args[1]));
-			Peer.getInstance().getControlChannel().setPort(Integer.parseInt(args[2]));
-			Peer.getInstance().getControlChannel().createSocket();
-			Peer.getInstance().getControlChannel().joinMulticastGroup();
+			peer.getControlChannel().setAddr(InetAddress.getByName(args[1]));
+			peer.getControlChannel().setPort(Integer.parseInt(args[2]));
+			peer.getControlChannel().createSocket();
+			peer.getControlChannel().joinMulticastGroup();
 
-			Peer.getInstance().getDataChannel().setAddr(InetAddress.getByName(args[3]));
-			Peer.getInstance().getDataChannel().setPort(Integer.parseInt(args[4]));
-			Peer.getInstance().getDataChannel().createSocket();
-			Peer.getInstance().getDataChannel().joinMulticastGroup();
+			peer.getDataChannel().setAddr(InetAddress.getByName(args[3]));
+			peer.getDataChannel().setPort(Integer.parseInt(args[4]));
+			peer.getDataChannel().createSocket();
+			peer.getDataChannel().joinMulticastGroup();
 
-			Peer.getInstance().getRestoreChannel().setAddr(InetAddress.getByName(args[5]));
-			Peer.getInstance().getRestoreChannel().setPort(Integer.parseInt(args[6]));
-			Peer.getInstance().getRestoreChannel().createSocket();
-			Peer.getInstance().getRestoreChannel().joinMulticastGroup();
+			peer.getRestoreChannel().setAddr(InetAddress.getByName(args[5]));
+			peer.getRestoreChannel().setPort(Integer.parseInt(args[6]));
+			peer.getRestoreChannel().createSocket();
+			peer.getRestoreChannel().joinMulticastGroup();
 
-			Peer.getInstance().createPeerFolder();
+			peer.createPeerFolder();
 
-			Peer.getInstance().getRestoreChannel().start();
-			Peer.getInstance().getDataChannel().start();
-			Peer.getInstance().getControlChannel().start();
+			peer.getRestoreChannel().start();
+			peer.getDataChannel().start();
+			peer.getControlChannel().start();
 		} catch (IOException e) {
 			System.out.println("Couldn't bind IP:ports to peer");
 		} catch (Exception e) {
 			e.printStackTrace();
 			System.out.println("Invalid Args. Ports must be between 1 and 9999 and IP must be a valid multicast address.");
+			return;
+		}
+		
+		// LOAD PEER DATA
+		
+		try{
+			PeerData.setDataPath(peer.getServerID());
+			peer.loadData();
+		}catch(FileNotFoundException e){
+			System.out.println("There wasn't a peerData file, creating one now");
+			System.out.println(e.getMessage());   
+			//e.printStackTrace();                           // Remove these stack traces after
+			//There wasn't a file, so we're creating one now!
+			try {
+				peer.getData().savePeerData();
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
+		}catch(IOException e){
+			System.out.println(e.getMessage());
+			e.printStackTrace();
+			return;
+		} catch (ClassNotFoundException e) {
+			System.out.println(e.getMessage());
+			e.printStackTrace();
 			return;
 		}
 
@@ -142,58 +172,6 @@ public class Peer implements Invocation {
 	}
 
 	// Methods
-
-	public ArrayList<ChunkID> getStored() {
-		return data.getStored();
-	}
-
-	public void addChunk(ChunkID id) {
-		data.addChunk(id);
-	}
-
-	public void setStored(ArrayList<ChunkID> stored) {
-		data.setStored(stored);
-	}
-
-	public HashMap<String, FileID> getFilesSent() {
-		return data.getFilesSent();
-	}
-
-	public void setFilesSent(HashMap<String, FileID> filesSent) {
-		data.setFilesSent(filesSent);
-	}
-
-	public HashMap<ChunkID, ArrayList<Integer>> getAnsweredCommand() {
-		return data.getServerAnsweredCommand();
-	}
-
-	public void setAnsweredCommand(HashMap<ChunkID, ArrayList<Integer>> answeredCommand) {
-		data.setServerAnsweredCommand(answeredCommand);
-	}
-
-	public MCReceiver getControlChannel() {
-		return controlChannel;
-	}
-
-	public void setControlChannel(MCReceiver controlChannel) {
-		this.controlChannel = controlChannel;
-	}
-
-	public MDBReceiver getDataChannel() {
-		return dataChannel;
-	}
-
-	public void setDataChannel(MDBReceiver dataChannel) {
-		this.dataChannel = dataChannel;
-	}
-
-	public MDRReceiver getRestoreChannel() {
-		return restoreChannel;
-	}
-
-	public void setRestoreChannel(MDRReceiver restoreChannel) {
-		this.restoreChannel = restoreChannel;
-	}
 
 	public static void registerRMI() {
 		// Create and export object
@@ -262,6 +240,59 @@ public class Peer implements Invocation {
 		return "reclaim sent";
 	}
 
+	
+	public ArrayList<ChunkID> getStored() {
+		return data.getStored();
+	}
+
+	public void addChunk(ChunkID id) {
+		data.addChunk(id);
+	}
+
+	public void setStored(ArrayList<ChunkID> stored) {
+		data.setStored(stored);
+	}
+
+	public HashMap<String, FileID> getFilesSent() {
+		return data.getFilesSent();
+	}
+
+	public void setFilesSent(HashMap<String, FileID> filesSent) {
+		data.setFilesSent(filesSent);
+	}
+
+	public HashMap<ChunkID, ArrayList<Integer>> getAnsweredCommand() {
+		return data.getServerAnsweredCommand();
+	}
+
+	public void setAnsweredCommand(HashMap<ChunkID, ArrayList<Integer>> answeredCommand) {
+		data.setServerAnsweredCommand(answeredCommand);
+	}
+
+	public MCReceiver getControlChannel() {
+		return controlChannel;
+	}
+
+	public void setControlChannel(MCReceiver controlChannel) {
+		this.controlChannel = controlChannel;
+	}
+
+	public MDBReceiver getDataChannel() {
+		return dataChannel;
+	}
+
+	public void setDataChannel(MDBReceiver dataChannel) {
+		this.dataChannel = dataChannel;
+	}
+
+	public MDRReceiver getRestoreChannel() {
+		return restoreChannel;
+	}
+
+	public void setRestoreChannel(MDRReceiver restoreChannel) {
+		this.restoreChannel = restoreChannel;
+	}
+	
 	public static Registry getRmiRegistry() {
 		return rmiRegistry;
 	}
@@ -336,6 +367,10 @@ public class Peer implements Invocation {
 
 	public void setData(PeerData data) {
 		this.data = data;
+	}
+	
+	public void loadData() throws FileNotFoundException, ClassNotFoundException, IOException {
+		this.data = data.loadPeerData();
 	}
 
 	public String getFolderPath() {
