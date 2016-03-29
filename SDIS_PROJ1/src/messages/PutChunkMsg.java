@@ -29,12 +29,17 @@ public class PutChunkMsg extends Message {
 	// PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg>
 	// <CRLF><CRLF><Body>
 	public boolean createMessage(byte[] data, String... args) {
-
+		if (data == null) {
+			System.out.println("Missing body");
+			return false;
+		}
+		this.body = data;
+		System.out.println("THE DATA HAS: " + data.length + " BYTES");
 		createHeader(args, N_ARGS, getPutchunk());
 		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER
 				+ MORE_THAN_1_SPACE + DREGREE_ARG + MSG_END_WITH_BODY;
 
-		return createMessageAux(data);
+		return createMessageAux();
 
 	}
 }

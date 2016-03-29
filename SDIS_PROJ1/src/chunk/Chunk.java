@@ -12,7 +12,7 @@ public class Chunk implements Serializable {
 	private byte data[];
 
 	public Chunk(String fileID, int number, byte[] data) {
-		System.out.println(fileID + "\n " + number);
+		//System.out.println(fileID + "\n " + number);
 		this.data = data.clone();
 		this.id = new ChunkID(fileID, number);
 	}

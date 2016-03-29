@@ -32,7 +32,8 @@ public class StoredMsg extends Message {
 		createHeader(args, N_ARGS, getStored());
 		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER
 				+ MSG_END_WITHOUT_BODY;
-		return createMessageAux(data);
+		
+		return createMessageAux();
 
 	}
 }

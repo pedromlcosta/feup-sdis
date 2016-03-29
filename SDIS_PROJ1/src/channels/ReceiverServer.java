@@ -14,6 +14,7 @@ import service.Processor;
 
 public class ReceiverServer extends Thread {
 
+	private static final int HEADER_SIZE = 512;
 	private MulticastSocket socket = null;
 	private boolean quitFlag = false;
 	private int serverID;
@@ -57,12 +58,14 @@ public class ReceiverServer extends Thread {
 				if (receivedMessage[i] == '\r' && receivedMessage[i + 1] == '\n')
 					if (receivedMessage[i + 2] == '\r' && receivedMessage[i + 3] == '\n') {
 						header = new String(Arrays.copyOf(receivedMessage, i));
-						body = Arrays.copyOfRange(receivedMessage, i + 4, receivedMessage.length);
+						// packet.getLength otherwise he would always use the
+						// max size of the buf
+						body = Arrays.copyOfRange(receivedMessage, i + 4, receivePacket.getLength());
+						System.out.println("Packet received:\n header with: " + i + " And the body will go from: " + (i + 4) + " to: " + receivePacket.getLength());
 						break;
 					}
 			}
 			if (header != null && header.length() > 0) {
-				System.out.println(header.length() + "  " + buf.length);
 				header = header.substring(0, header.length());
 				System.out.println("Server Received: " + header);
 
@@ -76,7 +79,7 @@ public class ReceiverServer extends Thread {
 				}
 				header = "";
 				body = null;
-				buf = new byte[Chunk.getChunkSize() + 512];
+				buf = new byte[Chunk.getChunkSize() + HEADER_SIZE];
 			}
 		}
 	}

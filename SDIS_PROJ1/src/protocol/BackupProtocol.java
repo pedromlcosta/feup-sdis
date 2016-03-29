@@ -73,21 +73,21 @@ public class BackupProtocol extends Thread {
 	 */
 	public void backupFile(FileHandler split, FileID fileID) {
 		System.out.println("Backup Stuff");
-		byte[] chunk;
+		byte[] chunkData;
 		int currentPos;
 		int chunkNumber = 0;
 		try {
 			do {
 				// Get chunk
-				chunk = split.splitFile();
-				currentPos = chunk.length;
+				chunkData = split.splitFile();
+				currentPos = chunkData.length;
 				// update Chunk Number
 				chunkNumber++;
-				System.out.println("Chunk Number: " + chunkNumber);
+				System.out.println("Chunk Number: " + chunkNumber + " ChunkData length: " + chunkData.length);
 				// Send putChunk msg
-				backupChunk(fileID, chunk, chunkNumber, wantedRepDegree, version);
+				backupChunk(fileID, chunkData, chunkNumber, wantedRepDegree, version);
 
-			} while (chunk.length > 0 && checkNChunks(fileID, chunkNumber));
+			} while (chunkData.length > 0 && checkNChunks(fileID, chunkNumber));
 
 			// Empty body when the file has a size multiple of the ChunkSize
 			if (fileID.isMultiple()) {
@@ -148,6 +148,8 @@ public class BackupProtocol extends Thread {
 
 		// Send Mensage
 		DatagramPacket msgPacket = peer.getDataChannel().createDatagramPacket(msg.getMessageBytes()); //
+
+		System.out.println("MSGPACKET HAS: " + msgPacket.getLength());
 		// TODO when should we clean ArrayList to avoid having "false positives"
 		HashMap<ChunkID, ArrayList<Integer>> seversAnswers = peer.getAnsweredCommand();
 		synchronized (seversAnswers) {
@@ -225,7 +227,7 @@ public class BackupProtocol extends Thread {
 		// Chunk No
 		args[3] = Integer.toString(putchunkMSG.getChunkNo());
 		byte msgData[] = putchunkMSG.getMessageData();
-		 
+		System.out.println("MSGDATAIN PUTCHUNKRECEIVE: " + msgData.length);
 		// TODO good idea?
 		Chunk chunk = new Chunk(new ChunkID(fileID, putchunkMSG.getChunkNo()), msgData);
 		chunk.setDesiredRepDegree(putchunkMSG.getReplicationDeg());
@@ -258,12 +260,20 @@ public class BackupProtocol extends Thread {
 	 */
 	public void writeChunk(String dirPath, Chunk chunk, ChunkID id) {
 		// Write Chunk
+		//
 		try {
+
 			FileOutputStream fileWriter = new FileOutputStream(dirPath + File.separator + id.getFileID() + "_" + id.getChunkNumber());
 			ObjectOutputStream out = new ObjectOutputStream(fileWriter);
 			// TODO OR out.writeObject(chunk.getData());
+			System.out.println("Data to Write: " + chunk.getData().length);
+			byte[] arr = new byte[3];
+			arr[0] = 'l';
+			arr[1] = 'a';
+			arr[2] = 'c';
+			// out.writeObject(chunk.getData());
 			out.writeObject(chunk);
-			fileWriter.close();
+
 			out.close();
 		} catch (FileNotFoundException e1) {
 			System.out.println("FileNotFound");
@@ -271,6 +281,7 @@ public class BackupProtocol extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		return;
 	}
 
 	/**
