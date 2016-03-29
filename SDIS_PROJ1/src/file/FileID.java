@@ -2,6 +2,7 @@ package file;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
@@ -10,7 +11,7 @@ import java.util.ArrayList;
 import chunk.Chunk;
 import extra.Extra;
 
-public class FileID {
+public class FileID  implements Serializable{
 	private long fileSize;
 	private int nChunks;
 	private int desiredRepDegree;
@@ -24,7 +25,7 @@ public class FileID {
 
 	}
 
-	public FileID(String fileName) {
+	public FileID(String fileName){
 		// TODO multiple Nchunks bellow
 		File file = new File(fileName);
 		String absPath = file.getAbsolutePath();
