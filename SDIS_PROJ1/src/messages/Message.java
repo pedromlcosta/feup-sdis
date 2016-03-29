@@ -146,7 +146,7 @@ public class Message {
 			// System.out.println("BODY HAS: " + body.length);
 		} else {
 			message = new byte[headerBytes.length];
-			// System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
+			System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
 		}
 		// System.out.println("HEADER HAS: " + headerBytes.length);
 		// System.out.println("MESSAGE HAS : " + message.length);

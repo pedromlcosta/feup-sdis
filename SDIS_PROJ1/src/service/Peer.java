@@ -123,31 +123,31 @@ public class Peer implements Invocation {
 		}
 		
 		// LOAD PEER DATA
-		
-		try{
-			PeerData.setDataPath(peer.getServerID());
-			peer.loadData();
-		}catch(FileNotFoundException e){
-			System.out.println("There wasn't a peerData file, creating one now");
-			System.out.println(e.getMessage());   
-			//e.printStackTrace();                           // Remove these stack traces after
-			//There wasn't a file, so we're creating one now!
-			try {
-				peer.saveData();
-			} catch (FileNotFoundException e1) {
-				e1.printStackTrace();
-			} catch (IOException e1) {
-				e1.printStackTrace();
-			}
-		}catch(IOException e){
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-			return;
-		} catch (ClassNotFoundException e) {
-			System.out.println(e.getMessage());
-			e.printStackTrace();
-			return;
-		}
+//		
+//		try{
+//			PeerData.setDataPath(peer.getServerID());
+//			peer.loadData();
+//		}catch(FileNotFoundException e){
+//			System.out.println("There wasn't a peerData file, creating one now");
+//			System.out.println(e.getMessage());   
+//			//e.printStackTrace();                           // Remove these stack traces after
+//			//There wasn't a file, so we're creating one now!
+//			try {
+//				peer.saveData();
+//			} catch (FileNotFoundException e1) {
+//				e1.printStackTrace();
+//			} catch (IOException e1) {
+//				e1.printStackTrace();
+//			}
+//		}catch(IOException e){
+//			System.out.println(e.getMessage());
+//			e.printStackTrace();
+//			return;
+//		} catch (ClassNotFoundException e) {
+//			System.out.println(e.getMessage());
+//			e.printStackTrace();
+//			return;
+//		}
 
 		registerRMI();
 
