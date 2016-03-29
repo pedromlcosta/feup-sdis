@@ -35,15 +35,21 @@ public class MDRReceiver extends ReceiverServer {
 	}
 	
 	// Synchronized to avoid 2 restores at once interleaving the functions used inside
-	public synchronized boolean isBeingRestoredAlready(String file){
-		if (restoreChunksReceived.containsKey(file) == false){
-			restoreChunksReceived.put(file, new ArrayList<Chunk>());
+	public synchronized boolean startRestore(String fileID){
+		if (restoreChunksReceived.containsKey(fileID) == false){
+			restoreChunksReceived.put(fileID, new ArrayList<Chunk>());
 			return false;
 		}
 		else{
 			return true;
 		}
 	}
+	
+	public synchronized void finishRestore(String fileID){
+		System.out.println("finish restore called");
+		restoreChunksReceived.remove(fileID);
+	}
+	
 	
 	public synchronized boolean expectingRestoreChunks(String fileID){
 		return restoreChunksReceived.containsKey(fileID);

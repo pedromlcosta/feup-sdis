@@ -60,7 +60,9 @@ public class Processor extends Thread {
 			if (messageFields == null)
 				messageFields = Message.parseHeader(messageString);
 			messageString = ""; // Empty, so as not to fill unnecessary space
-			System.out.println(messageFields[0]);
+			
+			//System.out.println(messageFields[0]);
+			
 			switch (messageFields[0]) {
 			case "PUTCHUNK":
 				msg = new PutChunkMsg(messageFields, messageBody);
@@ -177,6 +179,9 @@ public class Processor extends Thread {
 		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
 		MDRReceiver restore = Peer.getInstance().getRestoreChannel();
 		FileHandler fileHandler = new FileHandler();
+		
+		
+		
 		if (Peer.getInstance().hasChunkStored(chunkID)) {
 
 			// Start waiting for chunks with this ID
@@ -191,6 +196,8 @@ public class Processor extends Thread {
 			// Check if any chunks expected arrived while sleeping
 			if (!restore.wasForeignChunkReceived(chunkID)) {
 				// enviar mensagem com o chunk
+				
+				System.out.println("No foreign chunk received! Going to send a chunk!");
 
 				byte[] chunkBody = fileHandler.loadChunkBody(chunkID);
 				String[] args = { "1.0", Integer.toString(Peer.getInstance().getServerID()), chunkID.getFileID(), Integer.toString(chunkID.getChunkNumber()) };
@@ -204,11 +211,22 @@ public class Processor extends Thread {
 					System.out.println("Wasn't able to create and send chunk message");
 				}
 
+			}else{
+				System.out.println("Received foreign chunk???");
 			}
 
 			// Stop waiting for chunks with this ID
 			restore.expectingForeignChunk(chunkID, false);
 
+		}else{
+			System.out.println("Stored size: " + Peer.getInstance().getData().getStored().size());
+			
+			for(int i = 0; i< Peer.getInstance().getData().getStored().size(); i++){
+				System.out.println("Chunk nr. " + Peer.getInstance().getData().getStored().get(i).getChunkNumber());
+			}
+
+			
+			System.out.println("Dont have it stored, sorry!");
 		}
 
 	}

@@ -60,8 +60,10 @@ public class Message {
 	public static synchronized String[] parseHeader(String header) {
 		Pattern pattern = Pattern.compile(PATTERN);
 		String[] match = pattern.split(header, -2);
-		for (String a : Extra.eraseEmpty(match))
-			System.out.println("Print: " + a);
+		for (String a : Extra.eraseEmpty(match)){
+			//System.out.println("Print: " + a);
+		}
+			
 
 		return Extra.eraseEmpty(match);
 	}

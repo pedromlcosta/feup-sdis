@@ -24,7 +24,7 @@ public class TestApp {
 				remoteName = args[0];
 				subProtocol = args[1].toLowerCase();
 				filePath = args[2];
-				desiredRepDeg = Integer.parseInt(args[3]);
+				
 
 				Registry registry = LocateRegistry.getRegistry("localhost");
 				Invocation stub = (Invocation) registry.lookup(remoteName);
@@ -33,6 +33,7 @@ public class TestApp {
 
 				switch (subProtocol) {
 				case "backup":
+					desiredRepDeg = Integer.parseInt(args[3]);
 					response = stub.backup(filePath, desiredRepDeg);
 					break;
 				case "restore":
@@ -81,6 +82,7 @@ public class TestApp {
 		if (args.length < 2) { // Min number of args: 3 Max number or args: 4
 			System.out.println("Incorrect number of args.");
 			System.out.println("Correct usage: java TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>. ");
+			return false;
 		} else {
 			// Verify peer_ap first
 			if (args[0] == null || !Extra.isNumeric(args[0])) {

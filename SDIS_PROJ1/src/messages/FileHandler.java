@@ -16,6 +16,7 @@ import extra.Extra;
 //TODO STATIC OR NOT?? Check if good practice the Chunk.getChunkSize()
 public class FileHandler {
 	public static final String BACKUP_FOLDER_NAME = "backup";
+	public static final String RESTORE_FOLDER_NAME = "restore";
 	private File file;
 	private FileInputStream fileReader;
 	private FileOutputStream fileWriter;

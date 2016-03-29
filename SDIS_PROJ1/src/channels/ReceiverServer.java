@@ -42,7 +42,6 @@ public class ReceiverServer extends Thread {
 	public void run() {
 		System.out.println("Started Running the thread");
 		while (!quitFlag) {
-			System.out.println("New run");
 
 			DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
 			try {

@@ -58,9 +58,9 @@ public class BackupProtocol extends Thread {
 		// already in the hashmap
 		HashMap<String, FileID> sentFiles = peer.getFilesSent();
 		synchronized (sentFiles) {
-			if (sentFiles.containsKey(fileID.getID()))
+			if (sentFiles.containsKey(fileName))
 				return;
-			sentFiles.put(fileID.getID(), fileID);
+			sentFiles.put(fileName, fileID);
 		}
 		backupFile(split, fileID);
 		System.out.println("End of backupFile");

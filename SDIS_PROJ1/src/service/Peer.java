@@ -326,7 +326,7 @@ public class Peer implements Invocation {
 	}
 
 	public boolean hasChunkStored(ChunkID id) {
-		return data.getStored().contains(id);
+		return data.hasChunkStored(id);
 	}
 
 	public PeerData getData() {
