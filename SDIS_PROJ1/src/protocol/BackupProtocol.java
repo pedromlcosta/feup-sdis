@@ -63,15 +63,15 @@ public class BackupProtocol extends Thread {
 				return;
 			sentFiles.put(fileName, fileID);
 			// Save alterations to peer data
-//			try {
-//				peer.saveData();
-//			} catch (FileNotFoundException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+			// try {
+			// peer.saveData();
+			// } catch (FileNotFoundException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// } catch (IOException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// }
 		}
 		backupFile(split, fileID);
 		System.out.println("End of backupFile");
@@ -266,15 +266,15 @@ public class BackupProtocol extends Thread {
 				storedList.get(index).increaseRepDegree();
 			}
 			// Save alterations to peer data
-//			try {
-//				peer.saveData();
-//			} catch (FileNotFoundException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			} catch (IOException e) {
-//				// TODO Auto-generated catch block
-//				e.printStackTrace();
-//			}
+			// try {
+			// peer.saveData();
+			// } catch (FileNotFoundException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// } catch (IOException e) {
+			// // TODO Auto-generated catch block
+			// e.printStackTrace();
+			// }
 		}
 
 		writeChunk(dirPath, chunk, id);
