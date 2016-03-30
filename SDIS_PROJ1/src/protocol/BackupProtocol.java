@@ -51,7 +51,15 @@ public class BackupProtocol extends Thread {
 		System.out.println(fileName);
 		FileHandler split = new FileHandler();
 		split.changeFileToSplit(fileName);
-		FileID fileID = new FileID(fileName);
+		FileID fileID;
+		try {
+			fileID = new FileID(fileName);
+		} catch (Exception e) {
+			e.printStackTrace();
+			fileID = null;
+			split = null;
+			return;
+		}
 		fileID.setDesiredRepDegree(wantedRepDegree);
 
 		// If already in hash file already Send, "fileID" must match with one

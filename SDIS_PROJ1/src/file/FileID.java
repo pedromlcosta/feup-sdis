@@ -11,7 +11,8 @@ import java.util.ArrayList;
 import chunk.Chunk;
 import extra.Extra;
 
-public class FileID  implements Serializable{
+public class FileID implements Serializable {
+	private static final int MAX_NUMBER_OF_CHUNKS = 1000000;
 	private long fileSize;
 	private int nChunks;
 	private int desiredRepDegree;
@@ -25,7 +26,7 @@ public class FileID  implements Serializable{
 
 	}
 
-	public FileID(String fileName){
+	public FileID(String fileName) throws Exception {
 		// TODO multiple Nchunks bellow
 		File file = new File(fileName);
 		String absPath = file.getAbsolutePath();
@@ -35,7 +36,10 @@ public class FileID  implements Serializable{
 		this.nChunks = (int) Math.ceil((1.0 * fileSize) / Chunk.getChunkSize());
 		// each file must have at least 1 chunck
 		this.nChunks = ((this.nChunks == 0 && fileSize > 0) ? 1 : this.nChunks);
-
+		if (nChunks > MAX_NUMBER_OF_CHUNKS) {
+			System.out.println("File is to large to be backed up");
+			throw new Exception("File Too large to be backed up");
+		}
 		// In case fileSize is a multiple of ChunkSize
 		if (fileSize % Chunk.getChunkSize() == 0) {
 			multiple = true;
@@ -59,7 +63,7 @@ public class FileID  implements Serializable{
 	public void setFileSize(long fileSize) {
 		this.fileSize = fileSize;
 	}
-	
+
 	public int getnChunks() {
 		return nChunks;
 	}
