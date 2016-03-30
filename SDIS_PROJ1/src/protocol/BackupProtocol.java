@@ -146,10 +146,11 @@ public class BackupProtocol extends Thread {
 	 * @throws SocketException
 	 * @throws InterruptedException
 	 */
-	public void backupChunk(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version) throws SocketException, InterruptedException {
+	public boolean backupChunk(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version) throws SocketException, InterruptedException {
 		System.out.println("Backup Chunk");
 		Message msg = new PutChunkMsg();
 		int nMessagesSent = 0;
+		boolean chunkStatus = true;
 		// Create Chunk
 		Chunk chunkToSend = new Chunk(file.getID(), chunkNumber, chunkData);
 		chunkToSend.getId().setDesiredRepDegree(wantedRepDegree);
@@ -191,6 +192,13 @@ public class BackupProtocol extends Thread {
 			waitTime *= 2;
 		} while (nMessagesSent < 5 && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
 		System.out.println("End Backup Of Chunk");
+		if (nMessagesSent >= 5 || chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree()) {
+			System.out.println("The backup of the file of the chunk Number: " + chunkNumber + " has failed to reach the disered Replication Degree: " + wantedRepDegree
+					+ " instead the actual degree is: " + chunkToSend.getActualRepDegree());
+			chunkStatus = false;
+		}
+
+		return chunkStatus;
 	}
 
 	/**
