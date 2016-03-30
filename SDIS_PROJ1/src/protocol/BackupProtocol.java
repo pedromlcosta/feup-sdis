@@ -63,6 +63,16 @@ public class BackupProtocol extends Thread {
 			sentFiles.put(fileName, fileID);
 		}
 		backupFile(split, fileID);
+		
+		// Finished backing up, save?
+		try {
+			peer.saveData();
+		} catch (FileNotFoundException e1) {
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		
 		System.out.println("End of backupFile");
 	}
 
@@ -216,6 +226,14 @@ public class BackupProtocol extends Thread {
 			System.out.println("backingup Own file");
 			return;
 		}
+
+		// Create Peer folder, if not yet existing
+		try {
+			peer.createPeerFolder();
+		} catch (IOException e2) {
+			//System.out.println("Folder already exists.");
+		}
+
 		try {
 			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
