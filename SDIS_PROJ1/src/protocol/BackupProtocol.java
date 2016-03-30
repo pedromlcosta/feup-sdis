@@ -56,11 +56,20 @@ public class BackupProtocol extends Thread {
 
 		// If already in hash file already Send, "fileID" must match with one
 		// already in the hashmap
-		HashMap<String, FileID> sentFiles = peer.getFilesSent();
+		HashMap<String, ArrayList<FileID>> sentFiles = peer.getFilesSent();
+		ArrayList<FileID> fileList;
 		synchronized (sentFiles) {
-			if (sentFiles.containsKey(fileName))
-				return;
-			sentFiles.put(fileName, fileID);
+			if (sentFiles.containsKey(fileName)) {
+				fileList = sentFiles.get(fileName);
+				synchronized (fileList) {
+					// if (!fileList.contains(fileID))
+					fileList.add(fileID);
+				}
+			} else {
+				fileList = new ArrayList<FileID>();
+				fileList.add(fileID);
+				sentFiles.put(fileName, fileList);
+			}
 
 			backupFile(split, fileID);
 

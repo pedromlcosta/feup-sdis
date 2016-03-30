@@ -256,11 +256,11 @@ public class Peer implements Invocation {
 		data.setStored(stored);
 	}
 
-	public HashMap<String, FileID> getFilesSent() {
+	public HashMap<String, ArrayList<FileID>> getFilesSent() {
 		return data.getFilesSent();
 	}
 
-	public void setFilesSent(HashMap<String, FileID> filesSent) {
+	public void setFilesSent(HashMap<String, ArrayList<FileID>> filesSent) {
 		data.setFilesSent(filesSent);
 	}
 

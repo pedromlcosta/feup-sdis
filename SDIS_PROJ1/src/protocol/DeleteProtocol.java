@@ -22,7 +22,8 @@ public class DeleteProtocol extends Thread {
 
 	public void run() {
 
-		file = peer.getFilesSent().get(filePath);
+		// TODO get first FIle or last???
+		file = peer.getFilesSent().get(filePath).get(0);
 		if (file == null) {
 			System.out.println(filePath + " not found");
 			return;

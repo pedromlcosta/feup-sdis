@@ -50,7 +50,8 @@ public class RestoreProtocol extends Thread {
 			e1.printStackTrace();
 		}
 
-		FileID file = peer.getFilesSent().get(fileName);
+		// TODO get first FIle or last???
+		FileID file = peer.getFilesSent().get(fileName).get(0);
 
 		// Check if it was backed up by this peer
 		if (file == null) {
@@ -62,24 +63,23 @@ public class RestoreProtocol extends Thread {
 		String fileID = file.getID();
 
 		// Check if file is already being restored at the moment or not
-		// and flag it as being restored if not   -> START EXPECTING CHUNKS FOR THIS fileID
+		// and flag it as being restored if not -> START EXPECTING CHUNKS FOR
+		// THIS fileID
 		if (receiverChannel.startRestore(fileID)) {
 			System.out.println("This file is already being restored");
 			return;
 		}
 
-		
 		if (!fileHandler.createFile(dirPath + File.separator + fileName)) {
 			System.out.println("File with this name already exists, couldn't restore");
-			//return;
+			// return;
 		}
 		Message msg = new GetChunkMsg();
 
-		
-		
-		// CHUNK MAIN CYCLE:  Send GETCHUNK -> Wait for CHUNK -> Write it to the file
+		// CHUNK MAIN CYCLE: Send GETCHUNK -> Wait for CHUNK -> Write it to the
+		// file
 		for (int i = 1; i <= file.getnChunks(); i++) {
-			String[] args = { "1.0",  Integer.toString(peer.getServerID()), file.getID(), Integer.toString(i) };
+			String[] args = { "1.0", Integer.toString(peer.getServerID()), file.getID(), Integer.toString(i) };
 
 			// Create message
 			if (msg.createMessage(null, args) == false) {
@@ -90,41 +90,43 @@ public class RestoreProtocol extends Thread {
 			// Send message
 			peer.getControlChannel().writePacket(packet);
 
-			
-			
 			try {
 				// Wait for message and write it
 				Chunk chunk = waitForChunk(fileID, i);
-				
-				if(chunk == null){
-					System.out.println("Timeout: couldn't obtain Chunk nr. "+ i + " after 4 seconds, restore failed");
+
+				if (chunk == null) {
+					System.out.println("Timeout: couldn't obtain Chunk nr. " + i + " after 4 seconds, restore failed");
 					return;
 				}
-				
-				if(i != file.getnChunks())
-					fileHandler.writeToFile(chunk.getData());    // if it is the last chunk, write only the part needed?
-				else{
-					System.out.println("File Size: " + file.getFileSize() + " and this chunk:" + (int)file.getFileSize()%64000);
-					fileHandler.writeToFile(chunk.getData(), (int)file.getFileSize()%64000);
+
+				if (i != file.getnChunks())
+					fileHandler.writeToFile(chunk.getData()); // if it is the
+																// last chunk,
+																// write only
+																// the part
+																// needed?
+				else {
+					System.out.println("File Size: " + file.getFileSize() + " and this chunk:" + (int) file.getFileSize() % 64000);
+					fileHandler.writeToFile(chunk.getData(), (int) file.getFileSize() % 64000);
 				}
 			} catch (InterruptedException e) {
 				System.out.println("Thead sleep interrupted.");
-				//e.printStackTrace();
-			}catch( IOException e){
+				// e.printStackTrace();
+			} catch (IOException e) {
 				System.out.println("File writing exception");
 				e.printStackTrace();
-			}catch(Exception e){
+			} catch (Exception e) {
 				System.out.println("Non IO nor Interruption exception HAHAHAHHAEHHEHEHEHUHEUHEUHUEwesuck.");
 				e.printStackTrace();
 			}
 
 		}
-		
-		
 
-		// File Restore over, remove FileID from chunks being received 
+		// File Restore over, remove FileID from chunks being received
 		try {
-			fileHandler.closeOutputStream(); // ask someone if they know a better option than doing manually?
+			fileHandler.closeOutputStream(); // ask someone if they know a
+												// better option than doing
+												// manually?
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -132,39 +134,39 @@ public class RestoreProtocol extends Thread {
 
 	}
 
-
 	public synchronized Chunk waitForChunk(String fileID, int expectedChunkNr) throws InterruptedException {
 
-		// This get will never return null, we previously filled the hashmap 
+		// This get will never return null, we previously filled the hashmap
 		// with a fileID key associated to an empty chunk array!
-		
+
 		ArrayList<Chunk> restoreChunks = receiverChannel.getRestoreChunksReceived().get(fileID);
-		
-		if(restoreChunks == null){
+
+		if (restoreChunks == null) {
 			System.out.println("Well, I be damned..." + fileID);
 		}
-			
+
 		Chunk chunk = null;
 
 		long startTime = System.currentTimeMillis();
-		
+
 		while (true) {
-			
+
 			if (restoreChunks != null && !restoreChunks.isEmpty()) {
 				chunk = receiverChannel.getRestoreChunksReceived().get(fileID).remove(0);
 				System.out.println("Wait for chunk obtained chunk with nr: " + chunk.getId().getChunkNumber());
-				
+
 				if (chunk != null)
-					if(chunk.getId().getChunkNumber() == expectedChunkNr)
-						break;		// Finally got a valid and expected chunk, else would be discarded
+					if (chunk.getId().getChunkNumber() == expectedChunkNr)
+						break; // Finally got a valid and expected chunk, else
+								// would be discarded
 			}
-			
+
 			// If timeout, returns null, else, wait 50 more milliseconds
-			if((System.currentTimeMillis() - startTime) > RESTORE_TIMEOUT)
+			if ((System.currentTimeMillis() - startTime) > RESTORE_TIMEOUT)
 				return null;
-			else		
+			else
 				Thread.sleep(50);
-			
+
 		}
 		return chunk;
 	}

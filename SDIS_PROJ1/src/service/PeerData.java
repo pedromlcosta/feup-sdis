@@ -25,25 +25,23 @@ public class PeerData implements Serializable {
 	 */
 	private static final long serialVersionUID = 3129093348473298612L;
 
-	
 	private ArrayList<ChunkID> stored;
-	private HashMap<String, FileID> filesSent;
+	private HashMap<String, ArrayList<FileID>> filesSent;
 	private HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 	private final static long DISK_SIZE = 64000 * 1000000;
-	private static String dataPath = ""; 
+	private static String dataPath = "";
 	private static final String fileName = "PeerData.dat";
 
 	// CONSTRUCTOR
 
 	public PeerData() {
 		stored = new ArrayList<ChunkID>();
-		filesSent = new HashMap<String, FileID>();
+		filesSent = new HashMap<String,  ArrayList<FileID>>();
 		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
 	}
 
 	// SERIAL FUNCTIONS
-	public void savePeerData() throws FileNotFoundException,
-			IOException {
+	public void savePeerData() throws FileNotFoundException, IOException {
 
 		String dirPath = "";
 
@@ -62,8 +60,7 @@ public class PeerData implements Serializable {
 
 	}
 
-	public PeerData loadPeerData() throws FileNotFoundException, IOException,
-			ClassNotFoundException, NotSerializableException {
+	public PeerData loadPeerData() throws FileNotFoundException, IOException, ClassNotFoundException, NotSerializableException {
 
 		String dirPath = "";
 
@@ -73,11 +70,11 @@ public class PeerData implements Serializable {
 			throw new IOException(e1.getMessage() + " Couldn't create directory: " + dirPath);
 		}
 
-		// Read from disk using FileInputStream   -> may throw file not found exception ->
+		// Read from disk using FileInputStream -> may throw file not found
+		// exception ->
 		FileInputStream fileIn = null;
-		
-		fileIn = new FileInputStream(dirPath+ File.separator + fileName);
-		
+
+		fileIn = new FileInputStream(dirPath + File.separator + fileName);
 
 		// Read object using ObjectInputStream
 		ObjectInputStream objIn = new ObjectInputStream(fileIn);
@@ -108,8 +105,7 @@ public class PeerData implements Serializable {
 		return serverAnsweredCommand;
 	}
 
-	public void setServerAnsweredCommand(
-			HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand) {
+	public void setServerAnsweredCommand(HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand) {
 		this.serverAnsweredCommand = serverAnsweredCommand;
 	}
 
@@ -117,11 +113,11 @@ public class PeerData implements Serializable {
 		this.stored = stored;
 	}
 
-	public HashMap<String, FileID> getFilesSent() {
+	public HashMap<String,  ArrayList<FileID>> getFilesSent() {
 		return filesSent;
 	}
 
-	public void setFilesSent(HashMap<String, FileID> filesSent) {
+	public void setFilesSent(HashMap<String,  ArrayList<FileID>> filesSent) {
 		this.filesSent = filesSent;
 	}
 
@@ -169,14 +165,13 @@ public class PeerData implements Serializable {
 	public static String getDataPath() {
 		return dataPath;
 	}
-	
+
 	public static void setDataPath(String path) {
 		dataPath = path;
 	}
 
 	public static void setDataPath(Integer serverID) {
-		PeerData.dataPath = Integer.toString(serverID)
-					+ File.separator + "PeerData";
+		PeerData.dataPath = Integer.toString(serverID) + File.separator + "PeerData";
 	}
 
 }
