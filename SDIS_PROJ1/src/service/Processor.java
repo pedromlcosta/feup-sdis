@@ -54,7 +54,6 @@ public class Processor extends Thread {
 
 	public void run() {
 		// HANDLE MESSAGES HERE
-		System.out.println("Running processor");
 		// TODO msg != null &&
 		if (messageString != null || messageFields != null) {
 			// legacy reasons (in case some function uses this one)
@@ -174,9 +173,9 @@ public class Processor extends Thread {
 		// Received a chunk and was expecting it for a restore
 		if (restoreChannel.expectingRestoreChunks(chunkID.getFileID())) {
 			restoreChannel.addRestoreChunk(chunkID.getFileID(), new Chunk(chunkID, msg.getBody()));
-			System.out.println("receveid an expected chunk!");
+			System.out.println("Received an expected chunk.");
 		} else { // Received a chunk whose file wasn't being restored
-			System.out.println("receveid a foreign chunk!");
+			System.out.println("Received a foreign chunk.");
 			restoreChannel.receivedForeignChunk(chunkID);
 		}
 
@@ -210,7 +209,7 @@ public class Processor extends Thread {
 			if (!restore.wasForeignChunkReceived(chunkID)) {
 				// enviar mensagem com o chunk
 
-				System.out.println("No foreign chunk received! Going to send a chunk!");
+				System.out.println("No foreign chunk received! Going to send, as requests, chunk nr. " + chunkID.getChunkNumber());
 
 				byte[] chunkBody = new byte[0];
 				try {
@@ -235,7 +234,7 @@ public class Processor extends Thread {
 				}
 
 			} else {
-				System.out.println("Received foreign chunk???");
+				System.out.println("Received a foreign chunk with nr: " + chunkID.getChunkNumber() );
 			}
 
 			// Stop waiting for chunks with this ID

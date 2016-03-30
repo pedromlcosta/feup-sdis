@@ -79,8 +79,6 @@ public class Message {
 	public boolean createMessageAux() {
 		// System.out.println(messageToSend);
 		if (validateMsg(messageToSend)) {
-			System.out.println("Message Valid");
-
 			return true;
 		} else {
 			System.out.println("Mensagem nao valida");

@@ -58,22 +58,21 @@ public class BackupProtocol extends Thread {
 		// already in the hashmap
 		HashMap<String, FileID> sentFiles = peer.getFilesSent();
 		synchronized (sentFiles) {
-			// TODO FILES ALREADY SENT
 			if (sentFiles.containsKey(fileName))
 				return;
 			sentFiles.put(fileName, fileID);
-			// Save alterations to peer data
-			// try {
-			// peer.saveData();
-			// } catch (FileNotFoundException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// } catch (IOException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// }
+
+			backupFile(split, fileID);
+
+			// Finished backing up, save?
+			try {
+				peer.saveData();
+			} catch (FileNotFoundException e1) {
+				e1.printStackTrace();
+			} catch (IOException e1) {
+				e1.printStackTrace();
+			}
 		}
-		backupFile(split, fileID);
 		System.out.println("End of backupFile");
 	}
 
@@ -203,6 +202,7 @@ public class BackupProtocol extends Thread {
 					if (chunkToSend.getDesiredRepDegree() == size) {
 						chunkToSend.setActualRepDegree(size);
 						// TODO delete with System.out.println
+						System.out.println("Got enough stored. Breaking out at " + (System.nanoTime() - startTime));
 						elapsedTime = -1;
 						break;
 					}
@@ -226,16 +226,18 @@ public class BackupProtocol extends Thread {
 			System.out.println("backingup Own file");
 			return;
 		}
+
 		// Create Peer folder, if not yet existing
 		try {
 			peer.createPeerFolder();
 		} catch (IOException e2) {
-			System.out.println("Folder already exists?");
+			// System.out.println("Folder already exists.");
 		}
 
 		try {
 			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 
 		// Version
@@ -266,15 +268,15 @@ public class BackupProtocol extends Thread {
 				storedList.get(index).increaseRepDegree();
 			}
 			// Save alterations to peer data
-			// try {
-			// peer.saveData();
-			// } catch (FileNotFoundException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// } catch (IOException e) {
-			// // TODO Auto-generated catch block
-			// e.printStackTrace();
-			// }
+			try {
+				peer.saveData();
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 		}
 
 		writeChunk(dirPath, chunk, id);
