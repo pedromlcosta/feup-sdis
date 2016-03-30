@@ -79,8 +79,6 @@ public class Message {
 	public boolean createMessageAux() {
 		// System.out.println(messageToSend);
 		if (validateMsg(messageToSend)) {
-			System.out.println("Message Valid");
-
 			return true;
 		} else {
 			System.out.println("Mensagem nao valida");
@@ -146,7 +144,7 @@ public class Message {
 			// System.out.println("BODY HAS: " + body.length);
 		} else {
 			message = new byte[headerBytes.length];
-			// System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
+			System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
 		}
 		// System.out.println("HEADER HAS: " + headerBytes.length);
 		// System.out.println("MESSAGE HAS : " + message.length);

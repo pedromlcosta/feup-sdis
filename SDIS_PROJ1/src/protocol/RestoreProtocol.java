@@ -8,6 +8,7 @@ import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.concurrent.TimeUnit;
 
 import messages.FileHandler;
 import messages.GetChunkMsg;
@@ -21,6 +22,7 @@ import service.Peer;
 
 public class RestoreProtocol extends Thread {
 
+	private final int RESTORE_TIMEOUT = 4000;
 	private static Peer peer = Peer.getInstance();
 	private MDRReceiver receiverChannel = peer.getRestoreChannel();
 	private FileHandler fileHandler = new FileHandler();
@@ -88,9 +90,17 @@ public class RestoreProtocol extends Thread {
 			// Send message
 			peer.getControlChannel().writePacket(packet);
 
+			
+			
 			try {
 				// Wait for message and write it
-				Chunk chunk = waitForChunk(fileID);
+				Chunk chunk = waitForChunk(fileID, i);
+				
+				if(chunk == null){
+					System.out.println("Timeout: couldn't obtain Chunk nr. "+ i + " after 4 seconds, restore failed");
+					return;
+				}
+				
 				if(i != file.getnChunks())
 					fileHandler.writeToFile(chunk.getData());    // if it is the last chunk, write only the part needed?
 				else{
@@ -104,7 +114,7 @@ public class RestoreProtocol extends Thread {
 				System.out.println("File writing exception");
 				e.printStackTrace();
 			}catch(Exception e){
-				System.out.println("Non IO nor Interruption exception.");
+				System.out.println("Non IO nor Interruption exception HAHAHAHHAEHHEHEHEHUHEUHEUHUEwesuck.");
 				e.printStackTrace();
 			}
 
@@ -123,7 +133,7 @@ public class RestoreProtocol extends Thread {
 	}
 
 
-	public Chunk waitForChunk(String fileID) throws InterruptedException {
+	public synchronized Chunk waitForChunk(String fileID, int expectedChunkNr) throws InterruptedException {
 
 		// This get will never return null, we previously filled the hashmap 
 		// with a fileID key associated to an empty chunk array!
@@ -136,15 +146,24 @@ public class RestoreProtocol extends Thread {
 			
 		Chunk chunk = null;
 
+		long startTime = System.currentTimeMillis();
+		
 		while (true) {
 			
 			if (restoreChunks != null && !restoreChunks.isEmpty()) {
 				chunk = receiverChannel.getRestoreChunksReceived().get(fileID).remove(0);
-				System.out.println("Just got the chunk, with size: " + chunk.getData().length);
+				System.out.println("Wait for chunk obtained chunk with nr: " + chunk.getId().getChunkNumber());
+				
 				if (chunk != null)
-					break; // Finally got a valid chunk
+					if(chunk.getId().getChunkNumber() == expectedChunkNr)
+						break;		// Finally got a valid and expected chunk, else would be discarded
 			}
-			Thread.sleep(100);
+			
+			// If timeout, returns null, else, wait 50 more milliseconds
+			if((System.currentTimeMillis() - startTime) > RESTORE_TIMEOUT)
+				return null;
+			else		
+				Thread.sleep(50);
 			
 		}
 		return chunk;

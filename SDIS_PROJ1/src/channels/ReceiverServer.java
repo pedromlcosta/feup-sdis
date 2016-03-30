@@ -67,14 +67,14 @@ public class ReceiverServer extends Thread {
 			}
 			if (header != null && header.length() > 0) {
 				header = header.substring(0, header.length());
-				System.out.println("Server Received: " + header);
-
+	
 				String[] headerArgs = Message.parseHeader(header);
 
 				// TODO ignore messages sent by server
 				if (Integer.parseInt(headerArgs[2]) == Peer.getInstance().getServerID()) {
-					System.out.println("same server");
+					//System.out.println("same server");
 				} else {
+					System.out.println("Server Received: " + header);
 					new Processor(headerArgs, body).start();
 				}
 				header = "";

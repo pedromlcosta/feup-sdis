@@ -124,7 +124,7 @@ public class Peer implements Invocation {
 		}
 		
 		// LOAD PEER DATA
-		
+
 		try{
 			PeerData.setDataPath(peer.getServerID());
 			peer.loadData();

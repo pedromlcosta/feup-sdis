@@ -25,7 +25,7 @@ import service.Peer;
 public class BackupProtocol extends Thread {
 
 	private static final int SLEEP_TIME = 401;
-	private static final double INITIAL_WAITING_TIME = 0.1;
+	private static final int INITIAL_WAITING_TIME = 1;
 	// A peer must never store the chunks of its own files.
 	private Peer peer;
 	private String fileName;
@@ -58,20 +58,9 @@ public class BackupProtocol extends Thread {
 		// already in the hashmap
 		HashMap<String, FileID> sentFiles = peer.getFilesSent();
 		synchronized (sentFiles) {
-			// TODO FILES ALREADY SENT
 			if (sentFiles.containsKey(fileName))
 				return;
 			sentFiles.put(fileName, fileID);
-			// Save alterations to peer data
-			try {
-				peer.saveData();
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
 		}
 		backupFile(split, fileID);
 		System.out.println("End of backupFile");
@@ -170,7 +159,7 @@ public class BackupProtocol extends Thread {
 			} else // Replace
 				seversAnswers.replace(chunkToSendID, new ArrayList<Integer>());
 		}
-		double waitTime = TimeUnit.SECONDS.toNanos((long) INITIAL_WAITING_TIME);
+		long waitTime = TimeUnit.SECONDS.toNanos(INITIAL_WAITING_TIME);
 		do {
 			System.out.println("Wait for STORED");
 			// send Message
@@ -192,7 +181,7 @@ public class BackupProtocol extends Thread {
 	 * @param waitTime
 	 * @return
 	 */
-	public long waitForStoredMsg(Chunk chunkToSend, ChunkID chunkToSendID, double waitTime) {
+	public long waitForStoredMsg(Chunk chunkToSend, ChunkID chunkToSendID, long waitTime) {
 		long startTime = System.nanoTime();
 		long elapsedTime;
 		ArrayList<Integer> serverWhoAnswered;
@@ -203,6 +192,7 @@ public class BackupProtocol extends Thread {
 					if (chunkToSend.getDesiredRepDegree() == size) {
 						chunkToSend.setActualRepDegree(size);
 						// TODO delete with System.out.println
+						System.out.println("Got enough stored. Breaking out at " + (System.nanoTime() - startTime));
 						elapsedTime = -1;
 						break;
 					}
@@ -226,16 +216,10 @@ public class BackupProtocol extends Thread {
 			System.out.println("backingup Own file");
 			return;
 		}
-		// Create Peer folder, if not yet existing
-		try {
-			peer.createPeerFolder();
-		} catch (IOException e2) {
-			System.out.println("Folder already exists?");
-		}
-
 		try {
 			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
+			e1.printStackTrace();
 		}
 
 		// Version
@@ -264,16 +248,6 @@ public class BackupProtocol extends Thread {
 			} else {
 				// just need to increment Rep Degree
 				storedList.get(index).increaseRepDegree();
-			}
-			// Save alterations to peer data
-			try {
-				peer.saveData();
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
 			}
 		}
 
@@ -375,7 +349,7 @@ public class BackupProtocol extends Thread {
 		this.version = version;
 	}
 
-	public static double getInitialWaitingTime() {
+	public static int getInitialWaitingTime() {
 		return INITIAL_WAITING_TIME;
 	}
 
