@@ -51,7 +51,8 @@ public class RestoreProtocol extends Thread {
 		}
 
 		// TODO get first FIle or last???
-		FileID file = peer.getFilesSent().get(fileName).get(0);
+		ArrayList<FileID> fileSentVersions = peer.getFilesSent().get(fileName);
+		FileID file = fileSentVersions.get(fileSentVersions.size()-1);
 
 		// Check if it was backed up by this peer
 		if (file == null) {
