@@ -6,14 +6,22 @@ import java.io.Serializable;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 
 import chunk.Chunk;
+import chunk.ChunkID;
 import extra.Extra;
 
-public class FileID implements Serializable {
+public class FileID implements Serializable, Comparable<FileID> {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private static final int MAX_NUMBER_OF_CHUNKS = 1000000;
 	private long fileSize;
+	private String fileName;
+	private FileTime lastChange;
 	private int nChunks;
 	private int desiredRepDegree;
 	private int homeServer;
@@ -32,6 +40,8 @@ public class FileID implements Serializable {
 		String absPath = file.getAbsolutePath();
 		Path path = file.toPath();
 		fileSize = file.length();
+		this.fileName = fileName;
+
 		// TODO case where fileSize multiple of ChunkSize
 		this.nChunks = (int) Math.ceil((1.0 * fileSize) / Chunk.getChunkSize());
 		// each file must have at least 1 chunck
@@ -47,13 +57,57 @@ public class FileID implements Serializable {
 		try {
 			BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
 			// O ID criado com Path,Owner e data da ultima modificação
-			this.ID = Extra.SHA256(absPath + Files.getOwner(path).toString() + attr.lastModifiedTime().toString());
+			this.lastChange = attr.lastModifiedTime();
+			this.ID = Extra.SHA256(absPath + Files.getOwner(path).toString() + lastChange.toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		// System.out.println(
 		// "FileID create\nFileSize: " + file.length() + "\n" + "Nchunks: " +
 		// this.nChunks + "\n ID: " + this.ID);
+	}
+	
+	@Override
+	public int compareTo(FileID file) {
+		return lastChange.compareTo(file.getLastChange());
+
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((ID == null) ? 0 : ID.hashCode());
+		result = prime * result + desiredRepDegree;
+		result = prime * result + ((fileChunks == null) ? 0 : fileChunks.hashCode());
+		result = prime * result + ((fileName == null) ? 0 : fileName.hashCode());
+		result = prime * result + (int) (fileSize ^ (fileSize >>> 32));
+		result = prime * result + homeServer;
+		result = prime * result + ((lastChange == null) ? 0 : lastChange.hashCode());
+		result = prime * result + (multiple ? 1231 : 1237);
+		result = prime * result + nChunks;
+		return result;
+	}
+
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public FileTime getLastChange() {
+		return lastChange;
+	}
+
+	public void setLastChange(FileTime lastChange) {
+		this.lastChange = lastChange;
+	}
+
+	public static int getMaxNumberOfChunks() {
+		return MAX_NUMBER_OF_CHUNKS;
 	}
 
 	public long getFileSize() {

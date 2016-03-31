@@ -12,8 +12,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-
-import messages.FileHandler;
 import chunk.ChunkID;
 import extra.Extra;
 import file.FileID;
@@ -26,7 +24,7 @@ public class PeerData implements Serializable {
 	private static final long serialVersionUID = 3129093348473298612L;
 
 	private ArrayList<ChunkID> stored;
-	private HashMap<String, ArrayList<FileID>> filesSent;
+	private ArrayList<FileID> filesSent;
 	private HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 	private final static long DISK_SIZE = 64000 * 1000000;
 	private static String dataPath = "";
@@ -36,7 +34,7 @@ public class PeerData implements Serializable {
 
 	public PeerData() {
 		stored = new ArrayList<ChunkID>();
-		filesSent = new HashMap<String,  ArrayList<FileID>>();
+		filesSent = new ArrayList<FileID>();
 		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
 	}
 
@@ -46,6 +44,7 @@ public class PeerData implements Serializable {
 		String dirPath = "";
 
 		try {
+			Extra.createDirectory(Integer.toString(Peer.getInstance().getServerID()));
 			dirPath = Extra.createDirectory(dataPath);
 		} catch (IOException e1) {
 			throw new IOException(e1.getMessage() + " Couldn't create directory.");
@@ -113,11 +112,11 @@ public class PeerData implements Serializable {
 		this.stored = stored;
 	}
 
-	public HashMap<String,  ArrayList<FileID>> getFilesSent() {
+	public  ArrayList<FileID> getFilesSent() {
 		return filesSent;
 	}
 
-	public void setFilesSent(HashMap<String,  ArrayList<FileID>> filesSent) {
+	public void setFilesSent( ArrayList<FileID>filesSent) {
 		this.filesSent = filesSent;
 	}
 

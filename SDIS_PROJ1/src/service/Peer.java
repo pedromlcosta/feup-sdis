@@ -10,6 +10,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 
 import channels.MCReceiver;
@@ -61,7 +62,7 @@ public class Peer implements Invocation {
 	public static void main(String[] args) {
 
 		Peer peer = Peer.getInstance();
-		
+
 		for (String a : args)
 			System.out.println(a);
 
@@ -93,7 +94,6 @@ public class Peer implements Invocation {
 			rmiName = args[0];
 			peer.setServerID(Integer.parseInt(args[0]));
 			peer.getData();
-			
 
 			peer.getControlChannel().setAddr(InetAddress.getByName(args[1]));
 			peer.getControlChannel().setPort(Integer.parseInt(args[2]));
@@ -122,17 +122,17 @@ public class Peer implements Invocation {
 			System.out.println("Invalid Args. Ports must be between 1 and 9999 and IP must be a valid multicast address.");
 			return;
 		}
-		
+
 		// LOAD PEER DATA
 
-		try{
+		try {
 			PeerData.setDataPath(peer.getServerID());
 			peer.loadData();
-		}catch(FileNotFoundException e){
+		} catch (FileNotFoundException e) {
 			System.out.println("There wasn't a peerData file, creating one now");
-			System.out.println(e.getMessage());   
-			//e.printStackTrace();                           // Remove these stack traces after
-			//There wasn't a file, so we're creating one now!
+			System.out.println(e.getMessage());
+			// e.printStackTrace(); // Remove these stack traces after
+			// There wasn't a file, so we're creating one now!
 			try {
 				peer.saveData();
 			} catch (FileNotFoundException e1) {
@@ -140,9 +140,9 @@ public class Peer implements Invocation {
 			} catch (IOException e1) {
 				e1.printStackTrace();
 			}
-		}catch (NotSerializableException e){
+		} catch (NotSerializableException e) {
 			System.out.println("wtf is going on here?");
-		}catch(IOException e){
+		} catch (IOException e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();
 			return;
@@ -243,7 +243,6 @@ public class Peer implements Invocation {
 		return "reclaim sent";
 	}
 
-	
 	public ArrayList<ChunkID> getStored() {
 		return data.getStored();
 	}
@@ -256,11 +255,11 @@ public class Peer implements Invocation {
 		data.setStored(stored);
 	}
 
-	public HashMap<String, ArrayList<FileID>> getFilesSent() {
+	public ArrayList<FileID> getFilesSent() {
 		return data.getFilesSent();
 	}
 
-	public void setFilesSent(HashMap<String, ArrayList<FileID>> filesSent) {
+	public void setFilesSent(ArrayList<FileID> filesSent) {
 		data.setFilesSent(filesSent);
 	}
 
@@ -295,7 +294,7 @@ public class Peer implements Invocation {
 	public void setRestoreChannel(MDRReceiver restoreChannel) {
 		this.restoreChannel = restoreChannel;
 	}
-	
+
 	public static Registry getRmiRegistry() {
 		return rmiRegistry;
 	}
@@ -371,7 +370,7 @@ public class Peer implements Invocation {
 	public void setData(PeerData data) {
 		this.data = data;
 	}
-	
+
 	public void loadData() throws FileNotFoundException, ClassNotFoundException, IOException {
 		this.data = data.loadPeerData();
 	}
@@ -379,7 +378,7 @@ public class Peer implements Invocation {
 	public void saveData() throws FileNotFoundException, IOException {
 		data.savePeerData();
 	}
-	
+
 	public String getFolderPath() {
 		return folderPath;
 	}
@@ -388,6 +387,32 @@ public class Peer implements Invocation {
 		this.folderPath = workingDirPath;
 	}
 
-	
+	// search by name or ID
+	public FileID getFileSent(String field, boolean byName) {
+		if (byName) {
+			ArrayList<FileID> filesWithSameName = new ArrayList<FileID>();
+			for (FileID toCompare : getFilesSent()) {
+				if (toCompare.getFileName().equals(field))
+					filesWithSameName.add(toCompare);
+			}
+			Collections.sort(filesWithSameName);
+			return  filesWithSameName.get(0);
+		} else {
+			for (FileID toCompare : getFilesSent()) {
+				if (toCompare.getID().equals(field))
+					return toCompare;
+			}
+		}
+
+		return null;
+	}
+
+	public boolean containsFileSent(FileID fileID) {
+		for (FileID toCompare : getFilesSent()) {
+			if (toCompare.getID().equals(fileID.getID()))
+				return true;
+		}
+		return false;
+	}
 
 }

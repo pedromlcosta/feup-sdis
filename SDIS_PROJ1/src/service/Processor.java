@@ -234,7 +234,7 @@ public class Processor extends Thread {
 				}
 
 			} else {
-				System.out.println("Received a foreign chunk with nr: " + chunkID.getChunkNumber() );
+				System.out.println("Received a foreign chunk with nr: " + chunkID.getChunkNumber());
 			}
 
 			// Stop waiting for chunks with this ID
@@ -287,18 +287,25 @@ public class Processor extends Thread {
 				int index = peer.getStored().indexOf(chunkID);
 				if (index != -1)
 					peer.getStored().get(index).increaseRepDegree();
+				// TODO change FileID to have name and last modification data
+				FileID toNotify = Peer.getInstance().getFileSent(this.msg.getFileId(), false);
+				synchronized (toNotify) {
+
+					toNotify.notifyAll();
+				}
 
 				// Save alterations to peer data
-//				try {
-//					peer.saveData();
-//				} catch (FileNotFoundException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				} catch (IOException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
+				// try {
+				// peer.saveData();
+				// } catch (FileNotFoundException e) {
+				// // TODO Auto-generated catch block
+				// e.printStackTrace();
+				// } catch (IOException e) {
+				// // TODO Auto-generated catch block
+				// e.printStackTrace();
+				// }
 			}
+
 		}
 	}
 
@@ -367,12 +374,8 @@ public class Processor extends Thread {
 			System.out.println("Wasn't able to load chunk nr. " + tmp.getChunkNumber() + " from file id: " + fileId);
 			chunkBody = new byte[0];
 		}
+		new BackupProtocol(Peer.getInstance()).backupChunk(fileId, chunkBody, tmp.getChunkNumber(), desiredRepDegree, "1.0");
 
-		try {
-			new BackupProtocol(Peer.getInstance()).backupChunk(fileId, chunkBody, tmp.getChunkNumber(), desiredRepDegree, "1.0");
-		} catch (SocketException | InterruptedException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public String getMessageString() {

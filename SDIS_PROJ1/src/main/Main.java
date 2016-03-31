@@ -10,7 +10,7 @@ public class Main {
 
 		System.out.println(System.getProperty("user.dir"));
 		String dirPath = "C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\2\\backup\\";
-		FileOutputStream file = new FileOutputStream("1.pdf");
+		FileOutputStream file = new FileOutputStream("12.pdf");
 		ObjectInputStream out = null;
 		// TODO OR out.writeObject(chunk.getData());
 		for (int i = 1; i < 42; i++) {

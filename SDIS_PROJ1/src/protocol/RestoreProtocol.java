@@ -1,23 +1,17 @@
 package protocol;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 
+import channels.MDRReceiver;
+import chunk.Chunk;
+import extra.Extra;
+import file.FileID;
 import messages.FileHandler;
 import messages.GetChunkMsg;
 import messages.Message;
-import channels.MDRReceiver;
-import chunk.Chunk;
-import chunk.ChunkID;
-import extra.Extra;
-import file.FileID;
 import service.Peer;
 
 public class RestoreProtocol extends Thread {
@@ -45,14 +39,13 @@ public class RestoreProtocol extends Thread {
 		String dirPath = "";
 		try {
 			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.RESTORE_FOLDER_NAME);
-			System.out.println(dirPath);
+			System.out.println("Dirtpath: " + dirPath);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 
 		// TODO get first FIle or last???
-		ArrayList<FileID> fileSentVersions = peer.getFilesSent().get(fileName);
-		FileID file = fileSentVersions.get(fileSentVersions.size()-1);
+		FileID file = peer.getFileSent(fileName,true);
 
 		// Check if it was backed up by this peer
 		if (file == null) {
@@ -71,7 +64,8 @@ public class RestoreProtocol extends Thread {
 			return;
 		}
 
-		if (!fileHandler.createFile(dirPath + File.separator + fileName)) {
+		String[] lastFileName = fileName.split("\\" + File.separator);
+		if (!fileHandler.createFile(dirPath + File.separator + lastFileName[lastFileName.length - 1])) {
 			System.out.println("File with this name already exists, couldn't restore");
 			// return;
 		}

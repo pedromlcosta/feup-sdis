@@ -19,7 +19,7 @@ public class FileHandler {
 	public static final String BACKUP_FOLDER_NAME = "backup";
 	public static final String RESTORE_FOLDER_NAME = "restore";
 	private File file;
-	private FileInputStream fileReader;
+	private RandomAccessFile fileReader;
 	private FileOutputStream fileWriter;
 	private RandomAccessFile fileOut;
 
@@ -34,7 +34,7 @@ public class FileHandler {
 	public void closeInputStream() throws IOException {
 		fileReader.close();
 	}
-	
+
 	public void closeOutputStream() throws IOException {
 		fileWriter.close();
 	}
@@ -45,7 +45,7 @@ public class FileHandler {
 
 	public void changeFileToSplit(String fileName) {
 		try {
-			fileReader = new FileInputStream(fileName);
+			fileReader = new RandomAccessFile(fileName, "r");
 			file = new File(fileName);
 
 		} catch (FileNotFoundException e) {
@@ -62,16 +62,19 @@ public class FileHandler {
 		}
 	}
 
-	public byte[] splitFile() throws IOException {
+	public byte[] splitFile(long pos) throws IOException {
 
 		if (file.exists()) {
 			byte[] chunk = new byte[Chunk.getChunkSize()];
+			fileReader.seek(pos);
 			int bytesRead = fileReader.read(chunk, 0, Chunk.getChunkSize());
 			// TODO return null or return byte[0]
 			if (bytesRead <= 0)
 				return new byte[0];
-			else
+			else if (bytesRead < Chunk.getChunkSize())
 				return Arrays.copyOf(chunk, bytesRead);
+			else
+				return chunk;
 
 		} else
 			return null;
@@ -102,11 +105,11 @@ public class FileHandler {
 		this.file = file;
 	}
 
-	public FileInputStream getFileReader() {
+	public RandomAccessFile getFileReader() {
 		return fileReader;
 	}
 
-	public void setFileReader(FileInputStream fileReader) {
+	public void setFileReader(RandomAccessFile fileReader) {
 		this.fileReader = fileReader;
 	}
 
@@ -124,19 +127,19 @@ public class FileHandler {
 
 		File f = new File(filePath);
 
-		//if (!f.exists() && !f.isDirectory()) {
-			try {
-				System.out.println("Going to open the stream for " + filePath);
-				fileWriter = new FileOutputStream(filePath);
-				System.out.println("Just opened the stream for " + filePath);
-				return true;
-			} catch (FileNotFoundException e) {
-				System.out.println("here");
-				e.printStackTrace();
-			}
-		//} else {
-			//return false;
-		//}
+		// if (!f.exists() && !f.isDirectory()) {
+		try {
+			System.out.println("Going to open the stream for " + filePath);
+			fileWriter = new FileOutputStream(filePath);
+			System.out.println("Just opened the stream for " + filePath);
+			return true;
+		} catch (FileNotFoundException e) {
+			System.out.println("here");
+			e.printStackTrace();
+		}
+		// } else {
+		// return false;
+		// }
 
 		return false;
 	}
@@ -144,7 +147,7 @@ public class FileHandler {
 	public void writeToFile(byte[] fileData) throws IOException {
 		fileWriter.write(fileData);
 	}
-	
+
 	public void writeToFile(byte[] fileData, int len) throws IOException {
 		fileWriter.write(fileData, 0, len);
 	}
@@ -157,7 +160,7 @@ public class FileHandler {
 	public byte[] loadChunkBody(ChunkID chunkID) throws ClassNotFoundException, IOException {
 		String path;
 		String serverID = Integer.toString(Peer.getInstance().getServerID());
-		
+
 		path = Extra.createDirectory(serverID + File.separator + BACKUP_FOLDER_NAME);
 		FileInputStream fileOut = new FileInputStream(path + File.separator + chunkID.getFileID() + "_" + chunkID.getChunkNumber());
 		ObjectInputStream out = new ObjectInputStream(fileOut);
