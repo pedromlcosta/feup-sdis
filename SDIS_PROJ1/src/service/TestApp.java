@@ -13,7 +13,6 @@ public class TestApp {
 		String remoteName;
 		String subProtocol;
 		String filePath;
-		int reclaimSpace;
 
 		// Check if arguments are valid
 		boolean valid = validArgs(args);
@@ -42,8 +41,7 @@ public class TestApp {
 					response = stub.delete(filePath);
 					break;
 				case "reclaim":
-					reclaimSpace = Integer.parseInt(args[2]);
-					response = stub.reclaim(reclaimSpace);
+					response = stub.reclaim(Integer.parseInt(args[2]));
 					break;
 				}
 

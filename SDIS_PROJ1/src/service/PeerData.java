@@ -28,6 +28,7 @@ public class PeerData implements Serializable {
 	private ArrayList<ChunkID> stored;
 	private HashMap<String, ArrayList<FileID>> filesSent;
 	private HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
+	private ArrayList<ChunkID> deleted;
 	private final static long DISK_SIZE = 64000 * 1000000;
 	private static String dataPath = "";
 	private static final String fileName = "PeerData.dat";
@@ -38,6 +39,7 @@ public class PeerData implements Serializable {
 		stored = new ArrayList<ChunkID>();
 		filesSent = new HashMap<String,  ArrayList<FileID>>();
 		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
+		deleted = new ArrayList<ChunkID>();
 	}
 
 	// SERIAL FUNCTIONS
@@ -172,6 +174,22 @@ public class PeerData implements Serializable {
 
 	public static void setDataPath(Integer serverID) {
 		PeerData.dataPath = Integer.toString(serverID) + File.separator + "PeerData";
+	}
+
+	public ArrayList<ChunkID> getDeleted() {
+		return deleted;
+	}
+
+	public void setDeleted(ArrayList<ChunkID> deleted) {
+		this.deleted = deleted;
+	}
+	
+	public void addChunkDeleted(ChunkID chunk) {
+		this.deleted.add(chunk);
+	}
+	
+	public void removeChunkDeleted(ChunkID chunk){
+		this.deleted.remove(chunk);
 	}
 
 }

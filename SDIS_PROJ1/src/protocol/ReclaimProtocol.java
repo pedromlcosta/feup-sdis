@@ -53,6 +53,17 @@ public class ReclaimProtocol extends Thread {
 				DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
 				mc.writePacket(msgPacket);
 				
+				peer.getData().addChunkDeleted(chunk);
+				
+				try {
+					Thread.sleep(1000);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				
+				peer.getData().removeChunkDeleted(chunk);
+				
 				this.amountReclaimed += file.length();
 				
 				file.delete();

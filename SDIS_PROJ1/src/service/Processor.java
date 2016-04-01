@@ -71,6 +71,12 @@ public class Processor extends Thread {
 				// handles the message
 				messageFields = null;
 				reclaimCheck(msg.getFileId(), msg.getChunkNo());
+				//ignore message if chunk is set to deleted
+				{
+					ChunkID tmp = new ChunkID(msg.getFileId(),msg.getChunkNo());
+					if(Peer.getInstance().getData().getDeleted().contains(tmp))
+						break;
+				}
 				putChunkHandler();
 				break;
 			case "STORED":
@@ -102,7 +108,7 @@ public class Processor extends Thread {
 				messageFields = null;
 				deleteHandler();
 				break;
-			case "REMOVE":
+			case "REMOVED":
 				msg = new RemovedMsg(messageFields, messageBody);
 				messageFields = null;
 				removeHandler();
@@ -309,15 +315,12 @@ public class Processor extends Thread {
 
 	private void removeHandler() {
 
-		System.out.println("Remove start\n\n\n\n");
 		Peer peer = Peer.getInstance();
 		// check if chunkId exist in database
 		ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
 		int index = peer.getStored().indexOf(tmp);
 		if (index == -1)
 			return;
-
-		// update actualRepDegree
 
 		// report loss of chunk
 		peer.removeChunkPeer(tmp, Integer.valueOf(msg.getSenderID()));
@@ -327,7 +330,6 @@ public class Processor extends Thread {
 
 		int actualRepDegree = peer.getStored().get(index).getActualRepDegree();
 		int desiredRepDegree = peer.getStored().get(index).getDesiredRepDegree();
-		System.out.println("Actual:" + actualRepDegree + ", Desired:" + desiredRepDegree);
 
 		if (desiredRepDegree <= actualRepDegree)
 			return;
