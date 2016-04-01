@@ -24,6 +24,7 @@ import messages.PutChunkMsg;
 import messages.RemovedMsg;
 import messages.StoredMsg;
 import protocol.BackupProtocol;
+import protocol.ReclaimProtocol;
 
 public class Processor extends Thread {
 
@@ -71,12 +72,10 @@ public class Processor extends Thread {
 				// handles the message
 				messageFields = null;
 				reclaimCheck(msg.getFileId(), msg.getChunkNo());
-			// ignore message if chunk is set to deleted
-			{
+				// ignore message if chunk is set to deleted
 				ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
 				if (Peer.getInstance().getData().getDeleted().contains(tmp))
 					break;
-			}
 				putChunkHandler();
 				break;
 			case "STORED":
@@ -269,12 +268,6 @@ public class Processor extends Thread {
 
 	private void storedHandler() {
 		// I got a stored now I need to send them to the queue, we should have a
-		// Task that goes through that List and checks the Lists and such
-		// Maybe I do not need to keep on reading but just wait the time and
-		// then wait for a few secs and check the number of ppl who replied ?
-		// Filipe places the message in a queue? that will be read by the
-		// protocole handling the putcunk Message creation // concorrent?
-		// guardar no Peer?
 
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
 		// TODO check this part
@@ -297,27 +290,48 @@ public class Processor extends Thread {
 				// try {
 				// peer.saveData();
 				// } catch (FileNotFoundException e) {
-				// // TODO Auto-generated catch block
 				// e.printStackTrace();
 				// } catch (IOException e) {
-				// // TODO Auto-generated catch block
 				// e.printStackTrace();
 				// }
 			}
+			for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
+				System.out.println("Size: " + Peer.getInstance().getAnsweredCommand().get(c).size() + "     " + c.getFileID() + "_" + c.getChunkNumber());
 		}
+
 	}
 
 	private void putChunkHandler() {
+
+		String dirPath = "";
+		try {
+			dirPath = Extra.createDirectory(Integer.toString(Peer.getInstance().getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		long backupFolderSize = Extra.getFolderSize(dirPath);
+
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
 		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand().get(chunkID);
 		if (answered != null) {
 			synchronized (answered) {
 				ArrayList<ChunkID> stored = Peer.getInstance().getStored();
 				int index = stored.indexOf(chunkID);
-				if (answered.size() < stored.get(index).getDesiredRepDegree())
-					new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg);
+				if (answered.size() < stored.get(index).getDesiredRepDegree()) {
+					boolean safeTobackup = true;
+					if (backupFolderSize >= PeerData.getDiskSize()) {
+						safeTobackup = (new ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();
+					}
+					if (safeTobackup)
+						new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg);
+				} else
+					System.out.println("Already enough chunks");
 			}
+		} else {
+			System.out.println("Answered null");
+			new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg);
 		}
+
 	}
 
 	private void removeHandler() {

@@ -86,4 +86,36 @@ public class Extra {
 		}
 
 	}
+
+	public static long getFolderSize(String folderName) {
+		long size = 0;
+		if (folderName.isEmpty())
+			return size;
+
+		File folder = new File(folderName);
+		if (folder.isDirectory())
+			for (File file : folder.listFiles()) {
+				if (file.isDirectory())
+					size += Extra.getFolderSize(file);
+				else
+					size += file.length();
+			}
+		else
+			System.out.println("File is not a directory");
+		return size;
+	}
+
+	public static long getFolderSize(File folder) {
+		long size = 0;
+		if (folder.isDirectory())
+			for (File file : folder.listFiles()) {
+				if (file.isDirectory())
+					size += Extra.getFolderSize(file.getName());
+				else
+					size += file.length();
+			}
+		else
+			System.out.println("File is not a directory");
+		return size;
+	}
 }

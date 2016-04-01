@@ -73,7 +73,7 @@ public class ReceiverServer extends Thread {
 				String[] headerArgs = Message.parseHeader(header);
 
 				// TODO ignore messages sent by server
-				if (Integer.parseInt(headerArgs[2]) == Peer.getInstance().getServerID() || headerArgs[1] != Peer.getCurrentVersion()) {
+				if (Integer.parseInt(headerArgs[2]) == Peer.getInstance().getServerID() || !headerArgs[1].equals(Peer.getCurrentVersion())) {
 					// System.out.println("same server");
 				} else {
 					System.out.println("Server Received: " + header);

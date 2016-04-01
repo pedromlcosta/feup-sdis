@@ -1,23 +1,17 @@
 package protocol;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 
+import channels.MDRReceiver;
+import chunk.Chunk;
+import extra.Extra;
+import file.FileID;
 import messages.FileHandler;
 import messages.GetChunkMsg;
 import messages.Message;
-import channels.MDRReceiver;
-import chunk.Chunk;
-import chunk.ChunkID;
-import extra.Extra;
-import file.FileID;
 import service.Peer;
 
 public class RestoreProtocol extends Thread {
@@ -52,7 +46,11 @@ public class RestoreProtocol extends Thread {
 
 		// TODO get first FIle or last???
 		ArrayList<FileID> fileSentVersions = peer.getFilesSent().get(fileName);
-		FileID file = fileSentVersions.get(fileSentVersions.size()-1);
+		if (fileSentVersions == null) {
+			System.out.println("File has not yet been backedup");
+			return;
+		}
+		FileID file = fileSentVersions.get(fileSentVersions.size() - 1);
 
 		// Check if it was backed up by this peer
 		if (file == null) {
@@ -70,7 +68,6 @@ public class RestoreProtocol extends Thread {
 			System.out.println("This file is already being restored");
 			return;
 		}
-
 
 		Message msg = new GetChunkMsg();
 
@@ -98,11 +95,12 @@ public class RestoreProtocol extends Thread {
 				}
 
 				if (i != file.getnChunks())
-					fileHandler.writeToFile(chunk.getData()); // if it is the
-																// last chunk,
-																// write only
-																// the part
-																// needed?
+					fileHandler.writeToFile(chunk.getData());
+				// if it is the
+				// last chunk,
+				// write only
+				// the part
+				// needed?
 				else {
 					System.out.println("File Size: " + file.getFileSize() + " and this chunk:" + (int) file.getFileSize() % 64000);
 					fileHandler.writeToFile(chunk.getData(), (int) file.getFileSize() % 64000);

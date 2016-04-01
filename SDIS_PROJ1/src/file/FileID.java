@@ -12,9 +12,11 @@ import chunk.Chunk;
 import extra.Extra;
 
 public class FileID implements Serializable {
+	private static final long serialVersionUID = 1L;
 	private static final int MAX_NUMBER_OF_CHUNKS = 1000000;
 	private long fileSize;
 	private int nChunks;
+	private String fileName;
 	private int desiredRepDegree;
 	private int homeServer;
 	private String ID;
@@ -32,6 +34,7 @@ public class FileID implements Serializable {
 		String absPath = file.getAbsolutePath();
 		Path path = file.toPath();
 		fileSize = file.length();
+		this.fileName = file.getName();
 		// TODO case where fileSize multiple of ChunkSize
 		this.nChunks = (int) Math.ceil((1.0 * fileSize) / Chunk.getChunkSize());
 		// each file must have at least 1 chunck
@@ -110,6 +113,18 @@ public class FileID implements Serializable {
 
 	public void setMultiple(boolean multiple) {
 		this.multiple = multiple;
+	}
+
+	public String getFileName() {
+		return fileName;
+	}
+
+	public void setFileName(String fileName) {
+		this.fileName = fileName;
+	}
+
+	public static int getMaxNumberOfChunks() {
+		return MAX_NUMBER_OF_CHUNKS;
 	}
 
 }
