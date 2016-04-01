@@ -13,7 +13,6 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 
-import messages.FileHandler;
 import chunk.ChunkID;
 import extra.Extra;
 import file.FileID;

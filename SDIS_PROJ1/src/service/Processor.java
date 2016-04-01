@@ -71,12 +71,12 @@ public class Processor extends Thread {
 				// handles the message
 				messageFields = null;
 				reclaimCheck(msg.getFileId(), msg.getChunkNo());
-				//ignore message if chunk is set to deleted
-				{
-					ChunkID tmp = new ChunkID(msg.getFileId(),msg.getChunkNo());
-					if(Peer.getInstance().getData().getDeleted().contains(tmp))
-						break;
-				}
+			// ignore message if chunk is set to deleted
+			{
+				ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
+				if (Peer.getInstance().getData().getDeleted().contains(tmp))
+					break;
+			}
 				putChunkHandler();
 				break;
 			case "STORED":
@@ -240,7 +240,7 @@ public class Processor extends Thread {
 				}
 
 			} else {
-				System.out.println("Received a foreign chunk with nr: " + chunkID.getChunkNumber() );
+				System.out.println("Received a foreign chunk with nr: " + chunkID.getChunkNumber());
 			}
 
 			// Stop waiting for chunks with this ID
@@ -276,8 +276,6 @@ public class Processor extends Thread {
 		// protocole handling the putcunk Message creation // concorrent?
 		// guardar no Peer?
 
-		Peer peer = Peer.getInstance();
-
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
 		// TODO check this part
 		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand().get(chunkID);
@@ -290,27 +288,36 @@ public class Processor extends Thread {
 
 			if (answered.isEmpty() || !answered.contains(senderID)) {
 				answered.add(senderID);
-				int index = peer.getStored().indexOf(chunkID);
+				ArrayList<ChunkID> stored = Peer.getInstance().getStored();
+				int index = stored.indexOf(chunkID);
 				if (index != -1)
-					peer.getStored().get(index).increaseRepDegree();
+					stored.get(index).increaseRepDegree();
 
 				// Save alterations to peer data
-//				try {
-//					peer.saveData();
-//				} catch (FileNotFoundException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				} catch (IOException e) {
-//					// TODO Auto-generated catch block
-//					e.printStackTrace();
-//				}
+				// try {
+				// peer.saveData();
+				// } catch (FileNotFoundException e) {
+				// // TODO Auto-generated catch block
+				// e.printStackTrace();
+				// } catch (IOException e) {
+				// // TODO Auto-generated catch block
+				// e.printStackTrace();
+				// }
 			}
 		}
 	}
 
 	private void putChunkHandler() {
-		new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg);
-		// Filipe -> putchunk call the function it needs to handle the putuch
+		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
+		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand().get(chunkID);
+		if (answered != null) {
+			synchronized (answered) {
+				ArrayList<ChunkID> stored = Peer.getInstance().getStored();
+				int index = stored.indexOf(chunkID);
+				if (answered.size() < stored.get(index).getDesiredRepDegree())
+					new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg);
+			}
+		}
 	}
 
 	private void removeHandler() {
