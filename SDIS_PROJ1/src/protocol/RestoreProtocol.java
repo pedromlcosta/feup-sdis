@@ -71,10 +71,7 @@ public class RestoreProtocol extends Thread {
 			return;
 		}
 
-		if (!fileHandler.createFile(dirPath + File.separator + fileName)) {
-			System.out.println("File with this name already exists, couldn't restore");
-			// return;
-		}
+
 		Message msg = new GetChunkMsg();
 
 		// CHUNK MAIN CYCLE: Send GETCHUNK -> Wait for CHUNK -> Write it to the
