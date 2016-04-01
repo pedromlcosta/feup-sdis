@@ -1,20 +1,23 @@
 package main;
 
-import java.io.*;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.ObjectInputStream;
 
 import chunk.Chunk;
 
 public class Main {
 
-	public static void main(String arg[]) throws IOException, ClassNotFoundException {
+	public static void main(String arg[]) throws Exception {
 
 		System.out.println(System.getProperty("user.dir"));
 		String dirPath = "C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\2\\backup\\";
+
 		FileOutputStream file = new FileOutputStream("12.pdf");
 		ObjectInputStream out = null;
 		// TODO OR out.writeObject(chunk.getData());
-		for (int i = 1; i < 42; i++) {
-			FileInputStream fileWriter = new FileInputStream(dirPath + "968F8C59A0F6016B2BDD5D969F474BF6EF55F14A148B0666DD667A43CA1139FF_" + i);
+		for (int i = 1; i < 12610; i++) {
+			FileInputStream fileWriter = new FileInputStream(dirPath + "AE9CC210D78F37587295CCA57B109751B6C79F9359FD55DEEEF41A29CBC59065_" + i);
 			out = new ObjectInputStream(fileWriter);
 			Chunk c = (Chunk) out.readObject();
 

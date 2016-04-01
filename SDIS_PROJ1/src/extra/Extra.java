@@ -3,6 +3,7 @@ package extra;
 import java.io.File;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.nio.file.FileAlreadyExistsException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -38,7 +39,10 @@ public class Extra {
 		Path path = Paths.get(workingDirPath + File.separator + dirName);
 
 		if (!(Files.exists(path) && Files.isDirectory(path))) {
-			Files.createDirectory(path);
+			try {
+				Files.createDirectory(path);
+			} catch (FileAlreadyExistsException e) {
+			}
 
 		}
 		return path.toString();

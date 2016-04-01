@@ -10,7 +10,6 @@ import java.nio.file.attribute.FileTime;
 import java.util.ArrayList;
 
 import chunk.Chunk;
-import chunk.ChunkID;
 import extra.Extra;
 
 public class FileID implements Serializable, Comparable<FileID> {
@@ -21,7 +20,7 @@ public class FileID implements Serializable, Comparable<FileID> {
 	private static final int MAX_NUMBER_OF_CHUNKS = 1000000;
 	private long fileSize;
 	private String fileName;
-	private FileTime lastChange;
+	private long lastChange;
 	private int nChunks;
 	private int desiredRepDegree;
 	private int homeServer;
@@ -57,8 +56,8 @@ public class FileID implements Serializable, Comparable<FileID> {
 		try {
 			BasicFileAttributes attr = Files.readAttributes(path, BasicFileAttributes.class);
 			// O ID criado com Path,Owner e data da ultima modificação
-			this.lastChange = attr.lastModifiedTime();
-			this.ID = Extra.SHA256(absPath + Files.getOwner(path).toString() + lastChange.toString());
+			this.lastChange = attr.lastModifiedTime().toMillis();
+			this.ID = Extra.SHA256(absPath + Files.getOwner(path).toString() + attr.lastModifiedTime().toString());
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -66,10 +65,10 @@ public class FileID implements Serializable, Comparable<FileID> {
 		// "FileID create\nFileSize: " + file.length() + "\n" + "Nchunks: " +
 		// this.nChunks + "\n ID: " + this.ID);
 	}
-	
+
 	@Override
 	public int compareTo(FileID file) {
-		return lastChange.compareTo(file.getLastChange());
+		return Long.compare(lastChange, file.getLastChange());
 
 	}
 
@@ -83,12 +82,11 @@ public class FileID implements Serializable, Comparable<FileID> {
 		result = prime * result + ((fileName == null) ? 0 : fileName.hashCode());
 		result = prime * result + (int) (fileSize ^ (fileSize >>> 32));
 		result = prime * result + homeServer;
-		result = prime * result + ((lastChange == null) ? 0 : lastChange.hashCode());
+		result = prime * result + (int) (lastChange ^ (lastChange >>> 32));
 		result = prime * result + (multiple ? 1231 : 1237);
 		result = prime * result + nChunks;
 		return result;
 	}
-
 
 	public String getFileName() {
 		return fileName;
@@ -98,11 +96,11 @@ public class FileID implements Serializable, Comparable<FileID> {
 		this.fileName = fileName;
 	}
 
-	public FileTime getLastChange() {
+	public long getLastChange() {
 		return lastChange;
 	}
 
-	public void setLastChange(FileTime lastChange) {
+	public void setLastChange(long lastChange) {
 		this.lastChange = lastChange;
 	}
 

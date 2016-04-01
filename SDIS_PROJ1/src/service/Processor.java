@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.SocketException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
@@ -274,38 +275,44 @@ public class Processor extends Thread {
 
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
 		// TODO check this part
-		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand().get(chunkID);
-		if (answered == null) {
-			answered = new ArrayList<Integer>();
-			Peer.getInstance().getAnsweredCommand().put(chunkID, answered);
-		}
-		synchronized (answered) {
-			int senderID = Integer.parseInt(this.msg.getSenderID());
+		HashMap<ChunkID, ArrayList<Integer>> answeredMap = Peer.getInstance().getAnsweredCommand();
+		synchronized (answeredMap) {
 
-			if (answered.isEmpty() || !answered.contains(senderID)) {
-				answered.add(senderID);
-				int index = peer.getStored().indexOf(chunkID);
-				if (index != -1)
-					peer.getStored().get(index).increaseRepDegree();
-				// TODO change FileID to have name and last modification data
-				FileID toNotify = Peer.getInstance().getFileSent(this.msg.getFileId(), false);
-				synchronized (toNotify) {
+			ArrayList<Integer> answered = answeredMap.get(chunkID);
+			if (answered == null) {
+				answered = new ArrayList<Integer>();
+				Peer.getInstance().getAnsweredCommand().put(chunkID, answered);
+			} else
+				synchronized (answered) {
+					int senderID = Integer.parseInt(this.msg.getSenderID());
 
-					toNotify.notifyAll();
+					if (answered.isEmpty() || !answered.contains(senderID)) {
+						answered.add(senderID);
+						int index = peer.getStored().indexOf(chunkID);
+						if (index != -1)
+							peer.getStored().get(index).increaseRepDegree();
+						// TODO change FileID to have name and last modification
+						// data
+						FileID toNotify = Peer.getInstance().getFileSent(this.msg.getFileId(), false);
+						if (toNotify != null)
+							synchronized (toNotify) {
+
+								toNotify.notifyAll();
+							}
+
+						// Save alterations to peer data
+						// try {
+						// peer.saveData();
+						// } catch (FileNotFoundException e) {
+						// // TODO Auto-generated catch block
+						// e.printStackTrace();
+						// } catch (IOException e) {
+						// // TODO Auto-generated catch block
+						// e.printStackTrace();
+						// }
+					}
+
 				}
-
-				// Save alterations to peer data
-				// try {
-				// peer.saveData();
-				// } catch (FileNotFoundException e) {
-				// // TODO Auto-generated catch block
-				// e.printStackTrace();
-				// } catch (IOException e) {
-				// // TODO Auto-generated catch block
-				// e.printStackTrace();
-				// }
-			}
-
 		}
 	}
 
