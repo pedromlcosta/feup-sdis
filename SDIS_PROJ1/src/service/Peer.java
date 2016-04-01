@@ -152,6 +152,10 @@ public class Peer implements Invocation {
 		}
 
 		registerRMI();
+		// for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
+		// System.out.println("Size: " +
+		// Peer.getInstance().getAnsweredCommand().get(c).size() + " " +
+		// c.getFileID() + "_" + c.getChunkNumber());
 
 	}
 
@@ -388,6 +392,42 @@ public class Peer implements Invocation {
 
 	public static String getCurrentVersion() {
 		return PeerData.getCurrentVersion();
+	}
+
+	public void addSenderToAnswered(ChunkID chunkID, int senderID) {
+		ArrayList<Integer> answered = getAnsweredCommand().get(chunkID);
+		if (answered == null) {
+			answered = new ArrayList<Integer>();
+			synchronized (answered) {
+				Peer.getInstance().getAnsweredCommand().put(chunkID, answered);
+			}
+		}
+		synchronized (answered) {
+
+			if (answered.isEmpty() || !answered.contains(senderID)) {
+				// System.out.println("Added sender to list: " + senderID);
+				answered.add(senderID);
+				ArrayList<ChunkID> stored = Peer.getInstance().getStored();
+				int index = stored.indexOf(chunkID);
+				if (index != -1)
+					stored.get(index).increaseRepDegree();
+
+			} else {
+				// System.out.println("Already received message from server: " +
+				// senderID);
+			}
+
+		}
+		// Save alterations to peer data
+		try {
+			saveData();
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 	}
 
 }

@@ -184,8 +184,7 @@ public class BackupProtocol extends Thread {
 			if (seversAnswers.containsKey(chunkToSendID)) { // Place
 				System.out.println("Adding chunk");
 				seversAnswers.put(chunkToSendID, new ArrayList<Integer>());
-			} else // Replace
-				seversAnswers.replace(chunkToSendID, new ArrayList<Integer>());
+			}
 		}
 		long waitTime = TimeUnit.SECONDS.toNanos(INITIAL_WAITING_TIME);
 		do {
@@ -242,7 +241,7 @@ public class BackupProtocol extends Thread {
 	 * 
 	 * @param putchunkMSG
 	 */
-	public void putChunkReceive(Message putchunkMSG) {
+	public void putChunkReceive(Message putchunkMSG, boolean fullBackup) {
 		Message msg = new StoredMsg();
 		String dirPath = "";
 		String args[] = new String[4];
@@ -274,24 +273,28 @@ public class BackupProtocol extends Thread {
 		// Chunk No
 		args[3] = Integer.toString(putchunkMSG.getChunkNo());
 		byte msgData[] = putchunkMSG.getMessageData();
-		System.out.println("MSGDATAIN PUTCHUNKRECEIVE: " + msgData.length);
 		// TODO good idea?
-		Chunk chunk = new Chunk(new ChunkID(fileID, putchunkMSG.getChunkNo()), msgData);
-		chunk.setDesiredRepDegree(putchunkMSG.getReplicationDeg());
-		ChunkID id = chunk.getId();
-		int index;
-		ArrayList<ChunkID> storedList = peer.getStored();
-		// TODO Check if condition makes sense, check here
-		synchronized (storedList) {
-			if ((index = storedList.indexOf(id)) < 0) {
-				// Not in the list so added
-				chunk.setDesiredRepDegree(putchunkMSG.getReplicationDeg());
-				chunk.setActualRepDegree(1);
-				peer.addChunk(chunk.getId());
-			} else {
-				// just need to increment Rep Degree
-				storedList.get(index).increaseRepDegree();
+		if (fullBackup) {
+			System.out.println("Fullbackup");
+			Chunk chunk = new Chunk(new ChunkID(fileID, putchunkMSG.getChunkNo()), msgData);
+			chunk.setDesiredRepDegree(putchunkMSG.getReplicationDeg());
+			ChunkID id = chunk.getId();
+			int index;
+			ArrayList<ChunkID> storedList = peer.getStored();
+			// TODO Check if condition makes sense, check here
+			synchronized (storedList) {
+				if ((index = storedList.indexOf(id)) < 0) {
+					// Not in the list so added
+					chunk.setDesiredRepDegree(putchunkMSG.getReplicationDeg());
+					chunk.setActualRepDegree(1);
+					peer.addChunk(chunk.getId());
+				} else {
+					// just need to increment Rep Degree
+					storedList.get(index).increaseRepDegree();
+				}
 			}
+			Peer.getInstance().addSenderToAnswered(id, peer.getServerID());
+
 			// Save alterations to peer data
 			try {
 				peer.saveData();
@@ -302,9 +305,10 @@ public class BackupProtocol extends Thread {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-		}
 
-		writeChunk(dirPath, chunk, id);
+			writeChunk(dirPath, chunk, id);
+		} else
+			System.out.println("Just send MSG");
 		sendStoredMsg(msg, args);
 
 	}

@@ -61,9 +61,6 @@ public class ReceiverServer extends Thread {
 						// packet.getLength otherwise he would always use the
 						// max size of the buf
 						body = Arrays.copyOfRange(receivedMessage, i + 4, receivePacket.getLength());
-						// System.out.println("Packet received:\n header with: "
-						// + i + " And the body will go from: " + (i + 4) + "
-						// to: " + receivePacket.getLength());
 						break;
 					}
 			}
@@ -76,7 +73,7 @@ public class ReceiverServer extends Thread {
 				if (Integer.parseInt(headerArgs[2]) == Peer.getInstance().getServerID() || !headerArgs[1].equals(Peer.getCurrentVersion())) {
 					// System.out.println("same server");
 				} else {
-					System.out.println("Server Received: " + header);
+					System.out.println("Server Received: " + headerArgs[0]);
 					new Processor(headerArgs, body).start();
 				}
 				header = "";

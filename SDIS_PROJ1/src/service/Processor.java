@@ -270,39 +270,12 @@ public class Processor extends Thread {
 		// I got a stored now I need to send them to the queue, we should have a
 
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
-		// TODO check this part
-		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand().get(chunkID);
-		if (answered == null) {
-			answered = new ArrayList<Integer>();
-			Peer.getInstance().getAnsweredCommand().put(chunkID, answered);
-		}
-		synchronized (answered) {
-			int senderID = Integer.parseInt(this.msg.getSenderID());
-
-			if (answered.isEmpty() || !answered.contains(senderID)) {
-				answered.add(senderID);
-				ArrayList<ChunkID> stored = Peer.getInstance().getStored();
-				int index = stored.indexOf(chunkID);
-				if (index != -1)
-					stored.get(index).increaseRepDegree();
-
-				// Save alterations to peer data
-				// try {
-				// peer.saveData();
-				// } catch (FileNotFoundException e) {
-				// e.printStackTrace();
-				// } catch (IOException e) {
-				// e.printStackTrace();
-				// }
-			}
-			for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
-				System.out.println("Size: " + Peer.getInstance().getAnsweredCommand().get(c).size() + "     " + c.getFileID() + "_" + c.getChunkNumber());
-		}
+		Peer.getInstance().addSenderToAnswered(chunkID, Integer.parseInt(this.msg.getSenderID()));
 
 	}
 
 	private void putChunkHandler() {
-
+		boolean safeTobackup;
 		String dirPath = "";
 		try {
 			dirPath = Extra.createDirectory(Integer.toString(Peer.getInstance().getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
@@ -318,18 +291,21 @@ public class Processor extends Thread {
 				ArrayList<ChunkID> stored = Peer.getInstance().getStored();
 				int index = stored.indexOf(chunkID);
 				if (answered.size() < stored.get(index).getDesiredRepDegree()) {
-					boolean safeTobackup = true;
+					safeTobackup = true;
 					if (backupFolderSize >= PeerData.getDiskSize()) {
 						safeTobackup = (new ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();
 					}
-					if (safeTobackup)
-						new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg);
+					new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg, safeTobackup);
 				} else
-					System.out.println("Already enough chunks");
+				//	System.out.println("enough chunks,all already saved");
+				if (index >= 0) {
+					safeTobackup = true;
+					new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg, safeTobackup);
+				}
 			}
 		} else {
-			System.out.println("Answered null");
-			new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg);
+			safeTobackup = true;
+			new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg, safeTobackup);
 		}
 
 	}
