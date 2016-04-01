@@ -24,7 +24,7 @@ public class PeerData implements Serializable {
 	 * 
 	 */
 	private static final long serialVersionUID = 3129093348473298612L;
-
+	private static final String CURRENT_VERSION = "1.0";
 	private ArrayList<ChunkID> stored;
 	private HashMap<String, ArrayList<FileID>> filesSent;
 	private HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
@@ -36,7 +36,7 @@ public class PeerData implements Serializable {
 
 	public PeerData() {
 		stored = new ArrayList<ChunkID>();
-		filesSent = new HashMap<String,  ArrayList<FileID>>();
+		filesSent = new HashMap<String, ArrayList<FileID>>();
 		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
 	}
 
@@ -113,11 +113,11 @@ public class PeerData implements Serializable {
 		this.stored = stored;
 	}
 
-	public HashMap<String,  ArrayList<FileID>> getFilesSent() {
+	public HashMap<String, ArrayList<FileID>> getFilesSent() {
 		return filesSent;
 	}
 
-	public void setFilesSent(HashMap<String,  ArrayList<FileID>> filesSent) {
+	public void setFilesSent(HashMap<String, ArrayList<FileID>> filesSent) {
 		this.filesSent = filesSent;
 	}
 
@@ -172,6 +172,14 @@ public class PeerData implements Serializable {
 
 	public static void setDataPath(Integer serverID) {
 		PeerData.dataPath = Integer.toString(serverID) + File.separator + "PeerData";
+	}
+
+	public static String getCurrentVersion() {
+		return CURRENT_VERSION;
+	}
+
+	public static String getFilename() {
+		return fileName;
 	}
 
 }
