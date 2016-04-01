@@ -126,9 +126,7 @@ public class FileHandler {
 
 		//if (!f.exists() && !f.isDirectory()) {
 			try {
-				System.out.println("Going to open the stream for " + filePath);
 				fileWriter = new FileOutputStream(filePath);
-				System.out.println("Just opened the stream for " + filePath);
 				return true;
 			} catch (FileNotFoundException e) {
 				System.out.println("here");

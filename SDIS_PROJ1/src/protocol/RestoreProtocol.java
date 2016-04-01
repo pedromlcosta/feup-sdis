@@ -1,23 +1,19 @@
 package protocol;
 
 import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.concurrent.TimeUnit;
 
+import channels.MDRReceiver;
+import chunk.Chunk;
+import extra.Extra;
+import file.FileID;
 import messages.FileHandler;
 import messages.GetChunkMsg;
 import messages.Message;
-import channels.MDRReceiver;
-import chunk.Chunk;
-import chunk.ChunkID;
-import extra.Extra;
-import file.FileID;
 import service.Peer;
 
 public class RestoreProtocol extends Thread {
@@ -26,10 +22,10 @@ public class RestoreProtocol extends Thread {
 	private static Peer peer = Peer.getInstance();
 	private MDRReceiver receiverChannel = peer.getRestoreChannel();
 	private FileHandler fileHandler = new FileHandler();
-	private String fileName;
+	private String filePath;
 
-	public RestoreProtocol(String fileName) {
-		this.fileName = fileName;
+	public RestoreProtocol(String filePath) {
+		this.filePath = filePath;
 	}
 
 	public void run() {
@@ -40,28 +36,38 @@ public class RestoreProtocol extends Thread {
 		} catch (IOException e2) {
 			System.out.println("Folder already exists?");
 		}
-
+		System.out.println("got here");
 		// Create Restore folder, if not yet existing
 		String dirPath = "";
 		try {
-			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.RESTORE_FOLDER_NAME);
+			dirPath = Extra
+					.createDirectory(Integer.toString(peer.getServerID())
+							+ File.separator + FileHandler.RESTORE_FOLDER_NAME);
 			System.out.println(dirPath);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 
 		// TODO get first FIle or last???
-		ArrayList<FileID> fileSentVersions = peer.getFilesSent().get(fileName);
-		FileID file = fileSentVersions.get(fileSentVersions.size()-1);
+		ArrayList<FileID> fileSentVersions = peer.getFilesSent().get(filePath);
+		if (fileSentVersions == null) {
+			System.out.println("File has not yet been backedup");
+			return;
+		}
+		FileID file = fileSentVersions.get(fileSentVersions.size() - 1);
+
+		System.out.println("got here2");
 
 		// Check if it was backed up by this peer
 		if (file == null) {
-			System.out.println("There wasn't a file " + fileName + " backed up by this peer.");
+			System.out.println("There wasn't a file " + filePath
+					+ " backed up by this peer.");
 			System.out.println(peer.getFilesSent());
 			return;
 		}
 
 		String fileID = file.getID();
+		String originalName = file.getFileName();
 
 		// Check if file is already being restored at the moment or not
 		// and flag it as being restored if not -> START EXPECTING CHUNKS FOR
@@ -71,23 +77,56 @@ public class RestoreProtocol extends Thread {
 			return;
 		}
 
-		if (!fileHandler.createFile(dirPath + File.separator + fileName)) {
-			System.out.println("File with this name already exists, couldn't restore");
-			// return;
+		// createFile returns whether there was already a file with the name or
+		// not
+		
+		
+		
+		
+		String totalPath = "";
+		String filePathFxd = filePath.replace("/", File.separator);
+		
+		System.out.println("filePath after replace is: " +  filePathFxd);
+		
+		int index = filePathFxd.lastIndexOf(File.separator);
+
+		if(index == -1){
+			totalPath = originalName;
+		}else{
+			System.out.println(index);
+			totalPath = filePathFxd.
+			    substring(0,index) + "-" + originalName;
 		}
+		
+		System.out.println(totalPath);
+		
+		totalPath.replace("../", "");
+		totalPath.replace("//", "");
+		totalPath.replace("/", "_");
+		
+		System.out.println(totalPath);
+		
+		System.out.println("Creating file: " + dirPath + File.separator + totalPath );
+		
+		if(!fileHandler.createFile(dirPath + File.separator + totalPath)){
+			System.out.println("File with this name already existed. Restoring over previous version.");
+		}
+
 		Message msg = new GetChunkMsg();
 
 		// CHUNK MAIN CYCLE: Send GETCHUNK -> Wait for CHUNK -> Write it to the
 		// file
 		for (int i = 1; i <= file.getnChunks(); i++) {
-			String[] args = { "1.0", Integer.toString(peer.getServerID()), file.getID(), Integer.toString(i) };
+			String[] args = { "1.0", Integer.toString(peer.getServerID()),
+					file.getID(), Integer.toString(i) };
 
 			// Create message
 			if (msg.createMessage(null, args) == false) {
 				System.out.println("Wasn't able to create getchunk message");
 				return;
 			}
-			DatagramPacket packet = peer.getControlChannel().createDatagramPacket(msg.getMessageBytes());
+			DatagramPacket packet = peer.getControlChannel()
+					.createDatagramPacket(msg.getMessageBytes());
 			// Send message
 			peer.getControlChannel().writePacket(packet);
 
@@ -96,19 +135,24 @@ public class RestoreProtocol extends Thread {
 				Chunk chunk = waitForChunk(fileID, i);
 
 				if (chunk == null) {
-					System.out.println("Timeout: couldn't obtain Chunk nr. " + i + " after 4 seconds, restore failed");
+					System.out.println("Timeout: couldn't obtain Chunk nr. "
+							+ i + " after 4 seconds, restore failed");
 					return;
 				}
 
 				if (i != file.getnChunks())
-					fileHandler.writeToFile(chunk.getData()); // if it is the
-																// last chunk,
-																// write only
-																// the part
-																// needed?
+					fileHandler.writeToFile(chunk.getData());
+				// if it is the
+				// last chunk,
+				// write only
+				// the part
+				// needed?
 				else {
-					System.out.println("File Size: " + file.getFileSize() + " and this chunk:" + (int) file.getFileSize() % 64000);
-					fileHandler.writeToFile(chunk.getData(), (int) file.getFileSize() % 64000);
+					System.out.println("File Size: " + file.getFileSize()
+							+ " and this chunk:" + (int) file.getFileSize()
+							% 64000);
+					fileHandler.writeToFile(chunk.getData(),
+							(int) file.getFileSize() % 64000);
 				}
 			} catch (InterruptedException e) {
 				System.out.println("Thead sleep interrupted.");
@@ -117,7 +161,8 @@ public class RestoreProtocol extends Thread {
 				System.out.println("File writing exception");
 				e.printStackTrace();
 			} catch (Exception e) {
-				System.out.println("Non IO nor Interruption exception HAHAHAHHAEHHEHEHEHUHEUHEUHUEwesuck.");
+				System.out
+						.println("Non IO nor Interruption exception HAHAHAHHAEHHEHEHEHUHEUHEUHUEwesuck.");
 				e.printStackTrace();
 			}
 
@@ -132,15 +177,16 @@ public class RestoreProtocol extends Thread {
 			e.printStackTrace();
 		}
 		receiverChannel.finishRestore(fileID);
-
 	}
 
-	public synchronized Chunk waitForChunk(String fileID, int expectedChunkNr) throws InterruptedException {
+	public synchronized Chunk waitForChunk(String fileID, int expectedChunkNr)
+			throws InterruptedException {
 
 		// This get will never return null, we previously filled the hashmap
 		// with a fileID key associated to an empty chunk array!
 
-		ArrayList<Chunk> restoreChunks = receiverChannel.getRestoreChunksReceived().get(fileID);
+		ArrayList<Chunk> restoreChunks = receiverChannel
+				.getRestoreChunksReceived().get(fileID);
 
 		if (restoreChunks == null) {
 			System.out.println("Well, I be damned..." + fileID);
@@ -153,8 +199,10 @@ public class RestoreProtocol extends Thread {
 		while (true) {
 
 			if (restoreChunks != null && !restoreChunks.isEmpty()) {
-				chunk = receiverChannel.getRestoreChunksReceived().get(fileID).remove(0);
-				System.out.println("Wait for chunk obtained chunk with nr: " + chunk.getId().getChunkNumber());
+				chunk = receiverChannel.getRestoreChunksReceived().get(fileID)
+						.remove(0);
+				System.out.println("Wait for chunk obtained chunk with nr: "
+						+ chunk.getId().getChunkNumber());
 
 				if (chunk != null)
 					if (chunk.getId().getChunkNumber() == expectedChunkNr)
