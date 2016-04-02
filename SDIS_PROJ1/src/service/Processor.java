@@ -275,7 +275,7 @@ public class Processor extends Thread {
 	}
 
 	private void putChunkHandler() {
-		boolean safeTobackup;
+		boolean fullBackup;
 		String dirPath = "";
 		try {
 			dirPath = Extra.createDirectory(Integer.toString(Peer.getInstance().getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
@@ -283,29 +283,40 @@ public class Processor extends Thread {
 			e1.printStackTrace();
 		}
 		long backupFolderSize = Extra.getFolderSize(dirPath);
-
+		boolean canBackup = Peer.getInstance().reclaimDiskSpace(backupFolderSize);
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
 		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand().get(chunkID);
 		if (answered != null) {
 			synchronized (answered) {
 				ArrayList<ChunkID> stored = Peer.getInstance().getStored();
+				// if a chunk has stored msg associated to him, it means it must
+				// also be stored
 				int index = stored.indexOf(chunkID);
-				if (answered.size() < stored.get(index).getDesiredRepDegree()) {
-					safeTobackup = true;
-					if (backupFolderSize >= PeerData.getDiskSize()) {
-						safeTobackup = (new ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();
-					}
-					new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg, safeTobackup);
+				// Only lets store chunks with actualDegree lower than
+				// desiredDegree
+				if (index >= 0 && answered.size() < stored.get(index).getDesiredRepDegree()) {
+					fullBackup = true;
+					System.out.println("Peer: " + Peer.getInstance().getServerID());
+					System.out.println("Checking available space: " + (PeerData.getDiskSize() - backupFolderSize));
+					System.out.println(PeerData.getDiskSize() + "   " + backupFolderSize);
+					// Is the disk full? if not backup if it is full,was able to
+					// free some space?
+					if (canBackup)
+						new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg, fullBackup);
 				} else
-				//	System.out.println("enough chunks,all already saved");
+					System.out.println("enough chunks,all already saved");
 				if (index >= 0) {
-					safeTobackup = true;
-					new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg, safeTobackup);
-				}
+					fullBackup = false;
+					canBackup = true;
+				} else
+					fullBackup = true;
+				if (canBackup)
+					new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg, fullBackup);
 			}
 		} else {
-			safeTobackup = true;
-			new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg, safeTobackup);
+			fullBackup = true;
+			if (canBackup)
+				new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg, fullBackup);
 		}
 
 	}

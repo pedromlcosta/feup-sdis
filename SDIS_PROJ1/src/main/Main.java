@@ -1,15 +1,17 @@
 package main;
 
+import java.io.File;
+
 import extra.Extra;
-import file.FileID;
+import service.PeerData;
 
 public class Main {
 
 	public static void main(String arg[]) throws Exception {
 
 		System.out.println(System.getProperty("user.dir"));
-		FileID id = new FileID("src\\B1.tmp");
-		System.out.println(id.getFileName());
+		File id = new File("2\\backup");
+		System.out.println(Extra.getFolderSize(id));
 		// String dirPath =
 		// "C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\2\\backup\\";
 		// FileOutputStream file = new FileOutputStream("1.pdf");
@@ -26,7 +28,6 @@ public class Main {
 		// }
 		// file.close();
 		// out.close();
-		System.out.println(Extra.getFolderSize("src"));
-		System.out.println("END");
+		System.out.println("END: " + PeerData.getDiskSize());
 	}
 }

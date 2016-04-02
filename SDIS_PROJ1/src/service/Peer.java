@@ -1,5 +1,6 @@
 package service;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.NotSerializableException;
@@ -15,9 +16,11 @@ import java.util.HashMap;
 import channels.MCReceiver;
 import channels.MDBReceiver;
 import channels.MDRReceiver;
+import chunk.Chunk;
 import chunk.ChunkID;
 import extra.Extra;
 import file.FileID;
+import messages.FileHandler;
 import protocol.BackupProtocol;
 import protocol.DeleteProtocol;
 import protocol.ReclaimProtocol;
@@ -152,10 +155,8 @@ public class Peer implements Invocation {
 		}
 
 		registerRMI();
-		// for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
-		// System.out.println("Size: " +
-		// Peer.getInstance().getAnsweredCommand().get(c).size() + " " +
-		// c.getFileID() + "_" + c.getChunkNumber());
+		for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
+			System.out.println("Size: " + Peer.getInstance().getAnsweredCommand().get(c).size() + " " + c.getFileID() + "_" + c.getChunkNumber());
 
 	}
 
@@ -340,6 +341,12 @@ public class Peer implements Invocation {
 
 	public void setServerID(Integer serverID) {
 		this.serverID = serverID;
+		try {
+			createPeerFolder();
+			Extra.createDirectory(Integer.toString(this.serverID) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
 	}
 
 	public void removeStoredEntry(String fileId) {
@@ -428,6 +435,14 @@ public class Peer implements Invocation {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+	}
+
+	public boolean reclaimDiskSpace(long backupFolderSize) {
+		if (PeerData.getDiskSize() - backupFolderSize <= 0) {
+			System.out.println("!!Starting Disk Reclaim!!  " + PeerData.getDiskSize() + "   " + backupFolderSize);
+			return (new ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();
+		}
+		return true;
 	}
 
 }

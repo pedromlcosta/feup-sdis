@@ -98,7 +98,7 @@ public class ReclaimProtocol extends Thread {
 		synchronized (peer.getStored()) {
 			Iterator<ChunkID> it = Peer.getInstance().getStored().iterator();
 
-			do {
+			while (this.amountReclaimed < this.reclaimSpace && it.hasNext()) {
 				ChunkID chunk = it.next();
 				if (chunk.getActualRepDegree() > chunk.getDesiredRepDegree()) {
 					File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
@@ -130,7 +130,7 @@ public class ReclaimProtocol extends Thread {
 					it.remove();
 					peer.removeChunkPeers(chunk);
 				}
-			} while (this.amountReclaimed < this.reclaimSpace && it.hasNext());
+			}
 		}
 		// Save alterations to peer data
 		if (chunksRemoved)
