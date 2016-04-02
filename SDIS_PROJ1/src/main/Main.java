@@ -1,8 +1,5 @@
 package main;
 
-import java.io.File;
-
-import extra.Extra;
 import service.PeerData;
 
 public class Main {
@@ -10,8 +7,8 @@ public class Main {
 	public static void main(String arg[]) throws Exception {
 
 		System.out.println(System.getProperty("user.dir"));
-		File id = new File("2\\backup");
-		System.out.println(Extra.getFolderSize(id));
+		// File id = new File("2\\backup");
+		// System.out.println(Extra.getFolderSize(id));
 		// String dirPath =
 		// "C:\\Users\\Filipe\\git\\feup-sdis\\SDIS_PROJ1\\2\\backup\\";
 		// FileOutputStream file = new FileOutputStream("1.pdf");
@@ -28,6 +25,8 @@ public class Main {
 		// }
 		// file.close();
 		// out.close();
+		String s = null;
+		System.out.println("ola".equals(s));
 		System.out.println("END: " + PeerData.getDiskSize());
 	}
 }

@@ -67,19 +67,23 @@ public class BackupProtocol extends Thread {
 		HashMap<String, ArrayList<FileID>> sentFiles = peer.getFilesSent();
 		ArrayList<FileID> fileList;
 		synchronized (sentFiles) {
-			if (sentFiles.containsKey(fileName)) {
-				System.out.println("File already in List");
-				fileList = sentFiles.get(fileName);
+			if (sentFiles.containsKey(fileID.getID())) {
+				// System.out.println("File already in List");
+				fileList = sentFiles.get(fileID.getID());
 				synchronized (fileList) {
-					// TODO deixar ou não??
-					if (!fileList.contains(fileID))
+					if (!fileList.contains(fileID)) {
 						fileList.add(fileID);
+						// System.out.println("File added");
+					} else {
+						System.out.println("File already backed up");
+						return;
+					}
 				}
 			} else {
-				System.out.println("File not in List");
+				// System.out.println("File not in List");
 				fileList = new ArrayList<FileID>();
 				fileList.add(fileID);
-				sentFiles.put(fileName, fileList);
+				sentFiles.put(fileID.getID(), fileList);
 			}
 
 			// Save alterations to peer data

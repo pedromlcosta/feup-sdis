@@ -21,8 +21,6 @@ public class FileID implements Serializable {
 	private int homeServer;
 	private String ID;
 	private boolean multiple = false;
-	// TODO anyone uses this?
-	private ArrayList<Chunk> fileChunks = new ArrayList<Chunk>();
 
 	public FileID() {
 
@@ -59,6 +57,43 @@ public class FileID implements Serializable {
 		// this.nChunks + "\n ID: " + this.ID);
 	}
 
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((ID == null) ? 0 : ID.hashCode());
+		result = prime * result + desiredRepDegree;
+		result = prime * result + ((fileName == null) ? 0 : fileName.hashCode());
+		result = prime * result + (int) (fileSize ^ (fileSize >>> 32));
+		result = prime * result + homeServer;
+		result = prime * result + (multiple ? 1231 : 1237);
+		result = prime * result + nChunks;
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null || getClass() != obj.getClass())
+			return false;
+
+		FileID other = (FileID) obj;
+		if (!ID.equals(other.ID))
+			return false;
+		if (desiredRepDegree != other.desiredRepDegree)
+			return false;
+		if (!fileName.equals(other.fileName))
+			return false;
+		if (fileSize != other.fileSize)
+			return false;
+		if (homeServer != other.homeServer)
+			return false;
+		if (nChunks != other.nChunks)
+			return false;
+		return true;
+	}
+
 	public long getFileSize() {
 		return fileSize;
 	}
@@ -69,14 +104,6 @@ public class FileID implements Serializable {
 
 	public int getnChunks() {
 		return nChunks;
-	}
-
-	public ArrayList<Chunk> getFileChunks() {
-		return fileChunks;
-	}
-
-	public void setFileChunks(ArrayList<Chunk> fileChunks) {
-		this.fileChunks = fileChunks;
 	}
 
 	public void setnChunks(int nChunks) {
