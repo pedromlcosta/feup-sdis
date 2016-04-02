@@ -292,7 +292,12 @@ public class Processor extends Thread {
 			e1.printStackTrace();
 		}
 		long backupFolderSize = Extra.getFolderSize(dirPath);
-		boolean canBackup = Peer.getInstance().reclaimDiskSpace(backupFolderSize, this.msg.getBody().length);
+		boolean canBackup = true;
+		try {
+			canBackup = Peer.getInstance().reclaimDiskSpace(backupFolderSize, this.msg.getBody().length);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
 		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand().get(chunkID);
 		if (answered != null) {
@@ -309,7 +314,8 @@ public class Processor extends Thread {
 						System.out.println("Peer: " + Peer.getInstance().getServerID());
 						System.out.println("Checking available space: " + (PeerData.getDiskSize() - backupFolderSize));
 						System.out.println(PeerData.getDiskSize() + "   " + backupFolderSize);
-						// Is the disk full? if not backup if it is full,was able to
+						// Is the disk full? if not backup if it is full,was
+						// able to
 						// free some space?
 						if (canBackup)
 							new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg, fullBackup);
@@ -346,11 +352,11 @@ public class Processor extends Thread {
 
 		// update actualRepDegree
 		peer.getStored().get(index).decreaseRepDegree();
-		
+
 		int actualRepDegree = peer.getStored().get(index).getActualRepDegree();
 		int desiredRepDegree = peer.getStored().get(index).getDesiredRepDegree();
-		System.out.println("Rep values:"+actualRepDegree+"  "+desiredRepDegree);
-		
+		System.out.println("Rep values:" + actualRepDegree + "  " + desiredRepDegree);
+
 		if (desiredRepDegree <= actualRepDegree)
 			return;
 		// sleep between 0 to 400 ms

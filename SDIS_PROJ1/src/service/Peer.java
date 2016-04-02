@@ -12,11 +12,11 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
 
 import channels.MCReceiver;
 import channels.MDBReceiver;
 import channels.MDRReceiver;
-import chunk.Chunk;
 import chunk.ChunkID;
 import extra.Extra;
 import file.FileID;
@@ -447,9 +447,10 @@ public class Peer implements Invocation {
 		}
 	}
 
-	public boolean reclaimDiskSpace(long backupFolderSize, long dataSize) {
+	public boolean reclaimDiskSpace(long backupFolderSize, long dataSize) throws InterruptedException {
 		System.out.println("Testing " + PeerData.getDiskSize() + "   " + backupFolderSize + "   " + dataSize);
 		if (PeerData.getDiskSize() - (backupFolderSize + dataSize) < 0) {
+			Thread.sleep((new Random()).nextInt(351));
 			System.out.println("!!Starting Disk Reclaim!!  " + PeerData.getDiskSize() + "   " + backupFolderSize);
 			// return (new
 			// ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();
