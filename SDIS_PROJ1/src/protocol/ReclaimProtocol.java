@@ -36,8 +36,9 @@ public class ReclaimProtocol extends Thread {
 			e.printStackTrace();
 		}
 
-		peer.sortStored();
 		synchronized (peer.getStored()) {
+			peer.sortStored();
+			
 			Iterator<ChunkID> it = Peer.getInstance().getStored().iterator();
 
 			while (this.amountReclaimed < this.reclaimSpace && it.hasNext()) {
@@ -67,18 +68,20 @@ public class ReclaimProtocol extends Thread {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-
-		peer.sortStored();
+	
 		synchronized (peer.getStored()) {
+			peer.sortStored();
+			
 			Iterator<ChunkID> it = Peer.getInstance().getStored().iterator();
 			System.out.println("Start cycle");
 			while (this.amountReclaimed < this.reclaimSpace && it.hasNext()) {
 				ChunkID chunk = it.next();
+				System.out.println("BEFORE:"+chunk.getActualRepDegree() + "    " + chunk.getDesiredRepDegree());
 				if (chunk.getActualRepDegree() > chunk.getDesiredRepDegree()) {
 					chunksRemoved = reclaim(dirPath, it, chunk);
 					it.remove();
 				}
-				System.out.println(chunk.getActualRepDegree() + "    " + chunk.getDesiredRepDegree());
+				System.out.println("AFTER:"+chunk.getActualRepDegree() + "    " + chunk.getDesiredRepDegree());
 			}
 		}
 		// Save alterations to peer data
