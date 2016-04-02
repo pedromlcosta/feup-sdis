@@ -200,7 +200,7 @@ public class BackupProtocol extends Thread {
 		} while (nMessagesSent < 5 && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
 		System.out.println("End Backup Of Chunk");
 		if (nMessagesSent >= 5 || chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree()) {
-			System.out.println("The backup of the file of the chunk Number: " + chunkNumber + " has failed to reach the disered Replication Degree: " + wantedRepDegree
+			System.out.println("The backup of the file of the chunk Number: " + chunkNumber + " has failed to reach the desired Replication Degree: " + wantedRepDegree
 					+ " instead the actual degree is: " + chunkToSend.getActualRepDegree());
 			chunkStatus = false;
 		}

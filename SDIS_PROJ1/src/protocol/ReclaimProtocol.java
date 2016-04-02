@@ -5,7 +5,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.Iterator;
-import java.util.Random;
 
 import channels.MCReceiver;
 import chunk.ChunkID;
@@ -118,11 +117,20 @@ public class ReclaimProtocol extends Thread {
 		mc.writePacket(msgPacket);
 
 		peer.getData().addChunkDeleted(chunk);
-
-		try {
-			Thread.sleep(SLEEP_TIME);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		
+		int prevMsg=-1; int currentMsg = 0;
+		int sleepTime = SLEEP_TIME;
+		while(prevMsg < currentMsg){
+			
+			prevMsg = currentMsg;
+			try {
+				Thread.sleep(sleepTime);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			
+			currentMsg = peer.getData().getDeleted().get(chunk);
+			sleepTime *=2;
 		}
 
 		peer.getData().removeChunkDeleted(chunk);

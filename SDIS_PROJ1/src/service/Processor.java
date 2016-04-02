@@ -24,7 +24,6 @@ import messages.PutChunkMsg;
 import messages.RemovedMsg;
 import messages.StoredMsg;
 import protocol.BackupProtocol;
-import protocol.ReclaimProtocol;
 
 public class Processor extends Thread {
 
@@ -66,18 +65,19 @@ public class Processor extends Thread {
 
 			switch (messageFields[0]) {
 			case "PUTCHUNK":
+			{
 				msg = new PutChunkMsg(messageFields, messageBody);
 
 				// Unreserve the now unneeded array space, while the processor
 				// handles the message
 				messageFields = null;
 				reclaimCheck(msg.getFileId(), msg.getChunkNo());
-				// ignore message if chunk is set to deleted
-				ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
-				if (Peer.getInstance().getData().getDeleted().contains(tmp))
+				// ignore message if chunk is set to deleted		
+				if (ignoreMessage())
 					break;
 				putChunkHandler();
 				break;
+			}
 			case "STORED":
 				msg = new StoredMsg(messageFields, messageBody);
 				messageFields = null;
@@ -126,6 +126,16 @@ public class Processor extends Thread {
 		if (index != -1)
 			waitLookup.remove(index);
 		return index;
+	}
+	
+	private boolean ignoreMessage(){
+		ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
+		if(Peer.getInstance().getData().getDeleted().get(tmp) != null){
+			Peer.getInstance().getData().incChunkDeleted(tmp);
+			if (Peer.getInstance().getData().getDeleted().get(tmp) <= 5)
+				return true;
+		}
+		return false;
 	}
 
 	private void deleteHandler() {
@@ -354,6 +364,8 @@ public class Processor extends Thread {
 		int launch = reclaimCheck(tmp.getFileID(), tmp.getChunkNumber());
 		if (launch == -1)
 			return;
+		
+		System.out.println("I'm the one launching\n\n");
 
 		// if not received putChunk, launch
 		FileID fileId = new FileID();

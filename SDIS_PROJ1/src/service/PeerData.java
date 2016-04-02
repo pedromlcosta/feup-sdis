@@ -12,6 +12,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+
+import chunk.Chunk;
 import chunk.ChunkID;
 import extra.Extra;
 import file.FileID;
@@ -26,8 +28,8 @@ public class PeerData implements Serializable {
 	private ArrayList<ChunkID> stored;
 	private HashMap<String, ArrayList<FileID>> filesSent;
 	private HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
-	private ArrayList<ChunkID> deleted;
-	private final static long DISK_SIZE = 1000;// Chunk.getChunkSize() * 100000;
+	private HashMap<ChunkID,Integer> deleted;
+	private final static long DISK_SIZE = Chunk.getChunkSize() * 100000;
 	private static String dataPath = "";
 	private static final String fileName = "PeerData.dat";
 
@@ -37,7 +39,7 @@ public class PeerData implements Serializable {
 		stored = new ArrayList<ChunkID>();
 		filesSent = new HashMap<String, ArrayList<FileID>>();
 		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
-		deleted = new ArrayList<ChunkID>();
+		deleted = new HashMap<ChunkID,Integer>();
 	}
 
 	// SERIAL FUNCTIONS
@@ -174,20 +176,24 @@ public class PeerData implements Serializable {
 		PeerData.dataPath = Integer.toString(serverID) + File.separator + "PeerData";
 	}
 
-	public ArrayList<ChunkID> getDeleted() {
+	public HashMap<ChunkID, Integer> getDeleted() {
 		return deleted;
 	}
 
-	public void setDeleted(ArrayList<ChunkID> deleted) {
+	public void setDeleted(HashMap<ChunkID, Integer> deleted) {
 		this.deleted = deleted;
 	}
 
 	public void addChunkDeleted(ChunkID chunk) {
-		this.deleted.add(chunk);
+		this.deleted.put(chunk,0);
 	}
 
 	public void removeChunkDeleted(ChunkID chunk) {
 		this.deleted.remove(chunk);
+	}
+	
+	public void incChunkDeleted(ChunkID chunk) {
+		this.deleted.put(chunk,this.deleted.get(chunk)+1);
 	}
 
 	public static String getCurrentVersion() {
