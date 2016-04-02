@@ -17,6 +17,7 @@ import service.Peer;
 public class ReclaimProtocol extends Thread {
 
 	private static final int SLEEP_TIME = 1000;
+	private static final long WAIT_STORED = 400;
 	private int reclaimSpace;
 	private int amountReclaimed;
 	private static Peer peer = Peer.getInstance();
@@ -60,6 +61,7 @@ public class ReclaimProtocol extends Thread {
 	}
 
 	public boolean nonPriorityReclaim() {
+		
 		boolean chunksRemoved = false;
 		String dirPath = "";
 
@@ -76,12 +78,25 @@ public class ReclaimProtocol extends Thread {
 			System.out.println("Start cycle");
 			while (this.amountReclaimed < this.reclaimSpace && it.hasNext()) {
 				ChunkID chunk = it.next();
+				peer.getData().getRemoveLookup().add(chunk);
+				
+				try {
+					Thread.sleep(WAIT_STORED);
+				} catch (InterruptedException e1) {
+					// TODO Auto-generated catch block
+					e1.printStackTrace();
+				}
+				
+				// if launch is -1, mean that chunk has already gone through reclaim
+				int launch = peer.getData().removeCheck(chunk.getFileID(), chunk.getChunkNumber());
+				if (launch == -1)
+					break;
+				
 				System.out.println("BEFORE:"+chunk.getActualRepDegree() + "    " + chunk.getDesiredRepDegree());
 				if (chunk.getActualRepDegree() > chunk.getDesiredRepDegree()) {
 					chunksRemoved = reclaim(dirPath, it, chunk);
 					it.remove();
 				}
-				System.out.println("AFTER:"+chunk.getActualRepDegree() + "    " + chunk.getDesiredRepDegree());
 			}
 		}
 		// Save alterations to peer data
@@ -102,6 +117,7 @@ public class ReclaimProtocol extends Thread {
 	}
 
 	public synchronized boolean reclaim(String dirPath, Iterator<ChunkID> it, ChunkID chunk) {
+		System.out.println("Reclaim called");
 		File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
 
 		// create message

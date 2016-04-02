@@ -109,6 +109,7 @@ public class Processor extends Thread {
 			case "REMOVED":
 				msg = new RemovedMsg(messageFields, messageBody);
 				messageFields = null;
+				Peer.getInstance().getData().removeCheck(msg.getFileId(), msg.getChunkNo());
 				removeHandler();
 				break;
 			default:
@@ -126,6 +127,8 @@ public class Processor extends Thread {
 			waitLookup.remove(index);
 		return index;
 	}
+	
+	
 
 	private boolean ignoreMessage() {
 		ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
@@ -244,7 +247,6 @@ public class Processor extends Thread {
 					restore.writePacket(packet);
 				} else {
 					System.out.println("Wasn't able to create and send chunk message");
-					System.out.println("Wasn't able to create and send chunk message");
 				}
 
 			} else {
@@ -337,31 +339,35 @@ public class Processor extends Thread {
 		Peer peer = Peer.getInstance();
 		// check if chunkId exist in database
 		ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
-		int index = peer.getStored().indexOf(tmp);
-		if (index == -1)
-			return;
-
-		// report loss of chunk
-		peer.removeChunkPeer(tmp, Integer.valueOf(msg.getSenderID()));
-
-		// update actualRepDegree
-		peer.getStored().get(index).decreaseRepDegree();
-		
-		int actualRepDegree = peer.getStored().get(index).getActualRepDegree();
-		int desiredRepDegree = peer.getStored().get(index).getDesiredRepDegree();
-		System.out.println("Rep values:"+actualRepDegree+"  "+desiredRepDegree);
-		
-		if (desiredRepDegree <= actualRepDegree)
-			return;
-		// sleep between 0 to 400 ms
-		waitLookup.add(tmp);
-		int sleepTime = new Random().nextInt(MAX_WAIT);
-		try {
-			Thread.sleep(sleepTime);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+		ArrayList<ChunkID> stored = peer.getStored();
+		int index, desiredRepDegree;
+		synchronized(stored){
+			index = peer.getStored().indexOf(tmp);
+			if (index == -1)
+				return;
+	
+			// report loss of chunk
+			peer.removeChunkPeer(tmp, Integer.valueOf(msg.getSenderID()));
+	
+			// update actualRepDegree
+			peer.getStored().get(index).decreaseRepDegree();
+			
+			int actualRepDegree = peer.getStored().get(index).getActualRepDegree();
+			desiredRepDegree = peer.getStored().get(index).getDesiredRepDegree();
+			System.out.println("Rep values:"+actualRepDegree+"  "+desiredRepDegree);
+			
+			if (desiredRepDegree <= actualRepDegree)
+				return;
+			// sleep between 0 to 400 ms
+			waitLookup.add(tmp);
+			int sleepTime = new Random().nextInt(MAX_WAIT);
+			try {
+				Thread.sleep(sleepTime);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
 		}
-
+		
 		// if launch is -1, mean that chunk has already gone through putChunk
 		int launch = reclaimCheck(tmp.getFileID(), tmp.getChunkNumber());
 		if (launch == -1)
@@ -438,5 +444,4 @@ public class Processor extends Thread {
 	public static int getMaxWait() {
 		return MAX_WAIT;
 	}
-
 }

@@ -451,8 +451,7 @@ public class Peer implements Invocation {
 		System.out.println("Testing " + PeerData.getDiskSize() + "   " + backupFolderSize + "   " + dataSize);
 		if (PeerData.getDiskSize() - (backupFolderSize + dataSize) < 0) {
 			System.out.println("!!Starting Disk Reclaim!!  " + PeerData.getDiskSize() + "   " + backupFolderSize);
-			// return (new
-			// ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();
+			 return (new ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();
 		}
 		return true;
 	}

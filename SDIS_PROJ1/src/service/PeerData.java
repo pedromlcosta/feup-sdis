@@ -29,6 +29,7 @@ public class PeerData implements Serializable {
 	private HashMap<String, ArrayList<FileID>> filesSent;
 	private HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 	private HashMap<ChunkID, Integer> deleted;
+	private ArrayList<ChunkID> removeLookup = new ArrayList<ChunkID>();
 	private final static long DISK_SIZE = Chunk.getChunkSize();
 	private static String dataPath = "";
 	private static final String fileName = "PeerData.dat";
@@ -202,5 +203,23 @@ public class PeerData implements Serializable {
 
 	public static String getFilename() {
 		return fileName;
+	}
+	
+	public int removeCheck(String fileId, int chunkNo) {
+
+		ChunkID chunk = new ChunkID(fileId, chunkNo);
+		int index = removeLookup.indexOf(chunk);
+
+		if (index != -1)
+			removeLookup.remove(index);
+		return index;
+	}
+	
+	public ArrayList<ChunkID> getRemoveLookup() {
+		return removeLookup;
+	}
+
+	public void setRemoveLookup(ArrayList<ChunkID> removeLookup) {
+		this.removeLookup = removeLookup;
 	}
 }
