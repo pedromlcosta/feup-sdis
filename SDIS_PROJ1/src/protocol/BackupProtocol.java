@@ -70,8 +70,9 @@ public class BackupProtocol extends Thread {
 			if (sentFiles.containsKey(fileName)) {
 				fileList = sentFiles.get(fileName);
 				synchronized (fileList) {
-					// if (!fileList.contains(fileID))
-					fileList.add(fileID);
+					// TODO deixar ou não??
+					if (!fileList.contains(fileID))
+						fileList.add(fileID);
 				}
 			} else {
 				fileList = new ArrayList<FileID>();
@@ -246,22 +247,23 @@ public class BackupProtocol extends Thread {
 		String dirPath = "";
 		String args[] = new String[4];
 		String fileID = putchunkMSG.getFileId();
+		// What happens when two peers from the same PC try to backup the same
+		// file
 		if (Peer.getInstance().getFilesSent().get(fileID) != null) {
 			System.out.println("backingup Own file");
 			return;
+		} else {
+			System.out.println("NOT OWN File: " + putchunkMSG.getFileId() + "    " + putchunkMSG.getSenderID());
 		}
 
-		// Create Peer folder, if not yet existing
 		try {
 			peer.createPeerFolder();
 		} catch (IOException e2) {
-			// System.out.println("Folder already exists.");
 		}
 
 		try {
 			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
-			e1.printStackTrace();
 		}
 
 		// Version

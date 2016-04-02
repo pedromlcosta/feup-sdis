@@ -64,15 +64,14 @@ public class Processor extends Thread {
 			// System.out.println(messageFields[0]);
 
 			switch (messageFields[0]) {
-			case "PUTCHUNK":
-			{
+			case "PUTCHUNK": {
 				msg = new PutChunkMsg(messageFields, messageBody);
 
 				// Unreserve the now unneeded array space, while the processor
 				// handles the message
 				messageFields = null;
 				reclaimCheck(msg.getFileId(), msg.getChunkNo());
-				// ignore message if chunk is set to deleted		
+				// ignore message if chunk is set to deleted
 				if (ignoreMessage())
 					break;
 				putChunkHandler();
@@ -127,10 +126,10 @@ public class Processor extends Thread {
 			waitLookup.remove(index);
 		return index;
 	}
-	
-	private boolean ignoreMessage(){
+
+	private boolean ignoreMessage() {
 		ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
-		if(Peer.getInstance().getData().getDeleted().get(tmp) != null){
+		if (Peer.getInstance().getData().getDeleted().get(tmp) != null) {
 			Peer.getInstance().getData().incChunkDeleted(tmp);
 			if (Peer.getInstance().getData().getDeleted().get(tmp) <= 5)
 				return true;
@@ -293,7 +292,7 @@ public class Processor extends Thread {
 			e1.printStackTrace();
 		}
 		long backupFolderSize = Extra.getFolderSize(dirPath);
-		boolean canBackup = Peer.getInstance().reclaimDiskSpace(backupFolderSize);
+		boolean canBackup = Peer.getInstance().reclaimDiskSpace(backupFolderSize, this.msg.getBody().length);
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
 		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand().get(chunkID);
 		if (answered != null) {
@@ -364,7 +363,7 @@ public class Processor extends Thread {
 		int launch = reclaimCheck(tmp.getFileID(), tmp.getChunkNumber());
 		if (launch == -1)
 			return;
-		
+
 		System.out.println("I'm the one launching\n\n");
 
 		// if not received putChunk, launch
