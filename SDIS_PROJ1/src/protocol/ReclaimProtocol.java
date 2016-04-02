@@ -75,12 +75,6 @@ public class ReclaimProtocol extends Thread {
 			while (this.amountReclaimed < this.reclaimSpace && it.hasNext()) {
 				ChunkID chunk = it.next();
 				if (chunk.getActualRepDegree() > chunk.getDesiredRepDegree()) {
-
-					try {
-						System.in.read();
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
 					chunksRemoved = reclaim(dirPath, it, chunk);
 					it.remove();
 				}
