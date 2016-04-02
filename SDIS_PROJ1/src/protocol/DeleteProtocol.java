@@ -26,11 +26,12 @@ public class DeleteProtocol extends Thread {
 	public void run() {
 
 		ArrayList<FileID> fileSentVersions = peer.getFilesSent().get(filePath);
-		file = fileSentVersions.get(fileSentVersions.size()-1);
-		if (file == null) {
+		if(fileSentVersions == null || fileSentVersions.size() == 0){
 			System.out.println(filePath + " not found");
 			return;
 		}
+		
+		file = fileSentVersions.get(fileSentVersions.size()-1);
 
 		// create message
 		Message msg = new DeleteMsg();
