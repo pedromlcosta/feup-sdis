@@ -113,7 +113,7 @@ public class Peer implements Invocation {
 			restoreChannel.joinMulticastGroup();
 
 			peer.createPeerFolder();
-			
+
 			System.out.println(controlChannel.getAddr().toString());
 			System.out.println(controlChannel.getPort());
 			System.out.println(dataChannel.getAddr().toString());
@@ -409,28 +409,31 @@ public class Peer implements Invocation {
 	}
 
 	public void addSenderToAnswered(ChunkID chunkID, int senderID) {
-		ArrayList<Integer> answered = getAnsweredCommand().get(chunkID);
-		if (answered == null) {
-			answered = new ArrayList<Integer>();
+		HashMap<ChunkID, ArrayList<Integer>> command = getAnsweredCommand();
+		ArrayList<Integer> answered = command.get(chunkID);
+		synchronized (command) {
+			if (answered == null) {
+				answered = new ArrayList<Integer>();
+				synchronized (answered) {
+					command.put(chunkID, answered);
+					// System.out.println("Added CHUNKID");
+				}
+			}
 			synchronized (answered) {
-				Peer.getInstance().getAnsweredCommand().put(chunkID, answered);
+
+				if (answered.isEmpty() || !answered.contains(senderID)) {
+					// System.out.println("Added sender to list: " + senderID);
+					answered.add(senderID);
+					for (ChunkID toUpdate : command.keySet())
+						if (toUpdate.equals(chunkID))
+							toUpdate.increaseRepDegree();
+
+				} else {
+					// System.out.println("Already received message from server:
+					// " + senderID);
+				}
+
 			}
-		}
-		synchronized (answered) {
-
-			if (answered.isEmpty() || !answered.contains(senderID)) {
-				// System.out.println("Added sender to list: " + senderID);
-				answered.add(senderID);
-				ArrayList<ChunkID> stored = Peer.getInstance().getStored();
-				int index = stored.indexOf(chunkID);
-				if (index != -1)
-					stored.get(index).increaseRepDegree();
-
-			} else {
-				// System.out.println("Already received message from server: " +
-				// senderID);
-			}
-
 		}
 		// Save alterations to peer data
 		try {
@@ -448,7 +451,8 @@ public class Peer implements Invocation {
 		System.out.println("Testing " + PeerData.getDiskSize() + "   " + backupFolderSize + "   " + dataSize);
 		if (PeerData.getDiskSize() - (backupFolderSize + dataSize) < 0) {
 			System.out.println("!!Starting Disk Reclaim!!  " + PeerData.getDiskSize() + "   " + backupFolderSize);
-		//	return (new ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();
+			// return (new
+			// ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();
 		}
 		return true;
 	}

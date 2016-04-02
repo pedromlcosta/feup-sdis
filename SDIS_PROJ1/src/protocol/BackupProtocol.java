@@ -68,6 +68,7 @@ public class BackupProtocol extends Thread {
 		ArrayList<FileID> fileList;
 		synchronized (sentFiles) {
 			if (sentFiles.containsKey(fileName)) {
+				System.out.println("File already in List");
 				fileList = sentFiles.get(fileName);
 				synchronized (fileList) {
 					// TODO deixar ou não??
@@ -75,6 +76,7 @@ public class BackupProtocol extends Thread {
 						fileList.add(fileID);
 				}
 			} else {
+				System.out.println("File not in List");
 				fileList = new ArrayList<FileID>();
 				fileList.add(fileID);
 				sentFiles.put(fileName, fileList);
@@ -166,8 +168,7 @@ public class BackupProtocol extends Thread {
 	 * @throws SocketException
 	 * @throws InterruptedException
 	 */
-	public boolean backupChunk(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version)
-			throws SocketException, InterruptedException {
+	public boolean backupChunk(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version) throws SocketException, InterruptedException {
 		System.out.println("Backup Chunk");
 		Message msg = new PutChunkMsg();
 		int nMessagesSent = 0;
@@ -190,7 +191,6 @@ public class BackupProtocol extends Thread {
 		// Send Mensage
 		DatagramPacket msgPacket = peer.getDataChannel().createDatagramPacket(msg.getMessageBytes()); //
 
-		System.out.println("MSGPACKET HAS: " + msgPacket.getLength());
 		// TODO when should we clean ArrayList to avoid having "false positives"
 		HashMap<ChunkID, ArrayList<Integer>> seversAnswers = peer.getAnsweredCommand();
 		synchronized (seversAnswers) {
@@ -213,8 +213,7 @@ public class BackupProtocol extends Thread {
 		} while (nMessagesSent < 5 && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
 		System.out.println("End Backup Of Chunk");
 		if (nMessagesSent >= 5 || chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree()) {
-			System.out.println("The backup of the file of the chunk Number: " + chunkNumber
-					+ " has failed to reach the desired Replication Degree: " + wantedRepDegree
+			System.out.println("The backup of the file of the chunk Number: " + chunkNumber + " has failed to reach the desired Replication Degree: " + wantedRepDegree
 					+ " instead the actual degree is: " + chunkToSend.getActualRepDegree());
 			chunkStatus = false;
 		}
@@ -234,8 +233,7 @@ public class BackupProtocol extends Thread {
 		long elapsedTime;
 		ArrayList<Integer> serverWhoAnswered;
 		do {
-			if ((serverWhoAnswered = Peer.getInstance().getAnsweredCommand().get(chunkToSendID)) != null
-					&& !serverWhoAnswered.isEmpty()) {
+			if ((serverWhoAnswered = Peer.getInstance().getAnsweredCommand().get(chunkToSendID)) != null && !serverWhoAnswered.isEmpty()) {
 				synchronized (serverWhoAnswered) {
 					int size = serverWhoAnswered.size();
 					if (chunkToSend.getDesiredRepDegree() == size) {
@@ -276,8 +274,7 @@ public class BackupProtocol extends Thread {
 		}
 
 		try {
-			dirPath = Extra.createDirectory(
-					Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
+			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
 		}
 
@@ -341,8 +338,7 @@ public class BackupProtocol extends Thread {
 		//
 		try {
 
-			FileOutputStream fileWriter = new FileOutputStream(
-					dirPath + File.separator + id.getFileID() + "_" + id.getChunkNumber());
+			FileOutputStream fileWriter = new FileOutputStream(dirPath + File.separator + id.getFileID() + "_" + id.getChunkNumber());
 			ObjectOutputStream out = new ObjectOutputStream(fileWriter);
 			// TODO OR out.writeObject(chunk.getData());
 			System.out.println("Data to Write: " + chunk.getData().length);
