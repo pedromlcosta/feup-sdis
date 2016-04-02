@@ -42,8 +42,7 @@ public class ReceiverServer extends Thread {
 	@Override
 	public void run() {
 		System.out.println("Started Running the thread");
-		
-		
+
 		while (!quitFlag) {
 
 			DatagramPacket receivePacket = new DatagramPacket(buf, buf.length);
@@ -72,7 +71,8 @@ public class ReceiverServer extends Thread {
 				String[] headerArgs = Message.parseHeader(header);
 
 				// TODO ignore messages sent by server
-				if (Integer.parseInt(headerArgs[2]) == Peer.getInstance().getServerID() || !headerArgs[1].equals(Peer.getCurrentVersion())) {
+				if (Integer.parseInt(headerArgs[2]) == Peer.getInstance().getServerID()
+						|| !headerArgs[1].equals(Peer.getCurrentVersion())) {
 					// System.out.println("same server");
 				} else {
 					System.out.println("Server Received: " + headerArgs[0]);
@@ -122,9 +122,12 @@ public class ReceiverServer extends Thread {
 	}
 
 	public void joinMulticastGroup() {
+		System.out.println("Joining group: " + this.getAddr().toString());
 		try {
-			if (this.socket != null)
+			if (this.socket != null) {
 				this.socket.joinGroup(this.getAddr());
+			} else
+				System.out.println("SOCKET IS NULL");
 		} catch (IOException e) {
 			System.out.println("Error in Join Group");
 			e.printStackTrace();
