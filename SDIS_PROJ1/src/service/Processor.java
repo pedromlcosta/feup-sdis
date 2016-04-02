@@ -30,7 +30,7 @@ public class Processor extends Thread {
 	private static final int MAX_WAIT = 400;
 	private static ArrayList<ChunkID> waitLookup = new ArrayList<ChunkID>();
 	private final long GETCHUNK_WAITING_NANO = TimeUnit.MILLISECONDS.toNanos(400); // In
-																					// milliseconds
+	// milliseconds
 	private String messageString;
 	// TODO either this or turn parseHeader Static
 	private Message msg;
@@ -127,8 +127,8 @@ public class Processor extends Thread {
 			waitLookup.remove(index);
 		return index;
 	}
-	
-	
+
+
 
 	private boolean ignoreMessage() {
 		ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
@@ -295,6 +295,7 @@ public class Processor extends Thread {
 		}
 		long backupFolderSize = Extra.getFolderSize(dirPath);
 		boolean canBackup = Peer.getInstance().reclaimDiskSpace(backupFolderSize, this.msg.getBody().length);
+
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
 		ArrayList<Integer> answered = Peer.getInstance().getAnsweredCommand().get(chunkID);
 		if (answered != null) {
@@ -311,7 +312,8 @@ public class Processor extends Thread {
 						System.out.println("Peer: " + Peer.getInstance().getServerID());
 						System.out.println("Checking available space: " + (PeerData.getDiskSize() - backupFolderSize));
 						System.out.println(PeerData.getDiskSize() + "   " + backupFolderSize);
-						// Is the disk full? if not backup if it is full,was able to
+						// Is the disk full? if not backup if it is full,was
+						// able to
 						// free some space?
 						if (canBackup)
 							new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg, fullBackup);
@@ -345,17 +347,17 @@ public class Processor extends Thread {
 			index = peer.getStored().indexOf(tmp);
 			if (index == -1)
 				return;
-	
+
 			// report loss of chunk
 			peer.removeChunkPeer(tmp, Integer.valueOf(msg.getSenderID()));
-	
+
 			// update actualRepDegree
 			peer.getStored().get(index).decreaseRepDegree();
-			
+
 			int actualRepDegree = peer.getStored().get(index).getActualRepDegree();
 			desiredRepDegree = peer.getStored().get(index).getDesiredRepDegree();
 			System.out.println("Rep values:"+actualRepDegree+"  "+desiredRepDegree);
-			
+
 			if (desiredRepDegree <= actualRepDegree)
 				return;
 			// sleep between 0 to 400 ms
@@ -367,7 +369,7 @@ public class Processor extends Thread {
 				e.printStackTrace();
 			}
 		}
-		
+
 		// if launch is -1, mean that chunk has already gone through putChunk
 		int launch = reclaimCheck(tmp.getFileID(), tmp.getChunkNumber());
 		if (launch == -1)
