@@ -42,34 +42,7 @@ public class ReclaimProtocol extends Thread {
 
 			while (this.amountReclaimed < this.reclaimSpace && it.hasNext()) {
 				ChunkID chunk = it.next();
-				File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
-
-				// create message
-				Message msg = new RemovedMsg();
-
-				String[] args = { "1.0", Integer.toString(peer.getServerID()), chunk.getFileID(), Integer.toString(chunk.getChunkNumber()) };
-				msg.createMessage(null, args);
-
-				MCReceiver mc = peer.getControlChannel();
-				DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
-				mc.writePacket(msgPacket);
-
-				peer.getData().addChunkDeleted(chunk);
-
-				try {
-					Thread.sleep(SLEEP_TIME);
-				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-
-				peer.getData().removeChunkDeleted(chunk);
-
-				this.amountReclaimed += file.length();
-
-				file.delete();
-				it.remove();
-				peer.removeChunkPeers(chunk);
+				reclaim(dirPath, it, chunk);
 			}
 		}
 		// Save alterations to peer data
@@ -101,34 +74,7 @@ public class ReclaimProtocol extends Thread {
 			while (this.amountReclaimed < this.reclaimSpace && it.hasNext()) {
 				ChunkID chunk = it.next();
 				if (chunk.getActualRepDegree() > chunk.getDesiredRepDegree()) {
-					File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
-
-					// create message
-					Message msg = new RemovedMsg();
-					chunksRemoved = true;
-					String[] args = { "1.0", Integer.toString(peer.getServerID()), chunk.getFileID(), Integer.toString(chunk.getChunkNumber()) };
-					msg.createMessage(null, args);
-
-					MCReceiver mc = peer.getControlChannel();
-					DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
-					mc.writePacket(msgPacket);
-
-					peer.getData().addChunkDeleted(chunk);
-
-					try {
-						Thread.sleep(SLEEP_TIME);
-					} catch (InterruptedException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-
-					peer.getData().removeChunkDeleted(chunk);
-
-					this.amountReclaimed += file.length();
-
-					file.delete();
-					it.remove();
-					peer.removeChunkPeers(chunk);
+					chunksRemoved = reclaim(dirPath, it, chunk);
 				}
 			}
 		}
@@ -148,5 +94,38 @@ public class ReclaimProtocol extends Thread {
 			return true;
 		else
 			return false;
+	}
+
+	public boolean reclaim(String dirPath, Iterator<ChunkID> it, ChunkID chunk) {
+		boolean chunksRemoved;
+		File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
+
+		// create message
+		Message msg = new RemovedMsg();
+		chunksRemoved = true;
+		String[] args = { "1.0", Integer.toString(peer.getServerID()), chunk.getFileID(), Integer.toString(chunk.getChunkNumber()) };
+		msg.createMessage(null, args);
+
+		MCReceiver mc = peer.getControlChannel();
+		DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
+		mc.writePacket(msgPacket);
+
+		peer.getData().addChunkDeleted(chunk);
+
+		try {
+			Thread.sleep(SLEEP_TIME);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		peer.getData().removeChunkDeleted(chunk);
+
+		this.amountReclaimed += file.length();
+
+		file.delete();
+		it.remove();
+		peer.removeChunkPeers(chunk);
+		return chunksRemoved;
 	}
 }
