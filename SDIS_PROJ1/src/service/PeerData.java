@@ -43,7 +43,7 @@ public class PeerData implements Serializable {
 	}
 
 	// SERIAL FUNCTIONS
-	public void savePeerData() throws FileNotFoundException, IOException {
+	public synchronized void savePeerData() throws FileNotFoundException, IOException {
 
 		String dirPath = "";
 
@@ -62,7 +62,7 @@ public class PeerData implements Serializable {
 
 	}
 
-	public PeerData loadPeerData() throws FileNotFoundException, IOException, ClassNotFoundException, NotSerializableException {
+	public synchronized PeerData loadPeerData() throws FileNotFoundException, IOException, ClassNotFoundException, NotSerializableException {
 
 		String dirPath = "";
 
