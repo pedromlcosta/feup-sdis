@@ -156,7 +156,7 @@ public class Peer implements Invocation {
 
 		registerRMI();
 		for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
-			System.out.println("Size: " + Peer.getInstance().getAnsweredCommand().get(c).size() + " " + c.getFileID() + "_" + c.getChunkNumber());
+			System.out.println("Size: " + Peer.getInstance().getAnsweredCommand().get(c).size() + "  " + c.getActualRepDegree() + " " + c.getFileID() + "_" + c.getChunkNumber());
 
 	}
 
@@ -438,6 +438,7 @@ public class Peer implements Invocation {
 	}
 
 	public boolean reclaimDiskSpace(long backupFolderSize) {
+		System.out.println("Testing " + PeerData.getDiskSize() + "   " + backupFolderSize);
 		if (PeerData.getDiskSize() - backupFolderSize <= 0) {
 			System.out.println("!!Starting Disk Reclaim!!  " + PeerData.getDiskSize() + "   " + backupFolderSize);
 			return (new ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();

@@ -286,7 +286,7 @@ public class BackupProtocol extends Thread {
 				if ((index = storedList.indexOf(id)) < 0) {
 					// Not in the list so added
 					chunk.setDesiredRepDegree(putchunkMSG.getReplicationDeg());
-					chunk.setActualRepDegree(1);
+					chunk.setActualRepDegree(0);
 					peer.addChunk(chunk.getId());
 				} else {
 					// just need to increment Rep Degree

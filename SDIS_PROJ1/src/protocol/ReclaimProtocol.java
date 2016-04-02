@@ -5,14 +5,15 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.Iterator;
+import java.util.Random;
 
-import messages.RemovedMsg;
-import messages.FileHandler;
-import messages.Message;
-import service.Peer;
 import channels.MCReceiver;
 import chunk.ChunkID;
 import extra.Extra;
+import messages.FileHandler;
+import messages.Message;
+import messages.RemovedMsg;
+import service.Peer;
 
 public class ReclaimProtocol extends Thread {
 
@@ -43,6 +44,7 @@ public class ReclaimProtocol extends Thread {
 			while (this.amountReclaimed < this.reclaimSpace && it.hasNext()) {
 				ChunkID chunk = it.next();
 				reclaim(dirPath, it, chunk);
+				it.remove();
 			}
 		}
 		// Save alterations to peer data
@@ -70,39 +72,44 @@ public class ReclaimProtocol extends Thread {
 		peer.sortStored();
 		synchronized (peer.getStored()) {
 			Iterator<ChunkID> it = Peer.getInstance().getStored().iterator();
-
+			System.out.println("Start cycle");
 			while (this.amountReclaimed < this.reclaimSpace && it.hasNext()) {
 				ChunkID chunk = it.next();
 				if (chunk.getActualRepDegree() > chunk.getDesiredRepDegree()) {
+
+					try {
+						System.in.read();
+					} catch (IOException e) {
+						e.printStackTrace();
+					}
 					chunksRemoved = reclaim(dirPath, it, chunk);
+					it.remove();
 				}
+				System.out.println(chunk.getActualRepDegree() + "    " + chunk.getDesiredRepDegree());
 			}
 		}
 		// Save alterations to peer data
 		if (chunksRemoved)
 			try {
+				System.out.println("FileDeleted");
 				peer.saveData();
 			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
+		System.out.println("End of reclaim");
 		if (this.amountReclaimed >= this.reclaimSpace)
 			return true;
 		else
 			return false;
 	}
 
-	public boolean reclaim(String dirPath, Iterator<ChunkID> it, ChunkID chunk) {
-		boolean chunksRemoved;
+	public synchronized boolean reclaim(String dirPath, Iterator<ChunkID> it, ChunkID chunk) {
 		File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
 
 		// create message
 		Message msg = new RemovedMsg();
-		chunksRemoved = true;
 		String[] args = { "1.0", Integer.toString(peer.getServerID()), chunk.getFileID(), Integer.toString(chunk.getChunkNumber()) };
 		msg.createMessage(null, args);
 
@@ -115,7 +122,6 @@ public class ReclaimProtocol extends Thread {
 		try {
 			Thread.sleep(SLEEP_TIME);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -124,8 +130,7 @@ public class ReclaimProtocol extends Thread {
 		this.amountReclaimed += file.length();
 
 		file.delete();
-		it.remove();
 		peer.removeChunkPeers(chunk);
-		return chunksRemoved;
+		return true;
 	}
 }

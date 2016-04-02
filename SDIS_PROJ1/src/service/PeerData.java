@@ -12,8 +12,6 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-
-import chunk.Chunk;
 import chunk.ChunkID;
 import extra.Extra;
 import file.FileID;
@@ -29,7 +27,7 @@ public class PeerData implements Serializable {
 	private HashMap<String, ArrayList<FileID>> filesSent;
 	private HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 	private ArrayList<ChunkID> deleted;
-	private final static long DISK_SIZE = Chunk.getChunkSize() * 100000;
+	private final static long DISK_SIZE = 1000;// Chunk.getChunkSize() * 100000;
 	private static String dataPath = "";
 	private static final String fileName = "PeerData.dat";
 
