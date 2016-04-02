@@ -29,7 +29,7 @@ public class PeerData implements Serializable {
 	private HashMap<String, ArrayList<FileID>> filesSent;
 	private HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 	private HashMap<ChunkID, Integer> deleted;
-	private final static long DISK_SIZE = Chunk.getChunkSize();// * 100000;
+	private final static long DISK_SIZE = Chunk.getChunkSize()* 100000;
 	private static String dataPath = "";
 	private static final String fileName = "PeerData.dat";
 

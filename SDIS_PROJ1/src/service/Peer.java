@@ -64,9 +64,9 @@ public class Peer implements Invocation {
 	public static void main(String[] args) {
 
 		Peer peer = Peer.getInstance();
-
-		for (String a : args)
-			System.out.println(a);
+		MCReceiver controlChannel = peer.getControlChannel();
+		MDBReceiver dataChannel = peer.getDataChannel();
+		MDRReceiver restoreChannel = peer.getRestoreChannel();
 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
@@ -97,22 +97,29 @@ public class Peer implements Invocation {
 			peer.setServerID(Integer.parseInt(args[0]));
 			peer.getData();
 
-			peer.getControlChannel().setAddr(InetAddress.getByName(args[1]));
-			peer.getControlChannel().setPort(Integer.parseInt(args[2]));
-			peer.getControlChannel().createSocket();
-			peer.getControlChannel().joinMulticastGroup();
+			controlChannel.setAddr(InetAddress.getByName(args[1]));
+			controlChannel.setPort(Integer.parseInt(args[2]));
+			controlChannel.createSocket();
+			controlChannel.joinMulticastGroup();
 
-			peer.getDataChannel().setAddr(InetAddress.getByName(args[3]));
-			peer.getDataChannel().setPort(Integer.parseInt(args[4]));
-			peer.getDataChannel().createSocket();
-			peer.getDataChannel().joinMulticastGroup();
+			dataChannel.setAddr(InetAddress.getByName(args[3]));
+			dataChannel.setPort(Integer.parseInt(args[4]));
+			dataChannel.createSocket();
+			dataChannel.joinMulticastGroup();
 
-			peer.getRestoreChannel().setAddr(InetAddress.getByName(args[5]));
-			peer.getRestoreChannel().setPort(Integer.parseInt(args[6]));
-			peer.getRestoreChannel().createSocket();
-			peer.getRestoreChannel().joinMulticastGroup();
+			restoreChannel.setAddr(InetAddress.getByName(args[5]));
+			restoreChannel.setPort(Integer.parseInt(args[6]));
+			restoreChannel.createSocket();
+			restoreChannel.joinMulticastGroup();
 
 			peer.createPeerFolder();
+			
+			System.out.println(controlChannel.getAddr().toString());
+			System.out.println(controlChannel.getPort());
+			System.out.println(dataChannel.getAddr().toString());
+			System.out.println(dataChannel.getPort());
+			System.out.println(restoreChannel.getAddr().toString());
+			System.out.println(restoreChannel.getPort());
 
 			peer.getRestoreChannel().start();
 			peer.getDataChannel().start();
@@ -143,7 +150,7 @@ public class Peer implements Invocation {
 				e1.printStackTrace();
 			}
 		} catch (NotSerializableException e) {
-			System.out.println("wtf is going on here?");
+			System.out.println("PeerData is not Serializable");
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 			e.printStackTrace();

@@ -137,6 +137,9 @@ public class RestoreProtocol extends Thread {
 				if (chunk == null) {
 					System.out.println("Timeout: couldn't obtain Chunk nr. "
 							+ i + " after 4 seconds, restore failed");
+					
+					receiverChannel.finishRestore(fileID);
+					
 					return;
 				}
 
