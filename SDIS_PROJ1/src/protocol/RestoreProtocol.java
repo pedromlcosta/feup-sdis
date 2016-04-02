@@ -134,12 +134,11 @@ public class RestoreProtocol extends Thread {
 				// Wait for message and write it
 				Chunk chunk = waitForChunk(fileID, i);
 
-				if (chunk == null) {
+				if (chunk == null || chunk.getData() == null || chunk.getData().length == 0) {
 					System.out.println("Timeout: couldn't obtain Chunk nr. "
 							+ i + " after 4 seconds, restore failed");
 					
 					receiverChannel.finishRestore(fileID);
-					
 					return;
 				}
 
@@ -165,7 +164,7 @@ public class RestoreProtocol extends Thread {
 				e.printStackTrace();
 			} catch (Exception e) {
 				System.out
-						.println("Non IO nor Interruption exception HAHAHAHHAEHHEHEHEHUHEUHEUHUEwesuck.");
+						.println("Couldn't write chunk to file.");
 				e.printStackTrace();
 			}
 
@@ -204,7 +203,7 @@ public class RestoreProtocol extends Thread {
 			if (restoreChunks != null && !restoreChunks.isEmpty()) {
 				chunk = receiverChannel.getRestoreChunksReceived().get(fileID)
 						.remove(0);
-				System.out.println("Wait for chunk obtained chunk with nr: "
+				System.out.println("Wait for chunk with nr: "
 						+ chunk.getId().getChunkNumber());
 
 				if (chunk != null)
