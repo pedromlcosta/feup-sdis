@@ -75,7 +75,10 @@ public class ReceiverServer extends Thread {
 						|| !headerArgs[1].equals(Peer.getCurrentVersion())) {
 					// System.out.println("same server");
 				} else {
-					System.out.println("Server Received: " + headerArgs[0]);
+					System.out.print("Server Received:");
+					for(String arg:headerArgs)
+						System.out.print(", "+ arg);
+					System.out.println("\n");
 					new Processor(headerArgs, body).start();
 				}
 				header = "";

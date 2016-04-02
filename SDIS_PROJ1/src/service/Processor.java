@@ -300,27 +300,29 @@ public class Processor extends Thread {
 				ArrayList<ChunkID> stored = Peer.getInstance().getStored();
 				// if a chunk has stored msg associated to him, it means it must
 				// also be stored
-				int index = stored.indexOf(chunkID);
-				// Only lets store chunks with actualDegree lower than
-				// desiredDegree
-				if (index >= 0 && answered.size() < stored.get(index).getDesiredRepDegree()) {
-					fullBackup = true;
-					System.out.println("Peer: " + Peer.getInstance().getServerID());
-					System.out.println("Checking available space: " + (PeerData.getDiskSize() - backupFolderSize));
-					System.out.println(PeerData.getDiskSize() + "   " + backupFolderSize);
-					// Is the disk full? if not backup if it is full,was able to
-					// free some space?
+				synchronized (stored) {
+					int index = stored.indexOf(chunkID);
+					// Only lets store chunks with actualDegree lower than
+					// desiredDegree
+					if (index >= 0 && answered.size() < stored.get(index).getDesiredRepDegree()) {
+						fullBackup = true;
+						System.out.println("Peer: " + Peer.getInstance().getServerID());
+						System.out.println("Checking available space: " + (PeerData.getDiskSize() - backupFolderSize));
+						System.out.println(PeerData.getDiskSize() + "   " + backupFolderSize);
+						// Is the disk full? if not backup if it is full,was able to
+						// free some space?
+						if (canBackup)
+							new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg, fullBackup);
+					} else
+						System.out.println("enough chunks,all already saved");
+					if (index >= 0) {
+						fullBackup = false;
+						canBackup = true;
+					} else
+						fullBackup = true;
 					if (canBackup)
 						new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg, fullBackup);
-				} else
-					System.out.println("enough chunks,all already saved");
-				if (index >= 0) {
-					fullBackup = false;
-					canBackup = true;
-				} else
-					fullBackup = true;
-				if (canBackup)
-					new BackupProtocol(Peer.getInstance()).putChunkReceive(this.msg, fullBackup);
+				}
 			}
 		} else {
 			fullBackup = true;
@@ -344,10 +346,11 @@ public class Processor extends Thread {
 
 		// update actualRepDegree
 		peer.getStored().get(index).decreaseRepDegree();
-
+		
 		int actualRepDegree = peer.getStored().get(index).getActualRepDegree();
 		int desiredRepDegree = peer.getStored().get(index).getDesiredRepDegree();
-
+		System.out.println("Rep values:"+actualRepDegree+"  "+desiredRepDegree);
+		
 		if (desiredRepDegree <= actualRepDegree)
 			return;
 		// sleep between 0 to 400 ms
