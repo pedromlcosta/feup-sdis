@@ -19,10 +19,18 @@ public class DeleteProtocol extends Thread {
 	private String filePath;
 	private static int MAX_SENT = 5;
 
+	/**
+	 * Constructor for Delete protocol that deletes a file and sends DELETE message
+	 * 
+	 * @param filePath name of the file to be deleted
+	 */
 	public DeleteProtocol(String filePath) {
 		this.filePath = filePath;
 	}
-
+	
+	/**
+	 * Runs the Delete Protocol
+	 */
 	public void run() {
 
 		ArrayList<FileID> fileSentVersions = peer.getFilesSent().get(filePath);
@@ -46,7 +54,7 @@ public class DeleteProtocol extends Thread {
 			try {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				System.out.println("Unexpected wake up of a thread sleeping");
 			}
 			nMessagesSent++;
 		}
@@ -65,11 +73,9 @@ public class DeleteProtocol extends Thread {
 		try {
 			peer.saveData();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("File to save Data not found");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("IO error saving to file");
 		}
 	}
 }

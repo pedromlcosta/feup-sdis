@@ -201,8 +201,7 @@ public class FileHandler {
 			fileWriter = new FileOutputStream(filePath);
 			return true;
 		} catch (FileNotFoundException e) {
-			System.out.println("here");
-			e.printStackTrace();
+			System.out.println("Couldn't find the file: " + filePath);
 		}
 
 		return false;
