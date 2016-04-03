@@ -71,13 +71,12 @@ public class ReceiverServer extends Thread {
 				String[] headerArgs = Message.parseHeader(header);
 
 				// TODO ignore messages sent by server
-				if (Integer.parseInt(headerArgs[2]) == Peer.getInstance().getServerID()
-						|| !headerArgs[1].equals(Peer.getCurrentVersion())) {
+				if (Integer.parseInt(headerArgs[2]) == Peer.getInstance().getServerID() || !headerArgs[1].equals(Peer.getCurrentVersion())) {
 					// System.out.println("same server");
 				} else {
 					System.out.print("Server Received:");
-					for(String arg:headerArgs)
-						System.out.print(", "+ arg);
+					for (String arg : headerArgs)
+						System.out.print(", " + arg);
 					System.out.println("\n");
 					new Processor(headerArgs, body).start();
 				}
@@ -94,6 +93,10 @@ public class ReceiverServer extends Thread {
 
 	public DatagramPacket createDatagramPacket(byte[] buffer) {
 		return new DatagramPacket(buffer, buffer.length, this.getAddr(), this.getPort());
+	}
+
+	public static DatagramPacket createDatagramPacket(byte[] buffer, int port, InetAddress addr) {
+		return new DatagramPacket(buffer, buffer.length, addr, port);
 	}
 
 	public void open() throws IOException {
