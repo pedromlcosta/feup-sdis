@@ -30,14 +30,15 @@ public class PeerData implements Serializable {
 	private HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 	private HashMap<ChunkID, Integer> deleted;
 	private ArrayList<ChunkID> removeLookup = new ArrayList<ChunkID>();
-	private final static long DISK_SIZE = Chunk.getChunkSize();
+	private final static long DISK_SIZE = Chunk.getChunkSize() * 100000;
 	private static String dataPath = "";
 	private static final String fileName = "PeerData.dat";
 
 	// CONSTRUCTOR
-	
+
 	/**
-	 * Constructor for the PeerData, initializes the data members that are necessary
+	 * Constructor for the PeerData, initializes the data members that are
+	 * necessary
 	 */
 	public PeerData() {
 		stored = new ArrayList<ChunkID>();
@@ -49,6 +50,7 @@ public class PeerData implements Serializable {
 	// SERIAL FUNCTIONS
 	/**
 	 * Serializes this object into a file
+	 * 
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
@@ -72,8 +74,8 @@ public class PeerData implements Serializable {
 	}
 
 	/**
-	 * Deserializes this object, from a previously created file in a directory, if it exists
-	 * Otherwise, just creates the directory and/or file, as needed
+	 * Deserializes this object, from a previously created file in a directory,
+	 * if it exists Otherwise, just creates the directory and/or file, as needed
 	 * 
 	 * @return the PeerData object loaded from the file
 	 * @throws FileNotFoundException
@@ -225,7 +227,7 @@ public class PeerData implements Serializable {
 	public static String getFilename() {
 		return fileName;
 	}
-	
+
 	public int removeCheck(String fileId, int chunkNo) {
 
 		ChunkID chunk = new ChunkID(fileId, chunkNo);
@@ -235,7 +237,7 @@ public class PeerData implements Serializable {
 			removeLookup.remove(index);
 		return index;
 	}
-	
+
 	public ArrayList<ChunkID> getRemoveLookup() {
 		return removeLookup;
 	}
