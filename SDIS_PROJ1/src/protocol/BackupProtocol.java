@@ -284,8 +284,6 @@ public class BackupProtocol extends Thread {
 		if (Peer.getInstance().fileAlreadySent(fileID)) {
 			System.out.println("backingup Own file");
 			return;
-		} else {
-			System.out.println("NOT OWN File: " + putchunkMSG.getFileId() + "    " + putchunkMSG.getSenderID());
 		}
 
 		try {
