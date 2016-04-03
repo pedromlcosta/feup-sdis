@@ -35,7 +35,10 @@ public class PeerData implements Serializable {
 	private static final String fileName = "PeerData.dat";
 
 	// CONSTRUCTOR
-
+	
+	/**
+	 * Constructor for the PeerData, initializes the data members that are necessary
+	 */
 	public PeerData() {
 		stored = new ArrayList<ChunkID>();
 		filesSent = new HashMap<String, ArrayList<FileID>>();
@@ -44,6 +47,11 @@ public class PeerData implements Serializable {
 	}
 
 	// SERIAL FUNCTIONS
+	/**
+	 * Serializes this object into a file
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
 	public synchronized void savePeerData() throws FileNotFoundException, IOException {
 
 		String dirPath = "";
@@ -63,6 +71,16 @@ public class PeerData implements Serializable {
 
 	}
 
+	/**
+	 * Deserializes this object, from a previously created file in a directory, if it exists
+	 * Otherwise, just creates the directory and/or file, as needed
+	 * 
+	 * @return the PeerData object loaded from the file
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 * @throws ClassNotFoundException
+	 * @throws NotSerializableException
+	 */
 	public synchronized PeerData loadPeerData() throws FileNotFoundException, IOException, ClassNotFoundException, NotSerializableException {
 
 		String dirPath = "";
@@ -134,6 +152,9 @@ public class PeerData implements Serializable {
 		stored.remove(fileId);
 	}
 
+	/**
+	 * Sorts the stored chunks by difference in their actual-desired degrees
+	 */
 	public synchronized void sortStored() {
 		Collections.sort(stored);
 	}

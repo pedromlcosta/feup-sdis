@@ -37,21 +37,40 @@ public class Processor extends Thread {
 	private byte[] messageBody = null;
 	private String[] messageFields = null;
 
+	/**
+	 * Processor constructor
+	 * @param messageString string received, corresponding to a message
+	 */
 	public Processor(String messageString) {
 		this.messageString = messageString;
 	}
 
 	// Criado por causa das mudanças no receiver e evitar fazer o parseHeader 2x
+	/**
+	 * Processor constructor
+	 * @param headerArgs arguments of the header of the message
+	 * @param body body of the message
+	 */
 	public Processor(String[] headerArgs, byte[] body) {
 		this.messageFields = headerArgs;
 		this.messageBody = body;
 	}
 
+	/**
+	 * Processor constructor
+	 * @param header String that represents the header of the message
+	 * @param body body of the message
+	 */
 	public Processor(String header, byte[] body) {
 		this.messageString = header;
 		this.messageBody = body;
 	}
 
+	/**
+	 * Main processor thread. After the constructor is called, this
+	 * method accesses the message that was stored in the datamembers 
+	 * and calls the adequate handlers
+	 */
 	public void run() {
 		// HANDLE MESSAGES HERE
 		// TODO msg != null &&
@@ -118,6 +137,12 @@ public class Processor extends Thread {
 		}
 	}
 
+	/**
+	 * 
+	 * @param fileId
+	 * @param chunkNo
+	 * @return
+	 */
 	private int reclaimCheck(String fileId, int chunkNo) {
 
 		ChunkID chunk = new ChunkID(fileId, chunkNo);
@@ -129,7 +154,10 @@ public class Processor extends Thread {
 	}
 
 
-
+	/**
+	 * 
+	 * @return
+	 */
 	private boolean ignoreMessage() {
 		ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
 		if (Peer.getInstance().getData().getDeleted().get(tmp) != null) {
@@ -140,6 +168,9 @@ public class Processor extends Thread {
 		return false;
 	}
 
+	/**
+	 * Handles DELETE messages
+	 */
 	private void deleteHandler() {
 
 		Peer peer = Peer.getInstance();
@@ -182,6 +213,9 @@ public class Processor extends Thread {
 		Extra.recursiveDelete(file);
 	}
 
+	/**
+	 * Handles CHUNK messages
+	 */
 	private void chunkHandler() {
 
 		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
@@ -190,21 +224,20 @@ public class Processor extends Thread {
 		// Received a chunk and was expecting it for a restore
 		if (restoreChannel.expectingRestoreChunks(chunkID.getFileID())) {
 			restoreChannel.addRestoreChunk(chunkID.getFileID(), new Chunk(chunkID, msg.getBody()));
-			System.out.println("Received an expected chunk.");
-		} else { // Received a chunk whose file wasn't being restored
-			System.out.println("Received a foreign chunk.");
+			
+		} else { 
+			// Received a chunk whose file wasn't being restored
+			
 			restoreChannel.receivedForeignChunk(chunkID);
 		}
 
-		// 1o - Verificar se o Chunk pertence a um ficheiro em restore
-
-		// 2o - Se pertencer, guardar em chunksBeingReceived
-
-		// 3o - Se não pertencer, guardar só a informação que foi recebido um
-		// chunk
-		// So ver se e valido e adicionar aos chunks esperados desse ficheiro...
 	}
 
+	/**
+	 * Handles GETCHUNK messages
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 */
 	private void getChunkHandler() throws ClassNotFoundException, IOException {
 
 		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
@@ -257,34 +290,24 @@ public class Processor extends Thread {
 			restore.expectingForeignChunk(chunkID, false);
 
 		} else {
-			/*
-			 * System.out.println("Stored size: " +
-			 * Peer.getInstance().getData().getStored().size());
-			 * 
-			 * for(int i = 0; i<
-			 * Peer.getInstance().getData().getStored().size(); i++){
-			 * System.out.println("Chunk nr. " +
-			 * Peer.getInstance().getData().getStored().get(i).getChunkNumber()
-			 * +" with fileID: " +
-			 * Peer.getInstance().getData().getStored().get(i).getFileID()); }
-			 * 
-			 * System.out.println(
-			 * "And our chunkID we were comparing to has chunk nr. " +
-			 * chunkID.getChunkNumber()+ " and fileID " + chunkID.getFileID() );
-			 */
 			System.out.println("Dont have it stored, sorry!");
 		}
 
 	}
 
+	/**
+	 * Handles STORED messages
+	 */
 	private void storedHandler() {
-		// I got a stored now I need to send them to the queue, we should have a
 
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
 		Peer.getInstance().addSenderToAnswered(chunkID, Integer.parseInt(this.msg.getSenderID()));
 
 	}
 
+	/**
+	 * Handles PUTCHUNK messages
+	 */
 	private void putChunkHandler() {
 		boolean fullBackup;
 		String dirPath = "";
@@ -336,6 +359,9 @@ public class Processor extends Thread {
 
 	}
 
+	/**
+	 * Handles REMOVE messages
+	 */
 	private void removeHandler() {
 
 		Peer peer = Peer.getInstance();
