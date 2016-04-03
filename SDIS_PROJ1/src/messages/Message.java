@@ -144,15 +144,26 @@ public class Message {
 		addEOL();
 	}
 
+	/**
+	 * discards the current Message
+	 */
 	public void discardMessage() {
-		this.setMessageToSend("");
+		this.setMessageToSend(EMPTY_STRING);
 	}
 
+	/**
+	 * 
+	 * @return the data (body) of the message
+	 */
 	public byte[] getMessageData() {
 		return body;
 	}
 
-	// TODO check
+	/**
+	 * turns the whole message into an byte[] array
+	 * 
+	 * @return header+body in a single byte[]
+	 */
 	public byte[] getMessageBytes() {
 
 		byte[] headerBytes = messageToSend.getBytes();

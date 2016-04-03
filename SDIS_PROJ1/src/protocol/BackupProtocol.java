@@ -67,9 +67,9 @@ public class BackupProtocol extends Thread {
 		HashMap<String, ArrayList<FileID>> sentFiles = peer.getFilesSent();
 		ArrayList<FileID> fileList;
 		synchronized (sentFiles) {
-			if (sentFiles.containsKey(fileID.getID())) {
+			if (sentFiles.containsKey(fileID.getFileName())) {
 				// System.out.println("File already in List");
-				fileList = sentFiles.get(fileID.getID());
+				fileList = sentFiles.get(fileID.getFileName());
 				synchronized (fileList) {
 					if (!fileList.contains(fileID)) {
 						fileList.add(fileID);
@@ -83,7 +83,7 @@ public class BackupProtocol extends Thread {
 				// System.out.println("File not in List");
 				fileList = new ArrayList<FileID>();
 				fileList.add(fileID);
-				sentFiles.put(fileID.getID(), fileList);
+				sentFiles.put(fileID.getFileName(), fileList);
 			}
 
 			// Save alterations to peer data
