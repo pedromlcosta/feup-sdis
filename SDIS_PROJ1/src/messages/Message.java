@@ -8,20 +8,19 @@ import extra.Extra;
 
 public class Message {
 
-	protected static final String GETCHUNK = "GETCHUNK";
-	protected static final String CHUNK = "CHUNK";
-	protected static final String DELETE = "DELETE";
-	protected static final String REMOVED = "REMOVED";
-	protected static final String PUTCHUNK = "PUTCHUNK";
-	protected static final String STORED = "STORED";
-	protected static final String EMPTY_STRING = "";
+	static final String GETCHUNK = "GETCHUNK";
+	static final String CHUNK = "CHUNK";
+	static final String DELETE = "DELETE";
+	static final String REMOVED = "REMOVED";
+	static final String PUTCHUNK = "PUTCHUNK";
+	static final String STORED = "STORED";
+	static final String EMPTY_STRING = "";
 
 	public static enum MESSAGE_TYPE {
 		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED
 	}
 
 	public static final String EOL = "\r\n";
-
 	final String VALIDATE_MESSAGE_TYPE = "^(?:\\w+)";
 	final String MORE_THAN_1_SPACE = " +";
 	final String ZERO_OR_MORE_SPACES = " *";
@@ -31,9 +30,6 @@ public class Message {
 	final String DREGREE_ARG = "(?:\\d)";
 	final String MSG_END_WITHOUT_BODY = " *" + EOL + EOL;
 	final String MSG_END_WITH_BODY = MSG_END_WITHOUT_BODY + ".*";
-	// protected final String VALIDATE_MSG_Part1 = "(?:\\w+ +){";
-
-	// protected final String VALIDATE_MSG_Part2 = "}\\w+ *" + EOL + EOL + ".*";
 	public final static String PATTERN = " ";
 	String messageToSend = "";
 
@@ -45,10 +41,8 @@ public class Message {
 	int chunkNo;
 	int replicationDeg;
 	byte[] body;
-
 	String validateRegex;
 
-	// TODO check body with string and non ascii
 	// PUTCHUNK <Version> <SenderId> <FileId> <ChunkNo> <ReplicationDeg>
 	// <CRLF><CRLF><Body>
 	// STORED <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
@@ -56,19 +50,22 @@ public class Message {
 	// CHUNK <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF><Body>
 	// DELETE <Version> <SenderId> <FileId> <CRLF><CRLF>
 	// REMOVED <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
-	// made static
+	/**
+	 * 
+	 * @param header
+	 * @return an array with the values that makeup the header of a message
+	 */
 	public static synchronized String[] parseHeader(String header) {
 		Pattern pattern = Pattern.compile(PATTERN);
 		String[] match = pattern.split(header, -2);
-		// for (String a : Extra.eraseEmpty(match)) {
-		// System.out.println("Print: " + a);
-		// }
-
+		// erases the empty strings from the match array
 		return Extra.eraseEmpty(match);
 	}
 
+	/**
+	 * Empty constructor for message
+	 */
 	public Message() {
-
 	}
 
 	// Only "daugther" classes should be used to create
@@ -76,8 +73,11 @@ public class Message {
 		return false;
 	}
 
+	/**
+	 * 
+	 * @return true if the message is valid
+	 */
 	public boolean createMessageAux() {
-		// System.out.println(messageToSend);
 		if (validateMsg(messageToSend)) {
 			return true;
 		} else {
@@ -86,12 +86,27 @@ public class Message {
 		}
 	}
 
+	/**
+	 * Validates the message
+	 * 
+	 * @param s
+	 * @return true if the message is according to the validateRegex otherwise
+	 *         it returns false
+	 */
 	public boolean validateMsg(String s) {
 		Pattern p = Pattern.compile(validateRegex);
 		Matcher m = p.matcher(s);
 		return m.matches();
 	}
 
+	/**
+	 * Creates a header for the message
+	 * 
+	 * @param args
+	 * @param nArgs
+	 * @param messageType
+	 * @return true
+	 */
 	public boolean createHeader(String[] args, int nArgs, String messageType) {
 		if (args.length != nArgs) {
 			System.out.println("Args given for this type of message: " + args.length);
@@ -104,10 +119,19 @@ public class Message {
 		return true;
 	}
 
+	/**
+	 * adds EOL to the string
+	 * 
+	 * @param string
+	 * @return
+	 */
 	public String addEOL(String string) {
 		return string.concat(EOL);
 	}
 
+	/**
+	 * adds EOL to the message
+	 */
 	public void addEOL() {
 		messageToSend = messageToSend.concat(EOL);
 	}
@@ -125,10 +149,6 @@ public class Message {
 	}
 
 	public byte[] getMessageData() {
-		// if (body != null)
-		// System.out.println("GET DATA BEING CALLED: " + body.length);
-		// else
-		// System.out.println("BODY IS NULL");
 		return body;
 	}
 
@@ -141,13 +161,10 @@ public class Message {
 			message = new byte[body.length + headerBytes.length];
 			System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
 			System.arraycopy(body, 0, message, headerBytes.length, body.length);
-			// System.out.println("BODY HAS: " + body.length);
 		} else {
 			message = new byte[headerBytes.length];
 			System.arraycopy(headerBytes, 0, message, 0, headerBytes.length);
 		}
-		// System.out.println("HEADER HAS: " + headerBytes.length);
-		// System.out.println("MESSAGE HAS : " + message.length);
 		return message;
 	}
 

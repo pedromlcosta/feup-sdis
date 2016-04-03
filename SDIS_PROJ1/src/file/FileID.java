@@ -21,20 +21,33 @@ public class FileID implements Serializable {
 	private String ID;
 	private boolean multiple = false;
 
+	/**
+	 * Empty Constructor for FileID
+	 */
 	public FileID() {
 
 	}
 
+	/**
+	 * Constructor for FileID
+	 * 
+	 * @param fileName
+	 * @throws Exception
+	 *             -> if the file has a ChunkNumber bigger than what is allowed
+	 */
 	public FileID(String fileName) throws Exception {
-		// TODO multiple Nchunks bellow
 		File file = new File(fileName);
+		// get path for file
 		String absPath = file.getAbsolutePath();
 		Path path = file.toPath();
+		// get size of file
 		fileSize = file.length();
+		// get file Name for example if the path was src/file.txt the name would
+		// be file.txt
 		this.fileName = file.getName();
-		// TODO case where fileSize multiple of ChunkSize
+
 		this.nChunks = (int) Math.ceil((1.0 * fileSize) / Chunk.getChunkSize());
-		// each file must have at least 1 chunck
+		// each file must have at least 1 chunk if fileSize > 0
 		this.nChunks = ((this.nChunks == 0 && fileSize > 0) ? 1 : this.nChunks);
 		if (nChunks > MAX_NUMBER_OF_CHUNKS) {
 			System.out.println("File is to large to be backed up");
@@ -51,11 +64,12 @@ public class FileID implements Serializable {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		// System.out.println(
-		// "FileID create\nFileSize: " + file.length() + "\n" + "Nchunks: " +
-		// this.nChunks + "\n ID: " + this.ID);
+
 	}
 
+	/**
+	 * Hash code for the FileID object
+	 */
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -70,6 +84,9 @@ public class FileID implements Serializable {
 		return result;
 	}
 
+	/***
+	 * return true if FileIDs are equal
+	 */
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
@@ -93,62 +110,129 @@ public class FileID implements Serializable {
 		return true;
 	}
 
+	/**
+	 * 
+	 * @return size of the file which fileID represents
+	 */
 	public long getFileSize() {
 		return fileSize;
 	}
 
+	/**
+	 * set the fileSize
+	 * 
+	 * @param fileSize
+	 */
 	public void setFileSize(long fileSize) {
 		this.fileSize = fileSize;
 	}
 
+	/**
+	 * 
+	 * @return the number of chunks that file has
+	 */
 	public int getnChunks() {
 		return nChunks;
 	}
 
+	/**
+	 * sets the number of chunks
+	 * 
+	 * @param nChunks
+	 */
 	public void setnChunks(int nChunks) {
 		this.nChunks = nChunks;
 	}
 
+	/**
+	 * 
+	 * @return the desired Degree for all the chunks in the file
+	 */
 	public int getDesiredRepDegree() {
 		return desiredRepDegree;
 	}
 
+	/**
+	 * sets the desired representation degree
+	 * 
+	 * @param desiredRepDegree
+	 */
 	public void setDesiredRepDegree(int desiredRepDegree) {
 		this.desiredRepDegree = desiredRepDegree;
 	}
 
+	/**
+	 * 
+	 * @return the server who backed up this file, its "home"
+	 */
 	public int getHomeServer() {
 		return homeServer;
 	}
 
+	/**
+	 * sets the homeServer
+	 * 
+	 * @param homeServer
+	 */
 	public void setHomeServer(int homeServer) {
 		this.homeServer = homeServer;
 	}
 
+	/**
+	 * 
+	 * @return the fileID
+	 */
 	public String getID() {
 		return ID;
 	}
 
+	/**
+	 * sets the fileID
+	 * 
+	 * @param ID
+	 */
 	public void setID(String ID) {
 		this.ID = ID;
 	}
 
+	/**
+	 * 
+	 * @return if the file has a size multiple of Chunk.Size
+	 */
 	public boolean isMultiple() {
 		return multiple;
 	}
 
+	/**
+	 * set the field multiple
+	 * 
+	 * @param multiple
+	 */
 	public void setMultiple(boolean multiple) {
 		this.multiple = multiple;
 	}
 
+	/**
+	 *
+	 * @return the fileName
+	 */
 	public String getFileName() {
 		return fileName;
 	}
 
+	/**
+	 * sets the fileName
+	 * 
+	 * @param fileName
+	 */
 	public void setFileName(String fileName) {
 		this.fileName = fileName;
 	}
 
+	/**
+	 * 
+	 * @return the max number of chunks a file is allowed to have
+	 */
 	public static int getMaxNumberOfChunks() {
 		return MAX_NUMBER_OF_CHUNKS;
 	}
