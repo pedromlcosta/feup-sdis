@@ -42,7 +42,6 @@ public class Peer implements Invocation {
 	private Integer serverID;
 	private static Registry rmiRegistry;
 	private static String rmiName;
-	private Dispatcher commandDispatcher = new Dispatcher();
 	private String folderPath;
 	// TODO change names and check structures
 	// TODO servers that replay to command
@@ -320,14 +319,6 @@ public class Peer implements Invocation {
 
 	public static void setRmiName(String rmiName) {
 		Peer.rmiName = rmiName;
-	}
-
-	public Dispatcher getCommandDispatcher() {
-		return commandDispatcher;
-	}
-
-	public void setCommandDispatcher(Dispatcher commandDispatcher) {
-		this.commandDispatcher = commandDispatcher;
 	}
 
 	public HashMap<ChunkID, ArrayList<Integer>> getServerAnsweredCommand() {
