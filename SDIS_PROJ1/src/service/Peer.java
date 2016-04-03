@@ -35,7 +35,7 @@ public class Peer implements Invocation {
 
 	/**
 	 * 
-	 * @return the Peer singleton 
+	 * @return the Peer singleton
 	 */
 	public static Peer getInstance() {
 		return instance;
@@ -52,7 +52,8 @@ public class Peer implements Invocation {
 	private String folderPath;
 
 	/**
-	 * Default Peer constructor. Initializes receiver servers and PeerData container.
+	 * Default Peer constructor. Initializes receiver servers and PeerData
+	 * container.
 	 */
 	public Peer() {
 
@@ -65,6 +66,7 @@ public class Peer implements Invocation {
 
 	/**
 	 * Creates the folder for this peer, if not yet existent
+	 * 
 	 * @throws IOException
 	 */
 	public void createPeerFolder() throws IOException {
@@ -73,7 +75,11 @@ public class Peer implements Invocation {
 
 	/**
 	 * Starts running the peer, validating arguments and registering the RMI
-	 * @param args Peer arguments: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port>
+	 * 
+	 * @param args
+	 *            Peer arguments:
+	 *            <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port>
+	 *            <MDR_addr> <MDR_port>
 	 */
 	public static void main(String[] args) {
 
@@ -165,12 +171,12 @@ public class Peer implements Invocation {
 		} catch (IOException e) {
 			System.out.println("IOException while loading PeerData for the first time");
 			System.out.println(e.getMessage());
-			//e.printStackTrace();
+			// e.printStackTrace();
 			return;
 		} catch (ClassNotFoundException e) {
 			System.out.println("PeerData - a Class was not found");
 			System.out.println(e.getMessage());
-			//e.printStackTrace();
+			// e.printStackTrace();
 			return;
 		}
 
@@ -183,7 +189,8 @@ public class Peer implements Invocation {
 	/**
 	 * Validates the arguments received
 	 * 
-	 * @param args arguments received from main
+	 * @param args
+	 *            arguments received from main
 	 * @return true if they are in a valid from, false otherwise
 	 */
 	public static boolean validArgs(String[] args) {
@@ -416,6 +423,7 @@ public class Peer implements Invocation {
 
 	/**
 	 * Loads the PeerData object from a file, if it exists
+	 * 
 	 * @throws FileNotFoundException
 	 * @throws ClassNotFoundException
 	 * @throws IOException
@@ -426,6 +434,7 @@ public class Peer implements Invocation {
 
 	/**
 	 * Saves the PeerData object to a file
+	 * 
 	 * @throws FileNotFoundException
 	 * @throws IOException
 	 */
@@ -488,18 +497,40 @@ public class Peer implements Invocation {
 	}
 
 	/**
-	 * Starts to reclaim disk space when the data size is bigger than the backup size left
-	 * @param backupFolderSize size available on the backup folder
-	 * @param dataSize size of the data to write
-	 * @return 	true if there is enough space
+	 * Starts to reclaim disk space when the data size is bigger than the backup
+	 * size left
+	 * 
+	 * @param backupFolderSize
+	 *            size available on the backup folder
+	 * @param dataSize
+	 *            size of the data to write
+	 * @return true if there is enough space
 	 */
 	public boolean reclaimDiskSpace(long backupFolderSize, long dataSize) {
-		//System.out.println("Testing " + PeerData.getDiskSize() + "   " + backupFolderSize + "   " + dataSize);
+		// System.out.println("Testing " + PeerData.getDiskSize() + " " +
+		// backupFolderSize + " " + dataSize);
 		if (PeerData.getDiskSize() - (backupFolderSize + dataSize) < 0) {
 			System.out.println("!!Starting Disk Reclaim!!  " + PeerData.getDiskSize() + "   " + backupFolderSize);
-			 return (new ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();
+			return (new ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();
 		}
 		return true;
+	}
+
+	/**
+	 * 
+	 * @param fileID
+	 * @return true if the fileID belongs to a file Already backed up by this
+	 *         peer
+	 */
+	public boolean fileAlreadySent(String fileID) {
+		HashMap<String, ArrayList<FileID>> filesSent = data.getFilesSent();
+		for (String key : filesSent.keySet()) {
+			for (FileID member : filesSent.get(key)) {
+				if (member.getID().equals(fileID))
+					return true;
+			}
+		}
+		return false;
 	}
 
 }
