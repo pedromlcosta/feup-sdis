@@ -9,7 +9,7 @@ import java.util.Iterator;
 import channels.MCReceiver;
 import chunk.ChunkID;
 import extra.Extra;
-import messages.FileHandler;
+import extra.FileHandler;
 import messages.Message;
 import messages.RemovedMsg;
 import service.Peer;

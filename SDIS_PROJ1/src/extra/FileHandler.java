@@ -1,4 +1,4 @@
-package messages;
+package extra;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -12,7 +12,6 @@ import java.util.Arrays;
 import service.Peer;
 import chunk.Chunk;
 import chunk.ChunkID;
-import extra.Extra;
 
 //TODO STATIC OR NOT?? Check if good practice the Chunk.getChunkSize()
 public class FileHandler {
