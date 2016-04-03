@@ -22,10 +22,19 @@ public class RestoreProtocol extends Thread {
 	private FileHandler fileHandler = new FileHandler();
 	private String filePath;
 
+	/**
+	 * Restore Protocol thread constructor.
+	 * @param filePath relative path of file to restore
+	 */
 	public RestoreProtocol(String filePath) {
 		this.filePath = filePath;
 	}
 
+	/**
+	 * Run method associated with the thread that runs this protocol
+	 * It will restore the file represented by filePath chunk by chunk
+	 * It times out if it doesn't receive a chunk for 4 seconds
+	 */
 	public void run() {
 
 		// Create Peer folder, if not yet existing
@@ -157,6 +166,14 @@ public class RestoreProtocol extends Thread {
 		receiverChannel.finishRestore(fileID);
 	}
 
+	/**
+	 * Waits 4 seconds for a certain chunk of a certain file
+	 * 
+	 * @param fileID identifier of the file the chunk we expect belongs to
+	 * @param expectedChunkNr number of the chunk we expect
+	 * @return the Chunk that was awaited
+	 * @throws InterruptedException
+	 */
 	public synchronized Chunk waitForChunk(String fileID, int expectedChunkNr)
 			throws InterruptedException {
 
