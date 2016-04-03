@@ -473,15 +473,10 @@ public class Peer implements Invocation {
 			synchronized (answered) {
 
 				if (answered.isEmpty() || !answered.contains(senderID)) {
-					// System.out.println("Added sender to list: " + senderID);
 					answered.add(senderID);
 					for (ChunkID toUpdate : command.keySet())
 						if (toUpdate.equals(chunkID))
 							toUpdate.increaseRepDegree();
-
-				} else {
-					// System.out.println("Already received message from server:
-					// " + senderID);
 				}
 
 			}
