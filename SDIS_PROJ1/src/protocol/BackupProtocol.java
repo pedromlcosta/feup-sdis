@@ -97,7 +97,11 @@ public class BackupProtocol extends Thread {
 				e.printStackTrace();
 			}
 
-			backupFile(split, fileID);
+			try {
+				backupFile(split, fileID);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 
 			// Finished backing up, save?
 			try {
@@ -115,16 +119,22 @@ public class BackupProtocol extends Thread {
 	 * 
 	 * @param split
 	 * @param fileID
+	 * @throws Exception
 	 */
-	public void backupFile(FileHandler split, FileID fileID) {
+	public void backupFile(FileHandler split, FileID fileID) throws Exception {
 		System.out.println("Backup Stuff");
 		byte[] chunkData;
-		int currentPos;
+		int currentPos = 0;
 		int chunkNumber = 0;
+		boolean fileDoesNotExist = false;
 		try {
 			do {
 				// Get chunk
 				chunkData = split.splitFile();
+				if (chunkData == null) {
+					fileDoesNotExist = true;
+					break;
+				}
 				currentPos = chunkData.length;
 				// update Chunk Number
 				chunkNumber++;
@@ -135,7 +145,7 @@ public class BackupProtocol extends Thread {
 			} while (chunkData.length > 0 && checkNChunks(fileID, chunkNumber));
 
 			// Empty body when the file has a size multiple of the ChunkSize
-			if (fileID.isMultiple()) {
+			if (fileID.isMultiple() && !fileDoesNotExist) {
 				chunkNumber++;
 				fileID.setnChunks(chunkNumber);
 				System.out.println(currentPos + "  " + chunkNumber);
@@ -146,6 +156,11 @@ public class BackupProtocol extends Thread {
 			e.printStackTrace();
 		} catch (InterruptedException e) {
 			e.printStackTrace();
+		}
+		try {
+			split.closeInputStream();
+		} catch (IOException e) {
+			throw new Exception("Closure of FileInputStream failed");
 		}
 	}
 
