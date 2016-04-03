@@ -280,11 +280,10 @@ public class BackupProtocol extends Thread {
 		String fileID = putchunkMSG.getFileId();
 		// What happens when two peers from the same PC try to backup the same
 		// file
-		if (Peer.getInstance().getFilesSent().get(fileID) != null) {
+
+		if (Peer.getInstance().fileAlreadySent(fileID)) {
 			System.out.println("backingup Own file");
 			return;
-		} else {
-			System.out.println("NOT OWN File: " + putchunkMSG.getFileId() + "    " + putchunkMSG.getSenderID());
 		}
 
 		try {
