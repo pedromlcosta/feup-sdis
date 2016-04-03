@@ -8,6 +8,12 @@ import extra.Extra;
 
 public class TestApp {
 
+	/**
+	 * Runs the testapp, contacting a certain peer to execute a subprotocol
+	 * 
+	 * @param args arguments for the testapp
+	 * @throws IOException
+	 */
 	public static void main(String[] args) throws IOException {
 
 		String remoteName;
@@ -67,6 +73,11 @@ public class TestApp {
 	// DELETE file
 	// RECLAIM space
 
+	/**
+	 * 
+	 * @param args arguments received from testapp, to be validated
+	 * @return true if the args are in a valid formate, false otherwise
+	 */
 	static boolean validArgs(String[] args) {
 
 		System.out.println("Validating args...");

@@ -32,29 +32,26 @@ public class RestoreProtocol extends Thread {
 		try {
 			peer.createPeerFolder();
 		} catch (IOException e2) {
-			System.out.println("Folder already exists?");
+
 		}
-		System.out.println("got here");
+
 		// Create Restore folder, if not yet existing
 		String dirPath = "";
 		try {
 			dirPath = Extra
 					.createDirectory(Integer.toString(peer.getServerID())
 							+ File.separator + FileHandler.RESTORE_FOLDER_NAME);
-			System.out.println(dirPath);
+
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
 
-		// TODO get first FIle or last???
 		ArrayList<FileID> fileSentVersions = peer.getFilesSent().get(filePath);
 		if (fileSentVersions == null) {
-			System.out.println("File has not yet been backedup");
+			System.out.println("File has not yet been backed up");
 			return;
 		}
 		FileID file = fileSentVersions.get(fileSentVersions.size() - 1);
-
-		System.out.println("got here2");
 
 		// Check if it was backed up by this peer
 		if (file == null) {
@@ -75,39 +72,27 @@ public class RestoreProtocol extends Thread {
 			return;
 		}
 
-		// createFile returns whether there was already a file with the name or
-		// not
-		
-		
-		
-		
 		String totalPath = "";
 		String filePathFxd = filePath.replace("/", File.separator);
-		
-		System.out.println("filePath after replace is: " +  filePathFxd);
-		
+
 		int index = filePathFxd.lastIndexOf(File.separator);
 
-		if(index == -1){
+		if (index == -1) {
 			totalPath = originalName;
-		}else{
-			System.out.println(index);
-			totalPath = filePathFxd.
-			    substring(0,index) + "-" + originalName;
+		} else {
+			totalPath = filePathFxd.substring(0, index) + "-" + originalName;
 		}
-		
-		System.out.println(totalPath);
-		
+
 		totalPath.replace("../", "");
 		totalPath.replace("//", "");
 		totalPath.replace("/", "_");
-		
-		System.out.println(totalPath);
-		
-		System.out.println("Creating file: " + dirPath + File.separator + totalPath );
-		
-		if(!fileHandler.createFile(dirPath + File.separator + totalPath)){
-			System.out.println("File with this name already existed. Restoring over previous version.");
+
+		System.out.println("Creating file: " + dirPath + File.separator
+				+ totalPath);
+
+		if (!fileHandler.createFile(dirPath + File.separator + totalPath)) {
+			System.out
+					.println("File with this name already existed. Restoring over previous version.");
 		}
 
 		Message msg = new GetChunkMsg();
@@ -132,25 +117,19 @@ public class RestoreProtocol extends Thread {
 				// Wait for message and write it
 				Chunk chunk = waitForChunk(fileID, i);
 
-				if (chunk == null || chunk.getData() == null || chunk.getData().length == 0) {
+				if (chunk == null || chunk.getData() == null
+						|| chunk.getData().length == 0) {
 					System.out.println("Timeout: couldn't obtain Chunk nr. "
 							+ i + " after 4 seconds, restore failed");
-					
+
 					receiverChannel.finishRestore(fileID);
 					return;
 				}
 
 				if (i != file.getnChunks())
 					fileHandler.writeToFile(chunk.getData());
-				// if it is the
-				// last chunk,
-				// write only
-				// the part
-				// needed?
+				// else, last chunk!
 				else {
-					System.out.println("File Size: " + file.getFileSize()
-							+ " and this chunk:" + (int) file.getFileSize()
-							% 64000);
 					fileHandler.writeToFile(chunk.getData(),
 							(int) file.getFileSize() % 64000);
 				}
@@ -161,8 +140,7 @@ public class RestoreProtocol extends Thread {
 				System.out.println("File writing exception");
 				e.printStackTrace();
 			} catch (Exception e) {
-				System.out
-						.println("Couldn't write chunk to file.");
+				System.out.println("Couldn't write chunk to file.");
 				e.printStackTrace();
 			}
 
@@ -189,7 +167,6 @@ public class RestoreProtocol extends Thread {
 				.getRestoreChunksReceived().get(fileID);
 
 		if (restoreChunks == null) {
-			System.out.println("Well, I be damned..." + fileID);
 		}
 
 		Chunk chunk = null;

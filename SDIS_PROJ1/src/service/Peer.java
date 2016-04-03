@@ -28,8 +28,15 @@ import protocol.RestoreProtocol;
 
 //SINGLETON SYNCRONIZE ALL THREADS HAVE ACESS TO IT
 public class Peer implements Invocation {
+	/**
+	 * Creates the Peer singleton
+	 */
 	static Peer instance = new Peer();
 
+	/**
+	 * 
+	 * @return the Peer singleton 
+	 */
 	public static Peer getInstance() {
 		return instance;
 	}
@@ -43,10 +50,10 @@ public class Peer implements Invocation {
 	private static Registry rmiRegistry;
 	private static String rmiName;
 	private String folderPath;
-	// TODO change names and check structures
-	// TODO servers that replay to command
-	// TODO check connection between channel an peers
 
+	/**
+	 * Default Peer constructor. Initializes receiver servers and PeerData container.
+	 */
 	public Peer() {
 
 		controlChannel = new MCReceiver();
@@ -56,10 +63,18 @@ public class Peer implements Invocation {
 
 	}
 
+	/**
+	 * Creates the folder for this peer, if not yet existent
+	 * @throws IOException
+	 */
 	public void createPeerFolder() throws IOException {
 		folderPath = Extra.createDirectory(Integer.toString(serverID));
 	}
 
+	/**
+	 * Starts running the peer, validating arguments and registering the RMI
+	 * @param args Peer arguments: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port>
+	 */
 	public static void main(String[] args) {
 
 		Peer peer = Peer.getInstance();
@@ -75,9 +90,7 @@ public class Peer implements Invocation {
 					// UnicastRemoteObject.unexportObject(instance, true);
 
 				} catch (RemoteException | NotBoundException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-					System.out.println("Problem unbinding");
+					System.out.println("Problem unbinding the RMI");
 				} catch (Exception e) {
 
 				}
@@ -126,7 +139,6 @@ public class Peer implements Invocation {
 		} catch (IOException e) {
 			System.out.println("Couldn't bind IP:ports to peer");
 		} catch (Exception e) {
-			e.printStackTrace();
 			System.out.println("Invalid Args. Ports must be between 1 and 9999 and IP must be a valid multicast address.");
 			return;
 		}
@@ -144,19 +156,21 @@ public class Peer implements Invocation {
 			try {
 				peer.saveData();
 			} catch (FileNotFoundException e1) {
-				e1.printStackTrace();
+				System.out.println("FileNotFoundException for saveData");
 			} catch (IOException e1) {
-				e1.printStackTrace();
+				System.out.println("IOException for saveData");
 			}
 		} catch (NotSerializableException e) {
 			System.out.println("PeerData is not Serializable");
 		} catch (IOException e) {
+			System.out.println("IOException while loading PeerData for the first time");
 			System.out.println(e.getMessage());
-			e.printStackTrace();
+			//e.printStackTrace();
 			return;
 		} catch (ClassNotFoundException e) {
+			System.out.println("PeerData - a Class was not found");
 			System.out.println(e.getMessage());
-			e.printStackTrace();
+			//e.printStackTrace();
 			return;
 		}
 
@@ -166,6 +180,12 @@ public class Peer implements Invocation {
 
 	}
 
+	/**
+	 * Validates the arguments received
+	 * 
+	 * @param args arguments received from main
+	 * @return true if they are in a valid from, false otherwise
+	 */
 	public static boolean validArgs(String[] args) {
 
 		if (args.length != 7) {
@@ -185,7 +205,9 @@ public class Peer implements Invocation {
 	}
 
 	// Methods
-
+	/**
+	 * registers RMI with the remote name
+	 */
 	public static void registerRMI() {
 		// Create and export object
 		try {
@@ -202,15 +224,18 @@ public class Peer implements Invocation {
 			try {
 				rmiRegistry.bind(rmiName, stub);
 			} catch (Exception e) {
-				e.printStackTrace();
 				System.out.println("Couldnt bind, try another remote name, this one is in use");
 			}
 
 		} catch (Exception e) {
+			System.out.println("Unexpected Exception");
 			e.printStackTrace();
 		}
 	}
 
+	/**
+	 * Backup function for the RMI call - starts the backup protocol
+	 */
 	@Override
 	public synchronized String backup(String filePath, int desiredRepDegree) throws RemoteException {
 		// O dispatcher vai ter as cenas do socket necessarias
@@ -224,6 +249,9 @@ public class Peer implements Invocation {
 		return "backup sent";
 	}
 
+	/**
+	 * Restore function for the RMI call - starts the restore protocol
+	 */
 	@Override
 	public String restore(String filePath) throws RemoteException {
 		// Call restore protocol
@@ -234,6 +262,9 @@ public class Peer implements Invocation {
 		return "restore sent";
 	}
 
+	/**
+	 * Delete function for the RMI call - starts the delete protocol
+	 */
 	@Override
 	public synchronized String delete(String filePath) throws RemoteException {
 		// Call delete protocol
@@ -244,6 +275,9 @@ public class Peer implements Invocation {
 		return "delete sent";
 	}
 
+	/**
+	 * Reclaim function for the RMI call - starts the reclaim protocol
+	 */
 	@Override
 	public String reclaim(int reclaimSpace) throws RemoteException {
 		// Call reclaim protocol
@@ -343,6 +377,7 @@ public class Peer implements Invocation {
 			createPeerFolder();
 			Extra.createDirectory(Integer.toString(this.serverID) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
+			System.out.println("IOException when creating the Peer and Backup folders.");
 			e1.printStackTrace();
 		}
 	}
@@ -379,10 +414,21 @@ public class Peer implements Invocation {
 		this.data = data;
 	}
 
+	/**
+	 * Loads the PeerData object from a file, if it exists
+	 * @throws FileNotFoundException
+	 * @throws ClassNotFoundException
+	 * @throws IOException
+	 */
 	public void loadData() throws FileNotFoundException, ClassNotFoundException, IOException {
 		this.data = data.loadPeerData();
 	}
 
+	/**
+	 * Saves the PeerData object to a file
+	 * @throws FileNotFoundException
+	 * @throws IOException
+	 */
 	public void saveData() throws FileNotFoundException, IOException {
 		data.savePeerData();
 	}
@@ -399,6 +445,11 @@ public class Peer implements Invocation {
 		return PeerData.getCurrentVersion();
 	}
 
+	/**
+	 * 
+	 * @param chunkID
+	 * @param senderID
+	 */
 	public void addSenderToAnswered(ChunkID chunkID, int senderID) {
 		HashMap<ChunkID, ArrayList<Integer>> command = getAnsweredCommand();
 		ArrayList<Integer> answered = command.get(chunkID);
@@ -430,16 +481,20 @@ public class Peer implements Invocation {
 		try {
 			saveData();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("FileNotFoundException for saveData");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("IOException for saveData");
 		}
 	}
 
+	/**
+	 * Starts to reclaim disk space when the data size is bigger than the backup size left
+	 * @param backupFolderSize size available on the backup folder
+	 * @param dataSize size of the data to write
+	 * @return 	true if there is enough space
+	 */
 	public boolean reclaimDiskSpace(long backupFolderSize, long dataSize) {
-		System.out.println("Testing " + PeerData.getDiskSize() + "   " + backupFolderSize + "   " + dataSize);
+		//System.out.println("Testing " + PeerData.getDiskSize() + "   " + backupFolderSize + "   " + dataSize);
 		if (PeerData.getDiskSize() - (backupFolderSize + dataSize) < 0) {
 			System.out.println("!!Starting Disk Reclaim!!  " + PeerData.getDiskSize() + "   " + backupFolderSize);
 			 return (new ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();
