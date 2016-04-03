@@ -138,10 +138,11 @@ public class Processor extends Thread {
 	}
 
 	/**
+	 * check if received a putchunk for a chunk while waiting before starting Backup Protocol
 	 * 
-	 * @param fileId
-	 * @param chunkNo
-	 * @return
+	 * @param fileId - identifier of file
+	 * @param chunkNo - number of chunk
+	 * @return -1 if received a putchunk and shouldn't start Backup Protocol, any number otherwise
 	 */
 	private int reclaimCheck(String fileId, int chunkNo) {
 
@@ -155,8 +156,9 @@ public class Processor extends Thread {
 
 
 	/**
+	 * ignores up to 5 messages putchunk messages if the identifier of chunk in that message is in the container of chunks to be ignored
 	 * 
-	 * @return
+	 * @return true if message shall be ignored, false otherwise
 	 */
 	private boolean ignoreMessage() {
 		ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
@@ -180,7 +182,7 @@ public class Processor extends Thread {
 		try {
 			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Couldn't create or use directory");
 		}
 
 		ArrayList<ChunkID> chunks = peer.getStored();
@@ -202,11 +204,9 @@ public class Processor extends Thread {
 		try {
 			peer.saveData();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("File to save Data not found");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("IO error saving to file");
 		}
 
 		File file = new File(dirPath);
@@ -382,7 +382,6 @@ public class Processor extends Thread {
 
 			int actualRepDegree = peer.getStored().get(index).getActualRepDegree();
 			desiredRepDegree = peer.getStored().get(index).getDesiredRepDegree();
-			System.out.println("Rep values:"+actualRepDegree+"  "+desiredRepDegree);
 
 			if (desiredRepDegree <= actualRepDegree)
 				return;
@@ -392,7 +391,7 @@ public class Processor extends Thread {
 			try {
 				Thread.sleep(sleepTime);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				System.out.println("Unexpected wake up of a thread sleeping");
 			}
 		}
 
@@ -401,8 +400,6 @@ public class Processor extends Thread {
 		if (launch == -1)
 			return;
 
-		System.out.println("I'm the one launching\n\n");
-
 		// if not received putChunk, launch
 		FileID fileId = new FileID();
 		fileId.setID(tmp.getFileID());
@@ -410,7 +407,7 @@ public class Processor extends Thread {
 		try {
 			Extra.createDirectory(FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Couldn't create or use directory");
 		}
 
 		FileHandler fileHandler = new FileHandler();
@@ -419,7 +416,7 @@ public class Processor extends Thread {
 		try {
 			chunkBody = fileHandler.loadChunkBody(tmp);
 		} catch (SocketException | ClassNotFoundException e) {
-			e.printStackTrace();
+			System.out.println("Couldn't load chunk");
 		} catch (IOException e) {
 			// If fails, chunkBody will be empty
 			System.out.println("Wasn't able to load chunk nr. " + tmp.getChunkNumber() + " from file id: " + fileId);
@@ -429,7 +426,7 @@ public class Processor extends Thread {
 		try {
 			new BackupProtocol(Peer.getInstance()).backupChunk(fileId, chunkBody, tmp.getChunkNumber(), desiredRepDegree, "1.0");
 		} catch (SocketException | InterruptedException e) {
-			e.printStackTrace();
+			System.out.println("Error launching Backup Protocol in reclaiming");
 		}
 	}
 

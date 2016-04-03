@@ -22,11 +22,19 @@ public class ReclaimProtocol extends Thread {
 	private int amountReclaimed;
 	private static Peer peer = Peer.getInstance();
 
+	/**
+	 * Constructor for Reclaim protocol that deletes a file and sends REMOVED message
+	 * 
+	 * @param filePath name of the file to be deleted
+	 */
 	public ReclaimProtocol(int reclaimSpace) {
 		this.reclaimSpace = reclaimSpace;
 		this.amountReclaimed = 0;
 	}
 
+	/**
+	 * Runs the Reclaim Protocol
+	 */
 	public void run() {
 
 		String dirPath = "";
@@ -34,7 +42,7 @@ public class ReclaimProtocol extends Thread {
 		try {
 			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Couldn't create or use directory");
 		}
 
 		synchronized (peer.getStored()) {
@@ -52,14 +60,17 @@ public class ReclaimProtocol extends Thread {
 		try {
 			peer.saveData();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("File to save Data not found");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			System.out.println("IO error saving to file");
 		}
 	}
 
+	/**
+	 * Tries to reclaim space
+	 * 
+	 * @return true if could reclaim the space necessary, false otherwise
+	 */
 	public boolean nonPriorityReclaim() {
 		
 		boolean chunksRemoved = false;
@@ -68,14 +79,14 @@ public class ReclaimProtocol extends Thread {
 		try {
 			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e) {
-			e.printStackTrace();
+			System.out.println("Couldn't create or use directory");
 		}
 	
 		synchronized (peer.getStored()) {
 			peer.sortStored();
 			
 			Iterator<ChunkID> it = Peer.getInstance().getStored().iterator();
-			System.out.println("Start cycle");
+			
 			while (this.amountReclaimed < this.reclaimSpace && it.hasNext()) {
 				ChunkID chunk = it.next();
 				peer.getData().getRemoveLookup().add(chunk);
@@ -83,8 +94,7 @@ public class ReclaimProtocol extends Thread {
 				try {
 					Thread.sleep(WAIT_STORED);
 				} catch (InterruptedException e1) {
-					// TODO Auto-generated catch block
-					e1.printStackTrace();
+					System.out.println("Unexpected wake up of a thread sleeping");
 				}
 				
 				// if launch is -1, mean that chunk has already gone through reclaim
@@ -92,7 +102,6 @@ public class ReclaimProtocol extends Thread {
 				if (launch == -1)
 					break;
 				
-				System.out.println("BEFORE:"+chunk.getActualRepDegree() + "    " + chunk.getDesiredRepDegree());
 				if (chunk.getActualRepDegree() > chunk.getDesiredRepDegree()) {
 					chunksRemoved = reclaim(dirPath, it, chunk);
 					it.remove();
@@ -102,22 +111,28 @@ public class ReclaimProtocol extends Thread {
 		// Save alterations to peer data
 		if (chunksRemoved)
 			try {
-				System.out.println("FileDeleted");
 				peer.saveData();
 			} catch (FileNotFoundException e) {
-				e.printStackTrace();
+				System.out.println("File to save Data not found");
 			} catch (IOException e) {
-				e.printStackTrace();
+				System.out.println("IO error saving to file");
 			}
-		System.out.println("End of reclaim");
 		if (this.amountReclaimed >= this.reclaimSpace)
 			return true;
 		else
 			return false;
 	}
 
+	/**
+	 * reclaim the space of occupied from a chunk
+	 * 
+	 * @param dirPath location of chunk
+	 * @param it position of the chunk in Storage
+	 * @param chunk the chunk to free storage space
+	 * @return true always
+	 */
 	public synchronized boolean reclaim(String dirPath, Iterator<ChunkID> it, ChunkID chunk) {
-		System.out.println("Reclaim called");
+		
 		File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
 
 		// create message
@@ -133,13 +148,15 @@ public class ReclaimProtocol extends Thread {
 		
 		int prevMsg=-1; int currentMsg = 0;
 		int sleepTime = SLEEP_TIME;
+		
+		//wait to see if received putchunk message
 		while(prevMsg < currentMsg){
 			
 			prevMsg = currentMsg;
 			try {
 				Thread.sleep(sleepTime);
 			} catch (InterruptedException e) {
-				e.printStackTrace();
+				System.out.println("Unexpected wake up of a thread sleeping");
 			}
 			
 			currentMsg = peer.getData().getDeleted().get(chunk);
