@@ -51,7 +51,7 @@ public class TestApp {
 					break;
 				}
 
-				System.out.println("response: " + response);
+				System.out.println("Response: " + response);
 
 			} catch (Exception e) {
 				System.err.println("Client exception: " + e.toString());

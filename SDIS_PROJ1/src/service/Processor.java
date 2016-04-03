@@ -224,19 +224,13 @@ public class Processor extends Thread {
 		// Received a chunk and was expecting it for a restore
 		if (restoreChannel.expectingRestoreChunks(chunkID.getFileID())) {
 			restoreChannel.addRestoreChunk(chunkID.getFileID(), new Chunk(chunkID, msg.getBody()));
-			System.out.println("Received an expected chunk.");
-		} else { // Received a chunk whose file wasn't being restored
-			System.out.println("Received a foreign chunk.");
+			
+		} else { 
+			// Received a chunk whose file wasn't being restored
+			
 			restoreChannel.receivedForeignChunk(chunkID);
 		}
 
-		// 1o - Verificar se o Chunk pertence a um ficheiro em restore
-
-		// 2o - Se pertencer, guardar em chunksBeingReceived
-
-		// 3o - Se não pertencer, guardar só a informação que foi recebido um
-		// chunk
-		// So ver se e valido e adicionar aos chunks esperados desse ficheiro...
 	}
 
 	/**
@@ -296,21 +290,6 @@ public class Processor extends Thread {
 			restore.expectingForeignChunk(chunkID, false);
 
 		} else {
-			/*
-			 * System.out.println("Stored size: " +
-			 * Peer.getInstance().getData().getStored().size());
-			 * 
-			 * for(int i = 0; i<
-			 * Peer.getInstance().getData().getStored().size(); i++){
-			 * System.out.println("Chunk nr. " +
-			 * Peer.getInstance().getData().getStored().get(i).getChunkNumber()
-			 * +" with fileID: " +
-			 * Peer.getInstance().getData().getStored().get(i).getFileID()); }
-			 * 
-			 * System.out.println(
-			 * "And our chunkID we were comparing to has chunk nr. " +
-			 * chunkID.getChunkNumber()+ " and fileID " + chunkID.getFileID() );
-			 */
 			System.out.println("Dont have it stored, sorry!");
 		}
 
@@ -320,7 +299,6 @@ public class Processor extends Thread {
 	 * Handles STORED messages
 	 */
 	private void storedHandler() {
-		// I got a stored now I need to send them to the queue, we should have a
 
 		ChunkID chunkID = new ChunkID(this.msg.getFileId(), this.msg.getChunkNo());
 		Peer.getInstance().addSenderToAnswered(chunkID, Integer.parseInt(this.msg.getSenderID()));
