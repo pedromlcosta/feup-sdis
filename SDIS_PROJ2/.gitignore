@@ -1,0 +1,13 @@
+/bin/
+*.tmp
+*.pdf
+*.mp3
+*.rar
+*.zip
+*.txt
+*.png
+*.jpg
+*.jpge
+*.bat
+/[0-9]*/
+*.7z
