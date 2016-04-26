@@ -179,6 +179,7 @@ public class BackupProtocol extends Thread {
 	 * @throws InterruptedException
 	 *             most 5 PUTCHUNK messages per chunk
 	 */
+	//TODO COMMENTED FUNCTION
 	public boolean backupChunk(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version) throws SocketException, InterruptedException {
 		System.out.println("Backup Chunk");
 		Message msg = new PutChunkMsg();
@@ -200,7 +201,7 @@ public class BackupProtocol extends Thread {
 		msg.createMessage(chunkData, args);
 
 		// Send Mensage
-		DatagramPacket msgPacket = peer.getDataChannel().createDatagramPacket(msg.getMessageBytes()); //
+		//DatagramPacket msgPacket = peer.getDataChannel().createDatagramPacket(msg.getMessageBytes()); //
 
 		HashMap<ChunkID, ArrayList<Integer>> seversAnswers = peer.getAnsweredCommand();
 		synchronized (seversAnswers) {
@@ -213,7 +214,7 @@ public class BackupProtocol extends Thread {
 		do {
 			System.out.println("Wait for STORED");
 			// send Message
-			peer.getDataChannel().writePacket(msgPacket);
+		//	peer.getDataChannel().writePacket(msgPacket);
 			nMessagesSent++;
 			waitForStoredMsg(chunkToSend, chunkToSendID, waitTime);
 
@@ -361,20 +362,21 @@ public class BackupProtocol extends Thread {
 	 * @param msg
 	 * @param args
 	 */
+	//TODO COMMENTED FUNCTION
 	public void sendStoredMsg(Message msg, String[] args) {
-		// create message and packets
-		msg.createMessage(null, args);
-		DatagramPacket packet = peer.getControlChannel().createDatagramPacket(msg.getMessageBytes());
-
-		// 0 and 400 ms random delay
-		int delay = new Random().nextInt(SLEEP_TIME);
-		try {
-			Thread.sleep(delay);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		// send message
-		peer.getControlChannel().writePacket(packet);
+//		// create message and packets
+//		msg.createMessage(null, args);
+//		DatagramPacket packet = peer.getControlChannel().createDatagramPacket(msg.getMessageBytes());
+//
+//		// 0 and 400 ms random delay
+//		int delay = new Random().nextInt(SLEEP_TIME);
+//		try {
+//			Thread.sleep(delay);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
+//		// send message
+//		peer.getControlChannel().writePacket(packet);
 	}
 
 	// return the number of server who have answered the putchunk msg

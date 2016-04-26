@@ -5,7 +5,6 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.ArrayList;
 
-import channels.MCReceiver;
 import chunk.ChunkID;
 import file.FileID;
 import messages.DeleteMsg;
@@ -31,6 +30,7 @@ public class DeleteProtocol extends Thread {
 	/**
 	 * Runs the Delete Protocol
 	 */
+	//TODO COMMENTED FUNCTION
 	public void run() {
 
 		ArrayList<FileID> fileSentVersions = peer.getFilesSent().get(filePath);
@@ -47,10 +47,10 @@ public class DeleteProtocol extends Thread {
 
 		msg.createMessage(null, "1.0", Integer.toString(peer.getServerID()), file.getID());
 
-		MCReceiver mc = peer.getControlChannel();
-		DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
+	//	MCReceiver mc = peer.getControlChannel();
+		//DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
 		while (nMessagesSent < MAX_SENT) {
-			mc.writePacket(msgPacket);
+		//	mc.writePacket(msgPacket);
 			try {
 				Thread.sleep(200);
 			} catch (InterruptedException e) {
