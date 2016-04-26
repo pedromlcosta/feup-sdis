@@ -1,0 +1,4 @@
+Change RMI
+UDP/TCP connection between Peer and Monitor, Monitor and Tracker
+Peer ask Tracker for Peers who are alive 
+
