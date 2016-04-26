@@ -4,7 +4,6 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.NotSerializableException;
-import java.net.InetAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -12,10 +11,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
-
-import channels.MCReceiver;
-import channels.MDBReceiver;
-import channels.MDRReceiver;
 import chunk.Chunk;
 import chunk.ChunkID;
 import extra.Extra;
@@ -43,9 +38,7 @@ public class Peer implements Invocation {
 
 	private PeerData data;
 
-	private MCReceiver controlChannel;
-	private MDBReceiver dataChannel;
-	private MDRReceiver restoreChannel;
+ 
 	private Integer serverID;
 	private static Registry rmiRegistry;
 	private static String rmiName;
@@ -56,10 +49,7 @@ public class Peer implements Invocation {
 	 * container.
 	 */
 	public Peer() {
-
-		controlChannel = new MCReceiver();
-		dataChannel = new MDBReceiver();
-		restoreChannel = new MDRReceiver();
+ 
 		data = new PeerData();
 
 	}
@@ -84,10 +74,7 @@ public class Peer implements Invocation {
 	public static void main(String[] args) {
 
 		Peer peer = Peer.getInstance();
-		MCReceiver controlChannel = peer.getControlChannel();
-		MDBReceiver dataChannel = peer.getDataChannel();
-		MDRReceiver restoreChannel = peer.getRestoreChannel();
-
+ 
 		Runtime.getRuntime().addShutdownHook(new Thread() {
 			public void run() {
 				try {
@@ -115,35 +102,7 @@ public class Peer implements Invocation {
 			peer.setServerID(Integer.parseInt(args[0]));
 			peer.getData();
 
-			controlChannel.setAddr(InetAddress.getByName(args[1]));
-			controlChannel.setPort(Integer.parseInt(args[2]));
-			controlChannel.createSocket();
-			controlChannel.joinMulticastGroup();
-
-			dataChannel.setAddr(InetAddress.getByName(args[3]));
-			dataChannel.setPort(Integer.parseInt(args[4]));
-			dataChannel.createSocket();
-			dataChannel.joinMulticastGroup();
-
-			restoreChannel.setAddr(InetAddress.getByName(args[5]));
-			restoreChannel.setPort(Integer.parseInt(args[6]));
-			restoreChannel.createSocket();
-			restoreChannel.joinMulticastGroup();
-
-			peer.createPeerFolder();
-
-			System.out.println(controlChannel.getAddr().toString());
-			System.out.println(controlChannel.getPort());
-			System.out.println(dataChannel.getAddr().toString());
-			System.out.println(dataChannel.getPort());
-			System.out.println(restoreChannel.getAddr().toString());
-			System.out.println(restoreChannel.getPort());
-
-			peer.getRestoreChannel().start();
-			peer.getDataChannel().start();
-			peer.getControlChannel().start();
-		} catch (IOException e) {
-			System.out.println("Couldn't bind IP:ports to peer");
+		 
 		} catch (Exception e) {
 			System.out.println("Invalid Args. Ports must be between 1 and 9999 and IP must be a valid multicast address.");
 			return;
@@ -320,30 +279,6 @@ public class Peer implements Invocation {
 
 	public void setAnsweredCommand(HashMap<ChunkID, ArrayList<Integer>> answeredCommand) {
 		data.setServerAnsweredCommand(answeredCommand);
-	}
-
-	public MCReceiver getControlChannel() {
-		return controlChannel;
-	}
-
-	public void setControlChannel(MCReceiver controlChannel) {
-		this.controlChannel = controlChannel;
-	}
-
-	public MDBReceiver getDataChannel() {
-		return dataChannel;
-	}
-
-	public void setDataChannel(MDBReceiver dataChannel) {
-		this.dataChannel = dataChannel;
-	}
-
-	public MDRReceiver getRestoreChannel() {
-		return restoreChannel;
-	}
-
-	public void setRestoreChannel(MDRReceiver restoreChannel) {
-		this.restoreChannel = restoreChannel;
 	}
 
 	public static Registry getRmiRegistry() {

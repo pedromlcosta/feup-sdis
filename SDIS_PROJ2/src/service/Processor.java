@@ -10,7 +10,6 @@ import java.util.Iterator;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import channels.MDRReceiver;
 import chunk.Chunk;
 import chunk.ChunkID;
 import extra.Extra;
@@ -39,7 +38,9 @@ public class Processor extends Thread {
 
 	/**
 	 * Processor constructor
-	 * @param messageString string received, corresponding to a message
+	 * 
+	 * @param messageString
+	 *            string received, corresponding to a message
 	 */
 	public Processor(String messageString) {
 		this.messageString = messageString;
@@ -48,8 +49,11 @@ public class Processor extends Thread {
 	// Criado por causa das mudanças no receiver e evitar fazer o parseHeader 2x
 	/**
 	 * Processor constructor
-	 * @param headerArgs arguments of the header of the message
-	 * @param body body of the message
+	 * 
+	 * @param headerArgs
+	 *            arguments of the header of the message
+	 * @param body
+	 *            body of the message
 	 */
 	public Processor(String[] headerArgs, byte[] body) {
 		this.messageFields = headerArgs;
@@ -58,8 +62,11 @@ public class Processor extends Thread {
 
 	/**
 	 * Processor constructor
-	 * @param header String that represents the header of the message
-	 * @param body body of the message
+	 * 
+	 * @param header
+	 *            String that represents the header of the message
+	 * @param body
+	 *            body of the message
 	 */
 	public Processor(String header, byte[] body) {
 		this.messageString = header;
@@ -67,9 +74,9 @@ public class Processor extends Thread {
 	}
 
 	/**
-	 * Main processor thread. After the constructor is called, this
-	 * method accesses the message that was stored in the datamembers 
-	 * and calls the adequate handlers
+	 * Main processor thread. After the constructor is called, this method
+	 * accesses the message that was stored in the datamembers and calls the
+	 * adequate handlers
 	 */
 	public void run() {
 		// HANDLE MESSAGES HERE
@@ -138,11 +145,15 @@ public class Processor extends Thread {
 	}
 
 	/**
-	 * check if received a putchunk for a chunk while waiting before starting Backup Protocol
+	 * check if received a putchunk for a chunk while waiting before starting
+	 * Backup Protocol
 	 * 
-	 * @param fileId - identifier of file
-	 * @param chunkNo - number of chunk
-	 * @return -1 if received a putchunk and shouldn't start Backup Protocol, any number otherwise
+	 * @param fileId
+	 *            - identifier of file
+	 * @param chunkNo
+	 *            - number of chunk
+	 * @return -1 if received a putchunk and shouldn't start Backup Protocol,
+	 *         any number otherwise
 	 */
 	private int reclaimCheck(String fileId, int chunkNo) {
 
@@ -154,9 +165,9 @@ public class Processor extends Thread {
 		return index;
 	}
 
-
 	/**
-	 * ignores up to 5 messages putchunk messages if the identifier of chunk in that message is in the container of chunks to be ignored
+	 * ignores up to 5 messages putchunk messages if the identifier of chunk in
+	 * that message is in the container of chunks to be ignored
 	 * 
 	 * @return true if message shall be ignored, false otherwise
 	 */
@@ -216,82 +227,92 @@ public class Processor extends Thread {
 	/**
 	 * Handles CHUNK messages
 	 */
+	// TODO COMMENTED FUNCTION
 	private void chunkHandler() {
-
-		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
-		MDRReceiver restoreChannel = Peer.getInstance().getRestoreChannel();
-
-		// Received a chunk and was expecting it for a restore
-		if (restoreChannel.expectingRestoreChunks(chunkID.getFileID())) {
-			restoreChannel.addRestoreChunk(chunkID.getFileID(), new Chunk(chunkID, msg.getBody()));
-			
-		} else { 
-			// Received a chunk whose file wasn't being restored
-			
-			restoreChannel.receivedForeignChunk(chunkID);
-		}
+		//
+		// ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
+		// MDRReceiver restoreChannel = Peer.getInstance().getRestoreChannel();
+		//
+		// // Received a chunk and was expecting it for a restore
+		// if (restoreChannel.expectingRestoreChunks(chunkID.getFileID())) {
+		// restoreChannel.addRestoreChunk(chunkID.getFileID(), new
+		// Chunk(chunkID, msg.getBody()));
+		//
+		// } else {
+		// // Received a chunk whose file wasn't being restored
+		//
+		// restoreChannel.receivedForeignChunk(chunkID);
+		// }
 
 	}
 
 	/**
 	 * Handles GETCHUNK messages
+	 * 
 	 * @throws ClassNotFoundException
 	 * @throws IOException
 	 */
+	// TODO COMMENTED FUNCTION
 	private void getChunkHandler() throws ClassNotFoundException, IOException {
-
-		ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
-		MDRReceiver restore = Peer.getInstance().getRestoreChannel();
-		FileHandler fileHandler = new FileHandler();
-
-		if (Peer.getInstance().hasChunkStored(chunkID)) {
-
-			// Start waiting for chunks with this ID
-			restore.expectingForeignChunk(chunkID, true);
-
-			try {
-				Thread.sleep((new Random()).nextInt(401));
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-
-			// Check if any chunks expected arrived while sleeping
-			if (!restore.wasForeignChunkReceived(chunkID)) {
-				// enviar mensagem com o chunk
-
-				System.out.println("No foreign chunk received! Going to send, as requests, chunk nr. " + chunkID.getChunkNumber());
-
-				byte[] chunkBody = new byte[0];
-				try {
-					chunkBody = fileHandler.loadChunkBody(chunkID);
-				} catch (IOException e) {
-					e.getMessage();
-					e.printStackTrace();
-					System.out.println("Wasn't able to load chunk nr. " + chunkID.getChunkNumber() + " from file id: " + chunkID.getFileID());
-					chunkBody = new byte[0];
-				}
-
-				String[] args = { "1.0", Integer.toString(Peer.getInstance().getServerID()), chunkID.getFileID(), Integer.toString(chunkID.getChunkNumber()) };
-
-				// byte[] chunkBody = new byte[64];
-				Message chunkMsg = new ChunkMsg();
-				if (chunkMsg.createMessage(chunkBody, args) == true) {
-					DatagramPacket packet = restore.createDatagramPacket(chunkMsg.getMessageBytes());
-					restore.writePacket(packet);
-				} else {
-					System.out.println("Wasn't able to create and send chunk message");
-				}
-
-			} else {
-				System.out.println("Received a foreign chunk with nr: " + chunkID.getChunkNumber());
-			}
-
-			// Stop waiting for chunks with this ID
-			restore.expectingForeignChunk(chunkID, false);
-
-		} else {
-			System.out.println("Dont have it stored, sorry!");
-		}
+		//
+		// ChunkID chunkID = new ChunkID(msg.getFileId(), msg.getChunkNo());
+		// MDRReceiver restore = Peer.getInstance().getRestoreChannel();
+		// FileHandler fileHandler = new FileHandler();
+		//
+		// if (Peer.getInstance().hasChunkStored(chunkID)) {
+		//
+		// // Start waiting for chunks with this ID
+		// restore.expectingForeignChunk(chunkID, true);
+		//
+		// try {
+		// Thread.sleep((new Random()).nextInt(401));
+		// } catch (InterruptedException e) {
+		// e.printStackTrace();
+		// }
+		//
+		// // Check if any chunks expected arrived while sleeping
+		// if (!restore.wasForeignChunkReceived(chunkID)) {
+		// // enviar mensagem com o chunk
+		//
+		// System.out.println("No foreign chunk received! Going to send, as
+		// requests, chunk nr. " + chunkID.getChunkNumber());
+		//
+		// byte[] chunkBody = new byte[0];
+		// try {
+		// chunkBody = fileHandler.loadChunkBody(chunkID);
+		// } catch (IOException e) {
+		// e.getMessage();
+		// e.printStackTrace();
+		// System.out.println("Wasn't able to load chunk nr. " +
+		// chunkID.getChunkNumber() + " from file id: " + chunkID.getFileID());
+		// chunkBody = new byte[0];
+		// }
+		//
+		// String[] args = { "1.0",
+		// Integer.toString(Peer.getInstance().getServerID()),
+		// chunkID.getFileID(), Integer.toString(chunkID.getChunkNumber()) };
+		//
+		// // byte[] chunkBody = new byte[64];
+		// Message chunkMsg = new ChunkMsg();
+		// if (chunkMsg.createMessage(chunkBody, args) == true) {
+		// DatagramPacket packet =
+		// restore.createDatagramPacket(chunkMsg.getMessageBytes());
+		// restore.writePacket(packet);
+		// } else {
+		// System.out.println("Wasn't able to create and send chunk message");
+		// }
+		//
+		// } else {
+		// System.out.println("Received a foreign chunk with nr: " +
+		// chunkID.getChunkNumber());
+		// }
+		//
+		// // Stop waiting for chunks with this ID
+		// restore.expectingForeignChunk(chunkID, false);
+		//
+		// } else {
+		// System.out.println("Dont have it stored, sorry!");
+		// }
 
 	}
 
@@ -369,7 +390,7 @@ public class Processor extends Thread {
 		ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
 		ArrayList<ChunkID> stored = peer.getStored();
 		int index, desiredRepDegree;
-		synchronized(stored){
+		synchronized (stored) {
 			index = peer.getStored().indexOf(tmp);
 			if (index == -1)
 				return;
