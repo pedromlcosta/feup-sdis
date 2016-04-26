@@ -178,11 +178,18 @@ public class Message {
 		}
 		return message;
 	}
-
+/**
+ * 
+ * @return EOL
+ */
 	public String getEOL() {
 		return EOL;
 	}
 
+	/**
+	 * 
+	 * @return PATTERN
+	 */
 	public String getPATTERN() {
 		return PATTERN;
 	}
