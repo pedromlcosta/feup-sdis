@@ -16,6 +16,7 @@ import java.util.HashMap;
 import channels.MCReceiver;
 import channels.MDBReceiver;
 import channels.MDRReceiver;
+import channels.UDPConnection;
 import chunk.Chunk;
 import chunk.ChunkID;
 import extra.Extra;
@@ -50,6 +51,8 @@ public class Peer implements Invocation {
 	private static Registry rmiRegistry;
 	private static String rmiName;
 	private String folderPath;
+	//connection to monitor need port since addr will be localhost
+	private UDPConnection monitorConnection; 
 
 	/**
 	 * Default Peer constructor. Initializes receiver servers and PeerData
@@ -526,6 +529,14 @@ public class Peer implements Invocation {
 			}
 		}
 		return false;
+	}
+
+	public UDPConnection getMonitorConnection() {
+		return monitorConnection;
+	}
+
+	public void setMonitorConnection(UDPConnection monitorConnection) {
+		this.monitorConnection = monitorConnection;
 	}
 
 }

@@ -13,8 +13,11 @@ public class UDPConnection {
 	private DatagramPacket packet;
 	private byte[] buf;
 
+	public UDPConnection() {
+
+	}
+
 	public UDPConnection(InetAddress addr, int port) throws SocketException {
-		super();
 		this.addr = addr;
 		this.port = port;
 		socket = new DatagramSocket();
@@ -31,7 +34,7 @@ public class UDPConnection {
 
 	// TODO CHECK IF OK
 	public void send(String message) throws IOException {
-	
+
 		buf = new byte[256];
 		buf = message.getBytes();
 		packet = new DatagramPacket(buf, buf.length, addr, port);

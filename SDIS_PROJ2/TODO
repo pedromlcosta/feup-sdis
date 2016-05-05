@@ -2,3 +2,11 @@ Change RMI
 UDP/TCP connection between Peer and Monitor, Monitor and Tracker
 Peer ask Tracker for Peers who are alive 
 
+Create message WakeUp & the protocol| and messages to be sent between Monitor and Tracker
+
+What should the tracker keep in store a list of monitors and peerData?
+should the monitorList just be a "copy" of said monitor
+
+The tracker receives messages from the monitors (status updates) if a monitor does not answer after X time -> monitor goes on "probation"
+ If monitor answers Peer is dead Tracker gives command to restartPeer, need to check if PeerData Received (after restart) Matches PeerData Stored by Tracker
+ If it does no more is done, if it does not,which one is given priority  ? 
