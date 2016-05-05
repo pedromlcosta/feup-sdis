@@ -36,8 +36,9 @@ public class MulticastServer extends Thread {
 	 * @param addr Multicast IP address of this receiver
 	 * @param port Multicast Port of this receiver
 	 */
-	public MulticastServer(boolean quitFlag,  InetAddress addr, int port) {
+	public MulticastServer(boolean quitFlag, int serverID, InetAddress addr, int port) {
 		this.quitFlag = quitFlag;
+		this.serverID = serverID;
 		this.addr = addr;
 		this.port = port;
 		try {
