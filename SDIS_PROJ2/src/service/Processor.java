@@ -131,6 +131,9 @@ public class Processor extends Thread {
 				Peer.getInstance().getData().removeCheck(msg.getFileId(), msg.getChunkNo());
 				removeHandler();
 				break;
+			case "WAKEUP":
+				break;
+				
 			default:
 				break;
 			}

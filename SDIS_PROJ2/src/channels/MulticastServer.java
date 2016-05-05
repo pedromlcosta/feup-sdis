@@ -28,7 +28,22 @@ public class MulticastServer extends Thread {
 	public MulticastServer() {
 
 	}
-
+	/**
+	 * 
+	 * @param quitFlag flag for the infinite run cycle that receives the messages
+	 * @param addr Multicast IP address of this receiver
+	 * @param port Multicast Port of this receiver
+	 */
+	public MulticastServer(boolean quitFlag,  InetAddress addr, int port) {
+		this.quitFlag = quitFlag;
+		this.addr = addr;
+		this.port = port;
+		try {
+			this.socket = new MulticastSocket(port);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
 	/**
 	 * 
 	 * @param quitFlag flag for the infinite run cycle that receives the messages
