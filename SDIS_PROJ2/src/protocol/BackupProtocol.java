@@ -361,9 +361,11 @@ public class BackupProtocol extends Thread {
 	 * @param msg
 	 * @param args
 	 */
-	public void sendStoredMsg(Message msg, String[] args) {
+	//TODO CHECK CHANGE TO STATIC
+	public static void sendStoredMsg(Message msg, String[] args) {
 		// create message and packets
 		msg.createMessage(null, args);
+		Peer peer = Peer.getInstance();
 		DatagramPacket packet = peer.getControlChannel().createDatagramPacket(msg.getMessageBytes());
 
 		// 0 and 400 ms random delay

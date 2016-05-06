@@ -23,7 +23,9 @@ import messages.Message;
 import messages.PutChunkMsg;
 import messages.RemovedMsg;
 import messages.StoredMsg;
+import messages.WakeMsg;
 import protocol.BackupProtocol;
+import protocol.WakeProtocol;
 
 public class Processor extends Thread {
 
@@ -39,7 +41,9 @@ public class Processor extends Thread {
 
 	/**
 	 * Processor constructor
-	 * @param messageString string received, corresponding to a message
+	 * 
+	 * @param messageString
+	 *            string received, corresponding to a message
 	 */
 	public Processor(String messageString) {
 		this.messageString = messageString;
@@ -48,8 +52,11 @@ public class Processor extends Thread {
 	// Criado por causa das mudanças no receiver e evitar fazer o parseHeader 2x
 	/**
 	 * Processor constructor
-	 * @param headerArgs arguments of the header of the message
-	 * @param body body of the message
+	 * 
+	 * @param headerArgs
+	 *            arguments of the header of the message
+	 * @param body
+	 *            body of the message
 	 */
 	public Processor(String[] headerArgs, byte[] body) {
 		this.messageFields = headerArgs;
@@ -58,8 +65,11 @@ public class Processor extends Thread {
 
 	/**
 	 * Processor constructor
-	 * @param header String that represents the header of the message
-	 * @param body body of the message
+	 * 
+	 * @param header
+	 *            String that represents the header of the message
+	 * @param body
+	 *            body of the message
 	 */
 	public Processor(String header, byte[] body) {
 		this.messageString = header;
@@ -67,9 +77,9 @@ public class Processor extends Thread {
 	}
 
 	/**
-	 * Main processor thread. After the constructor is called, this
-	 * method accesses the message that was stored in the datamembers 
-	 * and calls the adequate handlers
+	 * Main processor thread. After the constructor is called, this method
+	 * accesses the message that was stored in the datamembers and calls the
+	 * adequate handlers
 	 */
 	public void run() {
 		// HANDLE MESSAGES HERE
@@ -132,8 +142,11 @@ public class Processor extends Thread {
 				removeHandler();
 				break;
 			case "WAKEUP":
+				msg = new WakeMsg(messageFields, messageBody);
+				messageFields = null;
+				wakeupHandler(msg);
 				break;
-				
+
 			default:
 				break;
 			}
@@ -141,11 +154,15 @@ public class Processor extends Thread {
 	}
 
 	/**
-	 * check if received a putchunk for a chunk while waiting before starting Backup Protocol
+	 * check if received a putchunk for a chunk while waiting before starting
+	 * Backup Protocol
 	 * 
-	 * @param fileId - identifier of file
-	 * @param chunkNo - number of chunk
-	 * @return -1 if received a putchunk and shouldn't start Backup Protocol, any number otherwise
+	 * @param fileId
+	 *            - identifier of file
+	 * @param chunkNo
+	 *            - number of chunk
+	 * @return -1 if received a putchunk and shouldn't start Backup Protocol,
+	 *         any number otherwise
 	 */
 	private int reclaimCheck(String fileId, int chunkNo) {
 
@@ -157,9 +174,9 @@ public class Processor extends Thread {
 		return index;
 	}
 
-
 	/**
-	 * ignores up to 5 messages putchunk messages if the identifier of chunk in that message is in the container of chunks to be ignored
+	 * ignores up to 5 messages putchunk messages if the identifier of chunk in
+	 * that message is in the container of chunks to be ignored
 	 * 
 	 * @return true if message shall be ignored, false otherwise
 	 */
@@ -227,10 +244,10 @@ public class Processor extends Thread {
 		// Received a chunk and was expecting it for a restore
 		if (restoreChannel.expectingRestoreChunks(chunkID.getFileID())) {
 			restoreChannel.addRestoreChunk(chunkID.getFileID(), new Chunk(chunkID, msg.getBody()));
-			
-		} else { 
+
+		} else {
 			// Received a chunk whose file wasn't being restored
-			
+
 			restoreChannel.receivedForeignChunk(chunkID);
 		}
 
@@ -238,6 +255,7 @@ public class Processor extends Thread {
 
 	/**
 	 * Handles GETCHUNK messages
+	 * 
 	 * @throws ClassNotFoundException
 	 * @throws IOException
 	 */
@@ -372,7 +390,7 @@ public class Processor extends Thread {
 		ChunkID tmp = new ChunkID(msg.getFileId(), msg.getChunkNo());
 		ArrayList<ChunkID> stored = peer.getStored();
 		int index, desiredRepDegree;
-		synchronized(stored){
+		synchronized (stored) {
 			index = peer.getStored().indexOf(tmp);
 			if (index == -1)
 				return;
@@ -431,6 +449,13 @@ public class Processor extends Thread {
 		} catch (SocketException | InterruptedException e) {
 			System.out.println("Error launching Backup Protocol in reclaiming");
 		}
+	}
+	/**
+	 * Handles WakeMsgs 
+	 * @param wakeupMSG
+	 */
+	public void wakeupHandler(Message wakeupMSG) {
+		(new WakeProtocol()).receiveWakeUp(wakeupMSG);
 	}
 
 	public String getMessageString() {

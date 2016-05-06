@@ -24,7 +24,8 @@ public class FileHandler {
 	/**
 	 * Constructor of this class
 	 * 
-	 * @param fileName - name of the file
+	 * @param fileName
+	 *            - name of the file
 	 */
 	public FileHandler(String fileName) {
 		changeFileToSplit(fileName);
@@ -35,7 +36,7 @@ public class FileHandler {
 	 */
 	public FileHandler() {
 	}
-	
+
 	/**
 	 * Closes the File Input Stream
 	 * 
@@ -44,7 +45,7 @@ public class FileHandler {
 	public void closeInputStream() throws IOException {
 		fileReader.close();
 	}
-	
+
 	/**
 	 * Closes the File Output Stream
 	 * 
@@ -66,7 +67,8 @@ public class FileHandler {
 	/**
 	 * Updates the File Input Stream and File used to split
 	 * 
-	 * @param fileName name of the file
+	 * @param fileName
+	 *            name of the file
 	 */
 	public void changeFileToSplit(String fileName) {
 		try {
@@ -81,7 +83,8 @@ public class FileHandler {
 	/**
 	 * Updates the Random Acess File and File used to merge
 	 * 
-	 * @param fileName name of the file
+	 * @param fileName
+	 *            name of the file
 	 */
 	public void changeFileToMerge(String fileName) {
 
@@ -116,8 +119,10 @@ public class FileHandler {
 	/**
 	 * write a chunk back to a file
 	 * 
-	 * @param chunk - chunk to be written
-	 * @param name - name of the file where chuck will be written
+	 * @param chunk
+	 *            - chunk to be written
+	 * @param name
+	 *            - name of the file where chuck will be written
 	 * @return true if successful, false otherwise
 	 * @throws IOException
 	 */
@@ -148,7 +153,8 @@ public class FileHandler {
 	/**
 	 * set the file used
 	 * 
-	 * @param file new file to be used
+	 * @param file
+	 *            new file to be used
 	 */
 	public void setFile(File file) {
 		this.file = file;
@@ -162,11 +168,11 @@ public class FileHandler {
 		return fileReader;
 	}
 
-
 	/**
 	 * set the file Input Steam
 	 * 
-	 * @param fileReader new file Input Stream to be used
+	 * @param fileReader
+	 *            new file Input Stream to be used
 	 */
 	public void setFileReader(FileInputStream fileReader) {
 		this.fileReader = fileReader;
@@ -183,7 +189,8 @@ public class FileHandler {
 	/**
 	 * set the file Random Access
 	 * 
-	 * @param fileOut new file Random Access to be used
+	 * @param fileOut
+	 *            new file Random Access to be used
 	 */
 	public void setFileOut(RandomAccessFile fileOut) {
 		this.fileOut = fileOut;
@@ -192,7 +199,8 @@ public class FileHandler {
 	/**
 	 * set the new file Output Stream
 	 * 
-	 * @param filePath - name of the file
+	 * @param filePath
+	 *            - name of the file
 	 * @return
 	 */
 	public synchronized boolean createFile(String filePath) {
@@ -210,17 +218,19 @@ public class FileHandler {
 	/**
 	 * writes an array of bytes to the file using current File Output Stream
 	 * 
-	 * @param fileData bytes to be written to a file
+	 * @param fileData
+	 *            bytes to be written to a file
 	 * @throws IOException
 	 */
 	public void writeToFile(byte[] fileData) throws IOException {
 		fileWriter.write(fileData);
 	}
-	
+
 	/**
 	 * writes only len bytes to the file using current File Output Stream
 	 * 
-	 * @param fileData bytes to be written to a file
+	 * @param fileData
+	 *            bytes to be written to a file
 	 * @len number of bytes to be written
 	 * @throws IOException
 	 */
@@ -231,7 +241,8 @@ public class FileHandler {
 	/**
 	 * read from a chunk
 	 * 
-	 * @param chunkID - identifier of chunk
+	 * @param chunkID
+	 *            - identifier of chunk
 	 * @return bytes from that file
 	 * @throws ClassNotFoundException
 	 * @throws IOException
@@ -239,7 +250,7 @@ public class FileHandler {
 	public byte[] loadChunkBody(ChunkID chunkID) throws ClassNotFoundException, IOException {
 		String path;
 		String serverID = Integer.toString(Peer.getInstance().getServerID());
-		
+
 		path = Extra.createDirectory(serverID + File.separator + BACKUP_FOLDER_NAME);
 		FileInputStream fileOut = new FileInputStream(path + File.separator + chunkID.getFileID() + "_" + chunkID.getChunkNumber());
 		ObjectInputStream out = new ObjectInputStream(fileOut);
@@ -248,6 +259,14 @@ public class FileHandler {
 		out.close();
 		return storedChunk.getData();
 
+	}
+
+	public static boolean checkIfFileExits(String filePath) {
+		File f = new File(filePath);
+		if (f.exists() && !f.isDirectory()) {
+			return true;
+		}
+		return false;
 	}
 
 }
