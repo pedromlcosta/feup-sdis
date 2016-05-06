@@ -26,6 +26,7 @@ import protocol.BackupProtocol;
 import protocol.DeleteProtocol;
 import protocol.ReclaimProtocol;
 import protocol.RestoreProtocol;
+import protocol.WakeProtocol;
 
 //SINGLETON SYNCRONIZE ALL THREADS HAVE ACESS TO IT
 public class Peer implements Invocation {
@@ -157,6 +158,8 @@ public class Peer implements Invocation {
 		try {
 			PeerData.setDataPath(peer.getServerID());
 			peer.loadData();
+			//It was peer data therefore it need to "recount"
+			(new WakeProtocol()).start();
 		} catch (FileNotFoundException e) {
 			System.out.println("There wasn't a peerData file, creating one now");
 			System.out.println(e.getMessage());
