@@ -14,10 +14,15 @@ public class Message {
 	static final String REMOVED = "REMOVED";
 	static final String PUTCHUNK = "PUTCHUNK";
 	static final String STORED = "STORED";
+	// TODO changes
+	static final String WAKEUP = "WAKEUP";
+	static final String TRACKER = "TRACKER";
+	static final String MONITOR = "MONITOR";
+	final int N_ARGS = 0;
 	static final String EMPTY_STRING = "";
 
 	public static enum MESSAGE_TYPE {
-		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED
+		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED, WAKEUP, TRACKER, MONITOR
 	}
 
 	public static final String EOL = "\r\n";
@@ -178,10 +183,11 @@ public class Message {
 		}
 		return message;
 	}
-/**
- * 
- * @return EOL
- */
+
+	/**
+	 * 
+	 * @return EOL
+	 */
 	public String getEOL() {
 		return EOL;
 	}
@@ -284,6 +290,74 @@ public class Message {
 
 	public void setBody(byte[] body) {
 		this.body = body;
+	}
+
+	public String getValidateRegex() {
+		return validateRegex;
+	}
+
+	public void setValidateRegex(String validateRegex) {
+		this.validateRegex = validateRegex;
+	}
+
+	public static String getWakeup() {
+		return WAKEUP;
+	}
+
+	public static String getTracker() {
+		return TRACKER;
+	}
+
+	public static String getMonitor() {
+		return MONITOR;
+	}
+
+	public int getN_ARGS() {
+		return N_ARGS;
+	}
+
+	public static String getEol() {
+		return EOL;
+	}
+
+	public String getVALIDATE_MESSAGE_TYPE() {
+		return VALIDATE_MESSAGE_TYPE;
+	}
+
+	public String getMORE_THAN_1_SPACE() {
+		return MORE_THAN_1_SPACE;
+	}
+
+	public String getZERO_OR_MORE_SPACES() {
+		return ZERO_OR_MORE_SPACES;
+	}
+
+	public String getVALIDATE_VERSION() {
+		return VALIDATE_VERSION;
+	}
+
+	public String getMIDDLE_ARGS() {
+		return MIDDLE_ARGS;
+	}
+
+	public String getCHUNK_NUMBER() {
+		return CHUNK_NUMBER;
+	}
+
+	public String getDREGREE_ARG() {
+		return DREGREE_ARG;
+	}
+
+	public String getMSG_END_WITHOUT_BODY() {
+		return MSG_END_WITHOUT_BODY;
+	}
+
+	public String getMSG_END_WITH_BODY() {
+		return MSG_END_WITH_BODY;
+	}
+
+	public static String getPattern() {
+		return PATTERN;
 	}
 
 }
