@@ -52,8 +52,8 @@ public class Peer implements Invocation {
 	private static Registry rmiRegistry;
 	private static String rmiName;
 	private String folderPath;
-	//connection to monitor need port since addr will be localhost
-	private UDPConnection monitorConnection; 
+	// connection to monitor need port since addr will be localhost
+	private UDPConnection monitorConnection;
 
 	/**
 	 * Default Peer constructor. Initializes receiver servers and PeerData
@@ -158,7 +158,7 @@ public class Peer implements Invocation {
 		try {
 			PeerData.setDataPath(peer.getServerID());
 			peer.loadData();
-			//It was peer data therefore it need to "recount"
+			// It was peer data therefore it need to "recount"
 			(new WakeProtocol()).start();
 		} catch (FileNotFoundException e) {
 			System.out.println("There wasn't a peerData file, creating one now");

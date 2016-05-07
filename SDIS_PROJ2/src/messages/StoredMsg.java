@@ -53,4 +53,8 @@ public class StoredMsg extends Message {
 		return createMessageAux();
 
 	}
+
+	public static int getnArgs() {
+		return N_ARGS;
+	}
 }

@@ -52,4 +52,8 @@ public class RemovedMsg extends Message {
 
 		return createMessageAux();
 	}
+
+	public static int getnArgs() {
+		return N_ARGS;
+	}
 }

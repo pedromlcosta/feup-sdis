@@ -49,4 +49,9 @@ public class DeleteMsg extends Message {
 		return createMessageAux();
 
 	}
+
+	public static int getnArgs() {
+		return N_ARGS;
+	}
+	
 }

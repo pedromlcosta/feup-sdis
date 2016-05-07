@@ -56,6 +56,10 @@ public class PutChunkMsg extends Message {
 				+ MORE_THAN_1_SPACE + DREGREE_ARG + MSG_END_WITH_BODY;
 
 		return createMessageAux();
-
 	}
+
+	public static int getnArgs() {
+		return N_ARGS;
+	}
+	
 }

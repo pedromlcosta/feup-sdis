@@ -143,8 +143,9 @@ public class Processor extends Thread {
 				break;
 			case "WAKEUP":
 				msg = new WakeMsg(messageFields, messageBody);
+				int n = messageFields.length;
 				messageFields = null;
-				wakeupHandler(msg);
+				wakeupHandler(msg, n);
 				break;
 
 			default:
@@ -450,12 +451,14 @@ public class Processor extends Thread {
 			System.out.println("Error launching Backup Protocol in reclaiming");
 		}
 	}
+
 	/**
-	 * Handles WakeMsgs 
+	 * Handles WakeMsgs
+	 * 
 	 * @param wakeupMSG
 	 */
-	public void wakeupHandler(Message wakeupMSG) {
-		(new WakeProtocol()).receiveWakeUp(wakeupMSG);
+	public void wakeupHandler(Message wakeupMSG, int nFields) {
+		(new WakeProtocol()).receiveWakeUp(wakeupMSG, nFields);
 	}
 
 	public String getMessageString() {

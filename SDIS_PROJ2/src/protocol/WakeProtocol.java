@@ -11,6 +11,7 @@ import messages.StoredMsg;
 import service.Peer;
 
 public class WakeProtocol extends Thread {
+	private static final int N_ARGS = 4;
 	// needs Access to Peer
 	// will go through Peer Data and send the WakeUpMessages
 	private Peer peer = Peer.getInstance();
@@ -38,32 +39,60 @@ public class WakeProtocol extends Thread {
 	}
 
 	// Received a wakeUp
-	public void receiveWakeUp(Message wakeupMSG) {
+	public void receiveWakeUp(Message wakeupMSG, int nFields) {
 		Message msg = new StoredMsg();
-
 		String fileID = wakeupMSG.getFileId();
-		ChunkID id = new ChunkID(fileID, wakeupMSG.getChunkNo());
-		// Need to check if chunk exists
-		if (FileHandler.checkIfFileExits(StoredChunksFolderPath + File.separator + id.getFileID() + "_" + id.getChunkNumber())) {
-			// if so send msg
-			String args[] = new String[4];
-			// Version
-			args[0] = getVersion();
-			// SenderID
-			args[1] = Integer.toString(peer.getServerID());
-			// FileID
-			args[2] = fileID;
-			// Chunk No
-			args[3] = Integer.toString(wakeupMSG.getChunkNo());
-			BackupProtocol.sendStoredMsg(msg, args);
+		if (nFields == N_ARGS) {
+			// WAKEUP <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
+			ChunkID id = new ChunkID(fileID, wakeupMSG.getChunkNo());
+			// Need to check if chunk exists
+			if (FileHandler.checkIfFileExits(StoredChunksFolderPath + File.separator + id.getFileID() + "_" + id.getChunkNumber())) {
+				// if so send msg
+				String args[] = new String[4];
+				// Version
+				args[0] = getVersion();
+				// SenderID
+				args[1] = Integer.toString(peer.getServerID());
+				// FileID
+				args[2] = fileID;
+				// Chunk No
+				args[3] = Integer.toString(wakeupMSG.getChunkNo());
+				BackupProtocol.sendStoredMsg(msg, args);
+			}
+		} else if (nFields == N_ARGS - 1) {
+			// WAKEUP <Version> <SenderId> <FileId> <CRLF><CRLF>
+			// In here we check if we chunks of said File
+			ChunkID id = new ChunkID(fileID, wakeupMSG.getChunkNo());
+			// Need to check if chunk exists
+			File dir = new File(StoredChunksFolderPath);
+			if (!dir.isDirectory())
+				throw new IllegalStateException("Not a directoray");
+			for (File file : dir.listFiles()) {
+				String prefix = id.getFileID() + "_";
+				String fileName = file.getName();
+				if (fileName.startsWith(prefix)) {
+					// if so send msg
+					String args[] = new String[4];
+					// Version
+					args[0] = getVersion();
+					// SenderID
+					args[1] = Integer.toString(peer.getServerID());
+					// FileID
+					args[2] = fileID;
+					// Chunk No -> Example: sadsadasdasdasdasda_10 it will
+					// return 10
+					args[3] = fileName.substring(fileName.indexOf(prefix) + prefix.length(), fileName.length());
+					BackupProtocol.sendStoredMsg(msg, args);
+				}
+			}
 		}
 		// if not ignore
 	}
 
 	public void sendWakeUp() {
-		//should I go through each file 
-		//need to know who has each chunk of Files it sent
-		//need to let ppl know which chunks it has
+		// should I go through each file
+		// need to know who has each chunk of Files it sent
+		// need to let ppl know which chunks it has
 		// what do I need for a wakeup msg
 		// version 1.0? or higher
 		// need senderID
@@ -71,7 +100,8 @@ public class WakeProtocol extends Thread {
 		// need chunkNo
 		// need fileID
 		// No bodies
-		//what happens when he send a I have Chunk X of File Y but Chunk X/FileY should not be in the system??
+		// what happens when he send a I have Chunk X of File Y but Chunk
+		// X/FileY should not be in the system??
 	}
 
 	public String getStoredChunksFolderPath() {

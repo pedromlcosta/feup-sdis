@@ -18,7 +18,7 @@ public class Message {
 	static final String WAKEUP = "WAKEUP";
 	static final String TRACKER = "TRACKER";
 	static final String MONITOR = "MONITOR";
-	final int N_ARGS = 0;
+	final static int N_ARGS = 0;
 	static final String EMPTY_STRING = "";
 
 	public static enum MESSAGE_TYPE {
@@ -312,7 +312,7 @@ public class Message {
 		return MONITOR;
 	}
 
-	public int getN_ARGS() {
+	public static int getnArgs() {
 		return N_ARGS;
 	}
 
