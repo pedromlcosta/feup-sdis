@@ -282,8 +282,7 @@ public class Peer implements Invocation {
 	public synchronized String delete(String filePath) throws RemoteException {
 		// Call delete protocol
 		System.out.println("Before calling delete");
-		Thread delete = new DeleteProtocol(filePath);
-		delete.start();
+		(new DeleteProtocol(filePath)).start();
 		System.out.println("delete called");
 		return "delete sent";
 	}

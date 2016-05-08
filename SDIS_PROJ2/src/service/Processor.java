@@ -143,9 +143,8 @@ public class Processor extends Thread {
 				break;
 			case "WAKEUP":
 				msg = new WakeMsg(messageFields, messageBody);
-				int n = messageFields.length;
 				messageFields = null;
-				wakeupHandler(msg, n);
+				wakeupHandler(msg);
 				break;
 
 			default:
@@ -457,8 +456,8 @@ public class Processor extends Thread {
 	 * 
 	 * @param wakeupMSG
 	 */
-	public void wakeupHandler(Message wakeupMSG, int nFields) {
-		(new WakeProtocol()).receiveWakeUp(wakeupMSG, nFields);
+	public void wakeupHandler(Message wakeupMSG) {
+		(new WakeProtocol()).receiveWakeUp(wakeupMSG);
 	}
 
 	public String getMessageString() {
