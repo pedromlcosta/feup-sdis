@@ -21,7 +21,6 @@ public class WakeMsg extends Message {
 		version = messageFields[1];
 		senderID = messageFields[2];
 		fileId = messageFields[3];
-		chunkNo = Integer.parseInt(messageFields[4]);
 		body = null;
 	}
 

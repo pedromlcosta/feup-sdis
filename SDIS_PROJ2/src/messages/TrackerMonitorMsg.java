@@ -8,7 +8,7 @@ public class TrackerMonitorMsg extends Message {
 	 * Constructor that just fills the type of Message
 	 */
 	public TrackerMonitorMsg() {
-		type = MESSAGE_TYPE.STORED;
+		type = MESSAGE_TYPE.TRACKER;
 	}
 
 	/**
@@ -45,7 +45,7 @@ public class TrackerMonitorMsg extends Message {
 			return false;
 		}
 		// Creates the message header
-		createHeader(args, N_ARGS, getStored());
+		createHeader(args, N_ARGS, getTracker());
 		// Regex that validates the message
 		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER
 				+ MSG_END_WITHOUT_BODY;

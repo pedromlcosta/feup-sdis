@@ -2,16 +2,18 @@ package protocol;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.DatagramPacket;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Set;
 
-import chunk.ChunkID;
+import channels.MCReceiver;
 import extra.Extra;
 import extra.FileHandler;
 import file.FileID;
 import messages.Message;
 import messages.StoredMsg;
+import messages.WakeMsg;
 import service.Peer;
 
 public class WakeProtocol extends Thread {
@@ -65,8 +67,11 @@ public class WakeProtocol extends Thread {
 				String fileID = fileIDs[0];
 				if (chunkStored.get(fileID) != null) {
 					chunkStored.put(fileID, true);
-					String args[] = new String[1];
-					args[0] = fileID;
+					String args[] = new String[4];
+					args[0] = Message.getWakeup();
+					args[1] = Peer.getCurrentVersion();
+					args[2] = Integer.toString(peer.getServerID());
+					args[3] = fileID;
 					sendWakeUp(true, args);
 					// The rest of the work need to be done at the processor
 				}
@@ -114,8 +119,18 @@ public class WakeProtocol extends Thread {
 	public void sendWakeUp(boolean tracker, String args[]) {
 		if (tracker) {
 			// send msg to monitor to send to tracker
+			// To the tracker I need the fileID just that
+			// <TRACKER> <VERSION> <SENDER_ID> <OP_NUMBER> <CTRL>CTRL> em que
+			// OP_NUMBER será sempre o ultimo arugmento de uma mensagem para o
+			// tracker que identifica qual operação a densenrolar ou mesmo uma
+			// string em vez de 1 number
 		} else {
 			// will send the msg to the network
+			Message msg = new WakeMsg(args, null);
+			System.out.println(msg.getMessageToSend());
+			MCReceiver control = peer.getControlChannel();
+			DatagramPacket msgPacket = control.createDatagramPacket(msg.getMessageBytes()); //
+			control.writePacket(msgPacket);
 		}
 
 	}
