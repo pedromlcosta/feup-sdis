@@ -86,7 +86,8 @@ public class Message {
 		if (validateMsg(messageToSend)) {
 			return true;
 		} else {
-			System.out.println("Mensagem nao valida");
+			System.out.println("Mensagem nao valida, Failed Regex");
+			System.out.println(validateRegex);
 			return false;
 		}
 	}

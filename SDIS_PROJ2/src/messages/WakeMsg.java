@@ -2,7 +2,7 @@ package messages;
 
 public class WakeMsg extends Message {
 
-	private static int N_ARGS = 4;
+	private static int N_ARGS = 3;
 	String ChunkNo;
 
 	/**
@@ -35,7 +35,7 @@ public class WakeMsg extends Message {
 	// to find out if the file is still in the system
 	// to do that we could change the message and just be and <Answer> would be
 	// like 0.0/1.0 depending if the sender is answering or not
-	// WAKEUP <Version> <SenderId> <FileId> <CRLF><CRLF>
+ 
 
 	// WAKEUP <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
 	/**
@@ -49,19 +49,12 @@ public class WakeMsg extends Message {
 			System.out.println("Mensagem nao valida");
 			return false;
 		}
-		int n = args.length;
-		int nArgs;
-		if (n == N_ARGS)
-			nArgs = N_ARGS;
-		if (n == N_ARGS - 1)
-			nArgs = n;
-		else
-			return false;
+
 		// Creates the message header
-		createHeader(args, nArgs, getWakeup());
+		createHeader(args, N_ARGS, getWakeup());
 		// Regex that validates the message
-		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + CHUNK_NUMBER
-				+ MSG_END_WITHOUT_BODY;
+		// WAKEUP <Version> <SenderId> <FileId> <CRLF><CRLF>
+		validateRegex = VALIDATE_MESSAGE_TYPE + MORE_THAN_1_SPACE + VALIDATE_VERSION + MORE_THAN_1_SPACE + MIDDLE_ARGS + MORE_THAN_1_SPACE + MIDDLE_ARGS + ZERO_OR_MORE_SPACES + MSG_END_WITHOUT_BODY;
 
 		return createMessageAux();
 

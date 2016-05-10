@@ -67,11 +67,10 @@ public class WakeProtocol extends Thread {
 				String fileID = fileIDs[0];
 				if (chunkStored.get(fileID) != null) {
 					chunkStored.put(fileID, true);
-					String args[] = new String[4];
-					args[0] = Message.getWakeup();
-					args[1] = Peer.getCurrentVersion();
-					args[2] = Integer.toString(peer.getServerID());
-					args[3] = fileID;
+					String args[] = new String[3];
+					args[0] = Peer.getCurrentVersion();
+					args[1] = Integer.toString(peer.getServerID());
+					args[2] = fileID;
 					sendWakeUp(true, args);
 					// The rest of the work need to be done at the processor
 				}
@@ -126,7 +125,8 @@ public class WakeProtocol extends Thread {
 			// string em vez de 1 number
 		} else {
 			// will send the msg to the network
-			Message msg = new WakeMsg(args, null);
+			Message msg = new WakeMsg();
+			msg.createMessage(null, args);
 			System.out.println(msg.getMessageToSend());
 			MCReceiver control = peer.getControlChannel();
 			DatagramPacket msgPacket = control.createDatagramPacket(msg.getMessageBytes()); //
