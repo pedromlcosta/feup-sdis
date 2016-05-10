@@ -20,6 +20,9 @@ public class Monitor extends Thread {
 
 	}
 
+	public void run() {
+	}
+
 	public UDPConnection getPeerConnection() {
 		return peerConnection;
 	}

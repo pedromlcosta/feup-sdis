@@ -2,13 +2,16 @@ package service;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import channels.MulticastServer;
+import file.FileID;
 
 public class Tracker extends Thread {
 	private MulticastServer monitorConnection;
 	private MulticastServer peerConnection;
+	private MulticastServer backupConnection;
 	private Tracker backup;
 	private boolean backupFlag;
 	private boolean activeFlag;
@@ -20,20 +23,34 @@ public class Tracker extends Thread {
 	private HashMap<Integer, PeerData> probationPeerList;
 	// probation Monitor
 	private HashMap<Integer, Monitor> probationMonitorList;
+	//
+	private ArrayList<FileID> deletedFiles;
 
-	public Tracker(InetAddress addrPeer, int portPeer, InetAddress addrMonitor, int portMonitor, boolean backupFlag, boolean activeFlag) throws IOException {
-		super();
+	public Tracker(InetAddress addrbackup, int backupPort, InetAddress addrPeer, int portPeer, InetAddress addrMonitor, int portMonitor, boolean backupFlag, boolean activeFlag) throws IOException {
+		// multicastGroup to listen to the peers
 		this.peerConnection = new MulticastServer(false, addrPeer, portPeer);
 		this.peerConnection.createSocket();
 		this.peerConnection.joinMulticastGroup();
+		// multicastGroup for the monitor
 		this.monitorConnection = new MulticastServer(false, addrMonitor, portMonitor);
 		this.monitorConnection.createSocket();
 		this.monitorConnection.joinMulticastGroup();
+		// multicastGroup for the backup
+		this.monitorConnection = new MulticastServer(false, addrbackup, backupPort);
+		this.monitorConnection.createSocket();
+		this.monitorConnection.joinMulticastGroup();
 		this.backupFlag = backupFlag;
-		//should only the main one read the network and send X in X the info?
+		// should only the main one read the network and send X in X the info?
 		this.activeFlag = activeFlag;
-		this.backup = new Tracker(addrPeer, portPeer, addrMonitor, portMonitor, true, false);
+		this.backup = new Tracker(addrbackup, backupPort, addrPeer, portPeer, addrMonitor, portMonitor, true, false);
 
+	}
+
+	public synchronized boolean checkIfFileDeleted(String IDToCheck) {
+		for (FileID check : deletedFiles)
+			if (check.getID().equals(IDToCheck))
+				return true;
+		return false;
 	}
 
 	public MulticastServer getMonitorConnection() {
@@ -106,6 +123,14 @@ public class Tracker extends Thread {
 
 	public void setProbationMonitorList(HashMap<Integer, Monitor> probationMonitorList) {
 		this.probationMonitorList = probationMonitorList;
+	}
+
+	public ArrayList<FileID> getDeletedFiles() {
+		return deletedFiles;
+	}
+
+	public void setDeletedFiles(ArrayList<FileID> deletedFiles) {
+		this.deletedFiles = deletedFiles;
 	}
 
 }

@@ -193,6 +193,18 @@ public class Peer implements Invocation {
 	}
 
 	/**
+	 * Starts a monitor 
+	 * @param addrUDP
+	 * @param portUDP
+	 * @param addrMC
+	 * @param portMC
+	 * @throws IOException
+	 */
+	public void startMonitor(InetAddress addrUDP, int portUDP, InetAddress addrMC, int portMC) throws IOException {
+		(new Monitor(addrUDP, portUDP, addrMC, portMC)).start();
+	}
+
+	/**
 	 * Validates the arguments received
 	 * 
 	 * @param args
