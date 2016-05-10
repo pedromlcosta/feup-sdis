@@ -6,10 +6,10 @@ import java.net.InetAddress;
 import channels.MulticastServer;
 import channels.UDPConnection;
 
-public class Monitor {
+public class Monitor extends Thread {
 	private UDPConnection peerConnection;
-	// TODO não vai ser esta mas para questões de estrutura vou deixar aqui
 	private MulticastServer trackerConnection;
+	private Integer peerID;
 
 	public Monitor(InetAddress addrUDP, int portUDP, InetAddress addrMC, int portMC) throws IOException {
 		super();
@@ -18,6 +18,9 @@ public class Monitor {
 		this.trackerConnection.createSocket();
 		this.trackerConnection.joinMulticastGroup();
 
+	}
+
+	public void run() {
 	}
 
 	public UDPConnection getPeerConnection() {
@@ -34,6 +37,14 @@ public class Monitor {
 
 	public void setTrackerConnection(MulticastServer trackerConnection) {
 		this.trackerConnection = trackerConnection;
+	}
+
+	public Integer getPeerID() {
+		return peerID;
+	}
+
+	public void setPeerID(Integer peerID) {
+		this.peerID = peerID;
 	}
 
 }

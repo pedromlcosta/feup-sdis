@@ -1,0 +1,38 @@
+Change RMI
+UDP/TCP connection between Peer and Monitor, Monitor and Tracker
+Peer ask Tracker for Peers who are alive 
+
+Create message WakeUp & the protocol| and messages to be sent between Monitor and Tracker
+
+What should the tracker keep in store a list of monitors and peerData?
+should the monitorList just be a "copy" of said monitor
+
+The tracker receives messages from the monitors (status updates) if a monitor does not answer after X time -> monitor goes on "probation"
+ If monitor answers Peer is dead Tracker gives command to restartPeer, need to check if PeerData Received (after restart) Matches PeerData Stored by Tracker
+ If it does no more is done, if it does not,which one is given priority  ? 
+ 
+ // WAKEUP <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
+			// this is sent when the SenderID has a chunk and wants to know if
+			// the chunk is still in the network, we just need to check
+			// Does delete remove from the sent list?
+			
+			
+			// what should we do let him not delete the message? also how
+				// should we let him delete the chunk? have a list of deleted
+				// files?? Seems like a good way to do things a list of all
+				// deleted files, and if FileID in there we send delete if not
+				// we send what? nothing a new msg? keepIt, putchunk?
+				
+				
+				// should I go through each file
+		// need to know who has each chunk of Files it sent
+		// need to let ppl know which chunks it has
+		// what do I need for a wakeup msg
+		// version 1.0? or higher
+		// need senderID
+		// need chunkID
+		// need chunkNo
+		// need fileID
+		// No bodies
+		// what happens when he send a I have Chunk X of File Y but Chunk
+		// X/FileY should not be in the system??

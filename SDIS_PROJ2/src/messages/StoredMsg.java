@@ -12,7 +12,7 @@ public class StoredMsg extends Message {
 	}
 
 	/**
-	 * Constructor for the Delete Msg that receives the messageFields and the
+	 * Constructor for the Stored Msg that receives the messageFields and the
 	 * messageFields: Version SenderID FileID ChunkNo body (Chunk data)
 	 * 
 	 * @param messageFields
@@ -52,5 +52,9 @@ public class StoredMsg extends Message {
 
 		return createMessageAux();
 
+	}
+
+	public static int getnArgs() {
+		return N_ARGS;
 	}
 }

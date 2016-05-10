@@ -45,4 +45,8 @@ public class GetChunkMsg extends Message {
 				+ MSG_END_WITHOUT_BODY;
 		return createMessageAux();
 	}
+	public static int getnArgs() {
+		return N_ARGS;
+	}
+
 }
