@@ -13,7 +13,6 @@ public class WakeMsg extends Message {
 	}
 
 	public WakeMsg(String[] messageFields, byte[] data) {
-		// type+args
 		if (messageFields.length < (N_ARGS)) {
 			System.out.println("Failed creating WakeUp message. Not enough fields");
 			return;

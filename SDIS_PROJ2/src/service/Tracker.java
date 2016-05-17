@@ -6,7 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import channels.MulticastServer;
-import file.FileID;
+import messages.Message;
 
 public class Tracker extends Thread {
 	private MulticastServer monitorConnection;
@@ -23,8 +23,8 @@ public class Tracker extends Thread {
 	private HashMap<Integer, PeerData> probationPeerList;
 	// probation Monitor
 	private HashMap<Integer, Monitor> probationMonitorList;
-	//
-	private ArrayList<FileID> deletedFiles;
+	// ID of files deleted by the peers
+	private ArrayList<String> deletedFiles;
 
 	public Tracker(InetAddress addrbackup, int backupPort, InetAddress addrPeer, int portPeer, InetAddress addrMonitor, int portMonitor, boolean backupFlag, boolean activeFlag) throws IOException {
 		// multicastGroup to listen to the peers
@@ -46,9 +46,17 @@ public class Tracker extends Thread {
 
 	}
 
+	public synchronized void handleDelete(Message msg) {
+		String id = msg.getFileId();
+		if (id != null && !id.isEmpty()) {
+			if (!deletedFiles.contains(id))
+				deletedFiles.add(id);
+		}
+	}
+
 	public synchronized boolean checkIfFileDeleted(String IDToCheck) {
-		for (FileID check : deletedFiles)
-			if (check.getID().equals(IDToCheck))
+		for (String check : deletedFiles)
+			if (check.equals(IDToCheck))
 				return true;
 		return false;
 	}
@@ -125,12 +133,20 @@ public class Tracker extends Thread {
 		this.probationMonitorList = probationMonitorList;
 	}
 
-	public ArrayList<FileID> getDeletedFiles() {
+	public ArrayList<String> getDeletedFiles() {
 		return deletedFiles;
 	}
 
-	public void setDeletedFiles(ArrayList<FileID> deletedFiles) {
+	public void setDeletedFiles(ArrayList<String> deletedFiles) {
 		this.deletedFiles = deletedFiles;
+	}
+
+	public MulticastServer getBackupConnection() {
+		return backupConnection;
+	}
+
+	public void setBackupConnection(MulticastServer backupConnection) {
+		this.backupConnection = backupConnection;
 	}
 
 }
