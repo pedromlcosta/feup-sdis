@@ -14,9 +14,9 @@ import java.util.concurrent.TimeUnit;
 
 import chunk.Chunk;
 import chunk.ChunkID;
+import data.FileID;
 import extra.Extra;
 import extra.FileHandler;
-import file.FileID;
 import messages.Message;
 import messages.PutChunkMsg;
 import messages.StoredMsg;

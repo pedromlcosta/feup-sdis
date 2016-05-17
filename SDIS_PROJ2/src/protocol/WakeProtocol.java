@@ -8,9 +8,9 @@ import java.util.HashMap;
 import java.util.Set;
 
 import channels.MCReceiver;
+import data.FileID;
 import extra.Extra;
 import extra.FileHandler;
-import file.FileID;
 import messages.Message;
 import messages.StoredMsg;
 import messages.WakeMsg;

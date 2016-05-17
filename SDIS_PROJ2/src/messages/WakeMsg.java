@@ -23,6 +23,9 @@ public class WakeMsg extends Message {
 		body = null;
 	}
 
+	// Think:
+	// Se um Peer receber o que tem que fazer? -> Peer vê se tem um chunk deste FileID?
+	// Se for o tracker faz o que? Tracker vê se o ficheiro foi deleted da rede? se sim
 	// WAKEUP <Version> <SenderId> <FileId> <CRLF><CRLF>
 	/**
 	 * creates a message with the data and the args but also validates the

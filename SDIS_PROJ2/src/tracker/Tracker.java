@@ -1,4 +1,4 @@
-package service;
+package tracker;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -6,7 +6,9 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 import channels.MulticastServer;
+import data.PeerData;
 import messages.Message;
+import service.Monitor;
 
 public class Tracker extends Thread {
 	private MulticastServer monitorConnection;
