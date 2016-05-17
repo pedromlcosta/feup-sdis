@@ -8,7 +8,7 @@ import java.util.HashMap;
 import channels.MulticastServer;
 import data.PeerData;
 import messages.Message;
-import service.Monitor;
+import monitor.Monitor;
 
 public class Tracker extends Thread {
 	private MulticastServer monitorConnection;

@@ -23,6 +23,7 @@ import data.FileID;
 import data.PeerData;
 import extra.Extra;
 import extra.FileHandler;
+import monitor.Monitor;
 import protocol.BackupProtocol;
 import protocol.DeleteProtocol;
 import protocol.ReclaimProtocol;
@@ -194,7 +195,8 @@ public class Peer implements Invocation {
 	}
 
 	/**
-	 * Starts a monitor 
+	 * Starts a monitor
+	 * 
 	 * @param addrUDP
 	 * @param portUDP
 	 * @param addrMC
@@ -202,7 +204,7 @@ public class Peer implements Invocation {
 	 * @throws IOException
 	 */
 	public void startMonitor(InetAddress addrUDP, int portUDP, InetAddress addrMC, int portMC) throws IOException {
-		(new Monitor(addrUDP, portUDP, addrMC, portMC)).start();
+		new Monitor(addrUDP, portUDP, addrMC, portMC);
 	}
 
 	/**
