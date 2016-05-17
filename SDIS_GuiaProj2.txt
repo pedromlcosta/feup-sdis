@@ -1,0 +1,36 @@
+SDIS
+
+FAULT TOLERANCE
+
+TRACKING ALIVE/DEAD
+-> Peer beeps monitor - might be RMI and check if call is answered, or UDP
+-> Monitors beep tracker - Might be a multicast with a different address, just for this, 							or it can be UDP.
+						 - Tracker can send 1 thread per monitor, but for efficiency, the best way would probably be to have hashmap of timeouts that are all increased over time. Each time it receives a beep, resets timeout for that beep. This will require that the beeps are queued, probably, so as not to launch a thread for each and overload the tracker or have to do thread management.
+						 2 possible methods then:
+						 				1 -> Hashmap timeouts, receive beeps in 1 thread with a queue
+						 				2 -> A thread for each monitor, with thread management... not viable, I think.
+
+
+PEER FAILURE
+
+-> If monitor notices peer has failed, attempts to launch it again
+
+PEER FAILURE RECOVERY
+
+-> A peer that has crashed, will do the following steps:
+		1 - communicate to the tracker (maybe through monitor? nah, can be direct) that he has recovered. The tracker will answer with his peerdata
+		2 - He will analyze part of the peerdata (chunks backed up) and cross it with the
+		data of the current computer (might be in a different computer from the original). This way, it can reset some parts of the peer data, like the chunks it has stored.
+		WARNING:  OPENING PEERS IN OTHER PCs THAN THE ORIGINAL WILL OUTDATE THE CURRENT REPLICATION DEGREE OF THE OTHER PEERS... MAYBE ANY MESSAGE ABOUT THIS IF THERE ARE DIFFERENCES BETWEEN METADATA AND COMPUTER STORAGE DATA?
+		3 - After analyzing peerdata, for each file it has chunks from, do the WOKEUP enhancement with other peers through MCAST, as described
+
+
+TRACKER FAILURE RECOVERY
+
+-> We didn't predict how to do this yet
+
+SECURITY
+
+KEY MANAGEMENT - SSL
+
+ENCRYPTION - AES
