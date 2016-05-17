@@ -34,3 +34,11 @@ SECURITY
 KEY MANAGEMENT - SSL
 
 ENCRYPTION - AES
+
+MONITOR:
+2 Tasks:
+ Let tracker know he (Monitor) is alive.
+ See if peer alive if not start Resurrection process.
+ 
+
+ 
