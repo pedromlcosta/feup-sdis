@@ -40,5 +40,8 @@ MONITOR:
  Let tracker know he (Monitor) is alive.
  See if peer alive if not start Resurrection process.
  
+PEER:
+Sends beep to monitor. Waits for reply. If a reply doesn't come, increment beepFailure by 1. When beepFailure reaches a certain treshold (5?), the peer assumes the monitor is dead and launches it again.
+ 
 
  
