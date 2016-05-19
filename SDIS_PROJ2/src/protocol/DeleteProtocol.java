@@ -30,9 +30,13 @@ public class DeleteProtocol extends Thread {
 		this.filePath = filePath;
 	}
 
+	public DeleteProtocol() {
+	}
+
 	/**
 	 * Runs the Delete Protocol
 	 */
+	//TODO check if changes no broke anything
 	public void run() {
 
 		ArrayList<FileID> fileSentVersions = peer.getFilesSent().get(filePath);
@@ -44,22 +48,7 @@ public class DeleteProtocol extends Thread {
 		file = fileSentVersions.get(fileSentVersions.size() - 1);
 
 		// create message
-		Message msg = new DeleteMsg();
-		int nMessagesSent = 0;
-
-		msg.createMessage(null, "1.0", Integer.toString(peer.getServerID()), file.getID());
-
-		MCReceiver mc = peer.getControlChannel();
-		DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
-		while (nMessagesSent < MAX_SENT) {
-			mc.writePacket(msgPacket);
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-				System.out.println("Unexpected wake up of a thread sleeping");
-			}
-			nMessagesSent++;
-		}
+		sendDeleteMsg(file.getID());
 		// delete
 		synchronized (peer.getStored()) {
 			peer.removeFilesSentEntry(filePath);
@@ -79,6 +68,25 @@ public class DeleteProtocol extends Thread {
 			System.out.println("File to save Data not found");
 		} catch (IOException e) {
 			System.out.println("IO error saving to file");
+		}
+	}
+
+	public void sendDeleteMsg(String fileID) {
+		Message msg = new DeleteMsg();
+		int nMessagesSent = 0;
+
+		msg.createMessage(null, "1.0", Integer.toString(peer.getServerID()), fileID);
+
+		MCReceiver mc = peer.getControlChannel();
+		DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
+		while (nMessagesSent < MAX_SENT) {
+			mc.writePacket(msgPacket);
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				System.out.println("Unexpected wake up of a thread sleeping");
+			}
+			nMessagesSent++;
 		}
 	}
 }

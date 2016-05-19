@@ -97,7 +97,7 @@ public class FileID implements Serializable {
 		FileID other = (FileID) obj;
 		if (!ID.equals(other.ID))
 			return false;
-		if (desiredRepDegree != other.desiredRepDegree)
+		/*if (desiredRepDegree != other.desiredRepDegree)
 			return false;
 		if (!fileName.equals(other.fileName))
 			return false;
@@ -106,7 +106,7 @@ public class FileID implements Serializable {
 		if (homeServer != other.homeServer)
 			return false;
 		if (nChunks != other.nChunks)
-			return false;
+			return false;*/
 		return true;
 	}
 
