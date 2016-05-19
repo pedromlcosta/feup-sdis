@@ -20,14 +20,14 @@ public class Monitor {
 	private Random randomGenerator = new Random();
 	private boolean peerResurrectedAttempted = false;
 	private int nTries = 0;
-	private final int LIMITE_OF_ATTEMPTS = 3;
+	private final int LIMIT_OF_ATTEMPTS = 3;
 
 	public Monitor(InetAddress addrUDP, int portUDP, InetAddress addrMC, int portMC) throws IOException {
 		this.peerConnection = new UDPConnection(addrUDP, portUDP);
 		this.trackerConnection = new MulticastServer(false, addrMC, portMC);
 		this.trackerConnection.createSocket();
 		this.trackerConnection.joinMulticastGroup();
-		timer.schedule(new beepTask(), 1 * 1000);
+	 
 	}
 
 	public class beepTask extends TimerTask {
@@ -50,7 +50,7 @@ public class Monitor {
 				// Action to take??
 
 			} else {
-				if (nTries == LIMITE_OF_ATTEMPTS) {
+				if (nTries >= LIMIT_OF_ATTEMPTS) {
 					peerResurrectedAttempted = true;
 					attemptResurrection();
 				}

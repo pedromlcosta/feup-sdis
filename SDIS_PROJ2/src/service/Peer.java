@@ -12,6 +12,9 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Random;
+import java.util.Timer;
+import java.util.TimerTask;
 
 import channels.MCReceiver;
 import channels.MDBReceiver;
@@ -56,6 +59,13 @@ public class Peer implements Invocation {
 	private String folderPath;
 	// connection to monitor need port since addr will be localhost
 	private UDPConnection monitorConnection;
+	// Monitor Stuff
+	private Timer timer = new Timer();
+	private boolean monitorAlive = false;
+	private boolean monitorResurrectedAttempted = false;
+	private Random randomGenerator = new Random();
+	private final int LIMIT_OF_ATTEMPTS = 3;
+	private int nTries;
 
 	/**
 	 * Default Peer constructor. Initializes receiver servers and PeerData
@@ -205,6 +215,43 @@ public class Peer implements Invocation {
 	 */
 	public void startMonitor(InetAddress addrUDP, int portUDP, InetAddress addrMC, int portMC) throws IOException {
 		new Monitor(addrUDP, portUDP, addrMC, portMC);
+	}
+
+	public class monitorBeepTask extends TimerTask {
+
+		@Override
+		public void run() {
+			task();
+		}
+	}
+
+	// TODO peer mandar beep para monitor, ver se temos reposta
+	private void task() {
+		if (monitorAlive) {
+			nTries = 0;
+			monitorAlive = false;
+			// create msg all well
+			// send beep to monitor
+		} else {
+			if (monitorResurrectedAttempted) {
+				monitorResurrectedAttempted = false;
+				System.out.println("failed To Ressurect Peer");
+				// Action to take??
+
+			} else {
+				if (nTries >= LIMIT_OF_ATTEMPTS) {
+					monitorResurrectedAttempted = true;
+					attemptMontiorResurrection();
+				}
+				nTries++;
+			}
+
+		}
+		// send msg
+		timer.schedule(new monitorBeepTask(), randomGenerator.nextInt(2) * 1000);
+	}
+
+	private void attemptMontiorResurrection() {
 	}
 
 	/**
