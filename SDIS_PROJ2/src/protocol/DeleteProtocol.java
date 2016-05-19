@@ -7,7 +7,7 @@ import java.util.ArrayList;
 
 import channels.MCReceiver;
 import chunk.ChunkID;
-import file.FileID;
+import data.FileID;
 import messages.DeleteMsg;
 import messages.Message;
 import service.Peer;

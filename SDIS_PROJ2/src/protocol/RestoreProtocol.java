@@ -7,9 +7,9 @@ import java.util.ArrayList;
 
 import channels.MDRReceiver;
 import chunk.Chunk;
+import data.FileID;
 import extra.Extra;
 import extra.FileHandler;
-import file.FileID;
 import messages.GetChunkMsg;
 import messages.Message;
 import service.Peer;

@@ -1,4 +1,4 @@
-package service;
+package data;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -16,7 +16,6 @@ import java.util.HashMap;
 import chunk.Chunk;
 import chunk.ChunkID;
 import extra.Extra;
-import file.FileID;
 
 public class PeerData implements Serializable {
 
