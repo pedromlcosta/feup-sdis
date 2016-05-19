@@ -17,6 +17,7 @@ import data.FileID;
 import data.PeerData;
 import extra.Extra;
 import extra.FileHandler;
+import messages.CheckChunkMsg;
 import messages.ChunkMsg;
 import messages.DeleteMsg;
 import messages.GetChunkMsg;
@@ -26,6 +27,7 @@ import messages.RemovedMsg;
 import messages.StoredMsg;
 import messages.WakeMsg;
 import protocol.BackupProtocol;
+import protocol.CheckChunksProtocol;
 import protocol.WakeProtocol;
 
 public class Processor extends Thread {
@@ -147,7 +149,10 @@ public class Processor extends Thread {
 				messageFields = null;
 				wakeupHandler();
 				break;
-
+			case "":
+				msg = new CheckChunkMsg(messageFields, messageBody);
+				messageFields = null;
+				checkChunkHandler();
 			default:
 				break;
 			}
@@ -459,6 +464,11 @@ public class Processor extends Thread {
 	 */
 	public void wakeupHandler() {
 		(new WakeProtocol()).receiveWakeUp(msg);
+	}
+
+	private void checkChunkHandler() {
+		(new CheckChunksProtocol()).receiveCheckChunks(msg);
+
 	}
 
 	public String getMessageString() {

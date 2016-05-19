@@ -303,6 +303,7 @@ public class Peer implements Invocation {
 				rmiRegistry.bind(rmiName, stub);
 			} catch (Exception e) {
 				System.out.println("Couldnt bind, try another remote name, this one is in use");
+				e.printStackTrace();
 			}
 
 		} catch (Exception e) {
@@ -365,10 +366,11 @@ public class Peer implements Invocation {
 	}
 
 	// TODO 2 instances when restart can be called
-	// actually just one, after we ask for PD ( PeerData ) from tracker we will check
+	// actually just one, after we ask for PD ( PeerData ) from tracker we will
+	// check
 	// if they match if not give prioraty to local peerdata
 	// and sent it to tracker and start the restart process
-	//if no local PD we use the PD tracker gave us
+	// if no local PD we use the PD tracker gave us
 	public String restart() throws RemoteException {
 		// TODO Auto-generated method stub
 		return "forced restart";

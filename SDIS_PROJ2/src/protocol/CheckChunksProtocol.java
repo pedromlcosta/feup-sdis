@@ -34,6 +34,11 @@ public class CheckChunksProtocol extends Thread {
 	}
 
 	public void run() {
+		sendCheckChunks();
+
+	}
+
+	public void sendCheckChunks() {
 		HashMap<String, ArrayList<FileID>> filesSent = peer.getFilesSent();
 		Set<String> keySet = filesSent.keySet();
 		for (String key : keySet) {
@@ -53,16 +58,14 @@ public class CheckChunksProtocol extends Thread {
 
 			}
 		}
-
 	}
 
-	// Not the receiver I need to do xD
-	public void receiveWakeUp(Message CheckChunksMsg) {
+	// CHECKCHUNK <Version> <SenderId> <FileId><CRLF><CRLF>
+	public void receiveCheckChunks(Message CheckChunksMsg) {
+		
 		Message msg = new CheckChunkMsg();
 		String fileID = CheckChunksMsg.getFileId();
-		// CHECKCHUNK <Version> <SenderId> <FileId><CRLF><CRLF>
-		// In here we check if we chunks of said File
-		// Need to check if chunk exists
+
 		File dir = new File(StoredChunksFolderPath);
 		if (!dir.isDirectory())
 			throw new IllegalStateException("Not a dir");
