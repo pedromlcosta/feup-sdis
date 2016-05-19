@@ -20,26 +20,28 @@ public class DeleteProtocol extends Thread {
 	private static int MAX_SENT = 5;
 
 	/**
-	 * Constructor for Delete protocol that deletes a file and sends DELETE message
+	 * Constructor for Delete protocol that deletes a file and sends DELETE
+	 * message
 	 * 
-	 * @param filePath name of the file to be deleted
+	 * @param filePath
+	 *            name of the file to be deleted
 	 */
 	public DeleteProtocol(String filePath) {
 		this.filePath = filePath;
 	}
-	
+
 	/**
 	 * Runs the Delete Protocol
 	 */
 	public void run() {
 
 		ArrayList<FileID> fileSentVersions = peer.getFilesSent().get(filePath);
-		if(fileSentVersions == null || fileSentVersions.size() == 0){
+		if (fileSentVersions == null || fileSentVersions.size() == 0) {
 			System.out.println(filePath + " not found");
 			return;
 		}
-		
-		file = fileSentVersions.get(fileSentVersions.size()-1);
+
+		file = fileSentVersions.get(fileSentVersions.size() - 1);
 
 		// create message
 		Message msg = new DeleteMsg();
@@ -72,6 +74,7 @@ public class DeleteProtocol extends Thread {
 		// Save alterations to peer data
 		try {
 			peer.saveData();
+			peer.getFilesDeleted().add(file);
 		} catch (FileNotFoundException e) {
 			System.out.println("File to save Data not found");
 		} catch (IOException e) {

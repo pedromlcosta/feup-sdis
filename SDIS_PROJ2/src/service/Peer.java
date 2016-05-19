@@ -12,7 +12,9 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -66,6 +68,7 @@ public class Peer implements Invocation {
 	private Random randomGenerator = new Random();
 	private final int LIMIT_OF_ATTEMPTS = 3;
 	private int nTries;
+	private Set<FileID> filesDeleted;
 
 	/**
 	 * Default Peer constructor. Initializes receiver servers and PeerData
@@ -77,7 +80,7 @@ public class Peer implements Invocation {
 		dataChannel = new MDBReceiver();
 		restoreChannel = new MDRReceiver();
 		data = new PeerData();
-
+		filesDeleted = new HashSet<FileID>();
 	}
 
 	/**
@@ -601,6 +604,58 @@ public class Peer implements Invocation {
 
 	public void setMonitorConnection(UDPConnection monitorConnection) {
 		this.monitorConnection = monitorConnection;
+	}
+
+	public Timer getTimer() {
+		return timer;
+	}
+
+	public void setTimer(Timer timer) {
+		this.timer = timer;
+	}
+
+	public boolean isMonitorAlive() {
+		return monitorAlive;
+	}
+
+	public void setMonitorAlive(boolean monitorAlive) {
+		this.monitorAlive = monitorAlive;
+	}
+
+	public boolean isMonitorResurrectedAttempted() {
+		return monitorResurrectedAttempted;
+	}
+
+	public void setMonitorResurrectedAttempted(boolean monitorResurrectedAttempted) {
+		this.monitorResurrectedAttempted = monitorResurrectedAttempted;
+	}
+
+	public Random getRandomGenerator() {
+		return randomGenerator;
+	}
+
+	public void setRandomGenerator(Random randomGenerator) {
+		this.randomGenerator = randomGenerator;
+	}
+
+	public int getnTries() {
+		return nTries;
+	}
+
+	public void setnTries(int nTries) {
+		this.nTries = nTries;
+	}
+
+	public Set<FileID> getFilesDeleted() {
+		return filesDeleted;
+	}
+
+	public void setFilesDeleted(Set<FileID> filesDeleted) {
+		this.filesDeleted = filesDeleted;
+	}
+
+	public int getLIMIT_OF_ATTEMPTS() {
+		return LIMIT_OF_ATTEMPTS;
 	}
 
 }
