@@ -73,4 +73,40 @@ public class monitorProcessor extends Thread {
 		}
 	}
 
+	public Message getMsg() {
+		return msg;
+	}
+
+	public void setMsg(Message msg) {
+		this.msg = msg;
+	}
+
+	public byte[] getMessageBody() {
+		return messageBody;
+	}
+
+	public void setMessageBody(byte[] messageBody) {
+		this.messageBody = messageBody;
+	}
+
+	public String[] getMessageFields() {
+		return messageFields;
+	}
+
+	public void setMessageFields(String[] messageFields) {
+		this.messageFields = messageFields;
+	}
+
+	public String getMessageString() {
+		return messageString;
+	}
+
+	public void setMessageString(String messageString) {
+		this.messageString = messageString;
+	}
+
+	public static int getMaxWait() {
+		return MAX_WAIT;
+	}
+
 }

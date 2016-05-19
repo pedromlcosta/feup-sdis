@@ -16,13 +16,14 @@ public class Message {
 	static final String STORED = "STORED";
 	// TODO changes
 	static final String WAKEUP = "WAKEUP";
+	static final String CHECK_CHUNK_NUMBER = "CHECKCHUNK";
 	static final String TRACKER = "TRACKER";
 	static final String MONITOR = "MONITOR";
 	final static int N_ARGS = 0;
 	static final String EMPTY_STRING = "";
 
 	public static enum MESSAGE_TYPE {
-		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED, WAKEUP, TRACKER, MONITOR
+		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED, WAKEUP, TRACKER, MONITOR,CHECK_CHUNK_NUMBER
 	}
 
 	public static final String EOL = "\r\n";
@@ -359,6 +360,10 @@ public class Message {
 
 	public static String getPattern() {
 		return PATTERN;
+	}
+
+	public static String getCheckChunkNumber() {
+		return CHECK_CHUNK_NUMBER;
 	}
 
 }

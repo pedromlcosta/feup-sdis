@@ -8,7 +8,6 @@ import java.util.TimerTask;
 
 import channels.MulticastServer;
 import channels.UDPConnection;
-import messages.Message;
 
 public class Monitor {
 	private UDPConnection peerConnection;

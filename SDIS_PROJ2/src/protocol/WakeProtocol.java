@@ -62,40 +62,6 @@ public class WakeProtocol extends Thread {
 		this.peer = peer;
 	}
 
-	// Not the receiver I need to do xD
-	// public void receiveWakeUp(Message wakeupMSG) {
-	// Message msg = new StoredMsg();
-	// String fileID = wakeupMSG.getFileId();
-	//
-	// // WAKEUP <Version> <SenderId> <FileId> <CRLF><CRLF>
-	// // In here we check if we chunks of said File
-	// // Need to check if chunk exists
-	// File dir = new File(StoredChunksFolderPath);
-	// if (!dir.isDirectory())
-	// throw new IllegalStateException("Not a dir");
-	//
-	// for (File file : dir.listFiles()) {
-	// String prefix = fileID + "_";
-	// String fileName = file.getName();
-	// if (fileName.startsWith(prefix)) {
-	// // if so send msg
-	// String args[] = new String[4];
-	// // Version
-	// args[0] = getVersion();
-	// // SenderID
-	// args[1] = Integer.toString(peer.getServerID());
-	// // FileID
-	// args[2] = fileID;
-	// // Chunk No -> Example: sadsadasdasdasdasda_10 it will
-	// // return 10
-	// args[3] = fileName.substring(fileName.indexOf(prefix) + prefix.length(),
-	// fileName.length());
-	// BackupProtocol.sendStoredMsg(msg, args);
-	// }
-	// }
-	// // if not ignore
-	// }
-
 	public void sendWakeUp(String args[]) {
 		// will send the msg to the network
 		Message msg = new WakeMsg();
