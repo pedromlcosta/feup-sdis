@@ -4,12 +4,9 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.util.ArrayList;
 import java.util.HashMap;
 
-import protocol.RestoreProtocol;
 import data.PeerData;
-import messages.Message;
 import monitor.Monitor;
 
 public class Tracker extends Thread {
@@ -33,12 +30,6 @@ public class Tracker extends Thread {
 	private HashMap<Integer, Monitor> monitorList;
 	// Record of Peers
 	private HashMap<Integer, PeerData> peerDataList;
-	// probation Peer
-	private HashMap<Integer, PeerData> probationPeerList;
-	// probation Monitor
-	private HashMap<Integer, Monitor> probationMonitorList;
-	// ID of files deleted by the peers
-	private ArrayList<String> deletedFiles;
 
 	public static void main(String[] args) throws IOException{
 		// Check if args are all ok and well written
@@ -84,22 +75,6 @@ public class Tracker extends Thread {
 		}
 		
 	}
-
-	public synchronized void handleDelete(Message msg) {
-		String id = msg.getFileId();
-		if (id != null && !id.isEmpty()) {
-			if (!deletedFiles.contains(id))
-				deletedFiles.add(id);
-		}
-	}
-
-	public synchronized boolean checkIfFileDeleted(String IDToCheck) {
-		for (String check : deletedFiles)
-			if (check.equals(IDToCheck))
-				return true;
-		return false;
-	}
-
 	public HashMap<Integer, PeerData> getPeerDataList() {
 		return peerDataList;
 	}
@@ -108,21 +83,12 @@ public class Tracker extends Thread {
 		this.peerDataList = peerDataList;
 	}
 
-	public HashMap<Integer, PeerData> getProbationPeerList() {
-		return probationPeerList;
+	public HashMap<Integer, Monitor> getMonitorList() {
+		return monitorList;
 	}
 
-	public void setProbationPeerList(HashMap<Integer, PeerData> probationPeerList) {
-		this.probationPeerList = probationPeerList;
+	public void setMonitorList(HashMap<Integer, Monitor> monitorList) {
+		this.monitorList = monitorList;
 	}
-
-	public ArrayList<String> getDeletedFiles() {
-		return deletedFiles;
-	}
-
-	public void setDeletedFiles(ArrayList<String> deletedFiles) {
-		this.deletedFiles = deletedFiles;
-	}
-
 
 }

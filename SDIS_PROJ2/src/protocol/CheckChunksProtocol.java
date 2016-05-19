@@ -42,11 +42,14 @@ public class CheckChunksProtocol extends Thread {
 			if (size > 0) {
 				FileID updated = file.get(size - 1);
 				// CHECKCHUNK <Version> <SenderId> <FileId> <CRLF><CRLF>
-
+				Message msg = new CheckChunkMsg();
 				String args[] = new String[3];
 				args[0] = getVersion();
 				args[1] = peer.getServerID().toString();
 				args[2] = updated.getID();
+				new Thread(() -> {
+					sendCheckChunksMsg(msg, args);
+				}).start();
 
 			}
 		}
