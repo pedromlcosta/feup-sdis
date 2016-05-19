@@ -2,21 +2,33 @@ package tracker;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import channels.MulticastServer;
+import protocol.RestoreProtocol;
 import data.PeerData;
 import messages.Message;
 import monitor.Monitor;
 
 public class Tracker extends Thread {
-	private MulticastServer monitorConnection;
-	private MulticastServer peerConnection;
-	private MulticastServer backupConnection;
-	private Tracker backup;
-	private boolean backupFlag;
-	private boolean activeFlag;
+	/**
+	 * Creates the Tracker singleton
+	 */
+	static Tracker instance;
+
+	
+	/**
+	 * 
+	 * @return the Tracker singleton
+	 */
+	public static Tracker getInstance() {
+		return instance;
+	}
+
+	boolean serverEnd = false;
+	ServerSocket serverSocket;
 	// Record of monitors
 	private HashMap<Integer, Monitor> monitorList;
 	// Record of Peers
@@ -28,24 +40,49 @@ public class Tracker extends Thread {
 	// ID of files deleted by the peers
 	private ArrayList<String> deletedFiles;
 
+	public static void main(String[] args) throws IOException{
+		// Check if args are all ok and well written
+		// Check if args are all ok and well written
+		if (args.length != 1) {
+			System.out.println("Proper Usage is: java Server <srvc_port>");
+			System.exit(0);
+		} else {
+			// Call the server
+			try{
+				instance = new Tracker();
+			}catch (IOException e){
+				return;
+			}
+			
+			instance.serverStart();
+		}		
+	}
+	
 	public Tracker(InetAddress addrbackup, int backupPort, InetAddress addrPeer, int portPeer, InetAddress addrMonitor, int portMonitor, boolean backupFlag, boolean activeFlag) throws IOException {
-		// multicastGroup to listen to the peers
-		this.peerConnection = new MulticastServer(false, addrPeer, portPeer);
-		this.peerConnection.createSocket();
-		this.peerConnection.joinMulticastGroup();
-		// multicastGroup for the monitor
-		this.monitorConnection = new MulticastServer(false, addrMonitor, portMonitor);
-		this.monitorConnection.createSocket();
-		this.monitorConnection.joinMulticastGroup();
-		// multicastGroup for the backup
-		this.monitorConnection = new MulticastServer(false, addrbackup, backupPort);
-		this.monitorConnection.createSocket();
-		this.monitorConnection.joinMulticastGroup();
-		this.backupFlag = backupFlag;
-		// should only the main one read the network and send X in X the info?
-		this.activeFlag = activeFlag;
-		this.backup = new Tracker(addrbackup, backupPort, addrPeer, portPeer, addrMonitor, portMonitor, true, false);
+		
+	}
+	
+	public Tracker() throws IOException {
+		serverSocket = new ServerSocket(444); // PORT 444 JUST TO TEST
+	}
 
+	public void serverStart(){
+		
+		
+		while(!serverSocket.isClosed()){
+			
+			Socket remoteSocket;
+			try {
+				remoteSocket = serverSocket.accept();
+			} catch (IOException e) {
+				continue;
+			}
+			
+			Thread serverListener = new ServerListener(remoteSocket);
+			serverListener.start();
+			
+		}
+		
 	}
 
 	public synchronized void handleDelete(Message msg) {
@@ -61,54 +98,6 @@ public class Tracker extends Thread {
 			if (check.equals(IDToCheck))
 				return true;
 		return false;
-	}
-
-	public MulticastServer getMonitorConnection() {
-		return monitorConnection;
-	}
-
-	public void setMonitorConnection(MulticastServer monitorConnection) {
-		this.monitorConnection = monitorConnection;
-	}
-
-	public MulticastServer getPeerConnection() {
-		return peerConnection;
-	}
-
-	public void setPeerConnection(MulticastServer peerConnection) {
-		this.peerConnection = peerConnection;
-	}
-
-	public Tracker getBackup() {
-		return backup;
-	}
-
-	public void setBackup(Tracker backup) {
-		this.backup = backup;
-	}
-
-	public boolean isBackupFlag() {
-		return backupFlag;
-	}
-
-	public void setBackupFlag(boolean backupFlag) {
-		this.backupFlag = backupFlag;
-	}
-
-	public boolean isActiveFlag() {
-		return activeFlag;
-	}
-
-	public void setActiveFlag(boolean activeFlag) {
-		this.activeFlag = activeFlag;
-	}
-
-	public HashMap<Integer, Monitor> getMonitorList() {
-		return monitorList;
-	}
-
-	public void setMonitorList(HashMap<Integer, Monitor> monitorList) {
-		this.monitorList = monitorList;
 	}
 
 	public HashMap<Integer, PeerData> getPeerDataList() {
@@ -127,14 +116,6 @@ public class Tracker extends Thread {
 		this.probationPeerList = probationPeerList;
 	}
 
-	public HashMap<Integer, Monitor> getProbationMonitorList() {
-		return probationMonitorList;
-	}
-
-	public void setProbationMonitorList(HashMap<Integer, Monitor> probationMonitorList) {
-		this.probationMonitorList = probationMonitorList;
-	}
-
 	public ArrayList<String> getDeletedFiles() {
 		return deletedFiles;
 	}
@@ -143,12 +124,5 @@ public class Tracker extends Thread {
 		this.deletedFiles = deletedFiles;
 	}
 
-	public MulticastServer getBackupConnection() {
-		return backupConnection;
-	}
-
-	public void setBackupConnection(MulticastServer backupConnection) {
-		this.backupConnection = backupConnection;
-	}
 
 }
