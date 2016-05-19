@@ -57,7 +57,7 @@ public class RestoreProtocol extends Thread {
 
 		ArrayList<FileID> fileSentVersions = peer.getFilesSent().get(filePath);
 		if (fileSentVersions == null) {
-			System.out.println("File has not yet been backed up");
+			System.out.println("FilePath: " + filePath + " The file has not yet been backed up.");
 			return;
 		}
 		FileID file = fileSentVersions.get(fileSentVersions.size() - 1);
