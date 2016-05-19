@@ -364,6 +364,16 @@ public class Peer implements Invocation {
 		return "reclaim sent";
 	}
 
+	// TODO 2 instances when restart can be called
+	// actually just one, after we ask for PD ( PeerData ) from tracker we will check
+	// if they match if not give prioraty to local peerdata
+	// and sent it to tracker and start the restart process
+	//if no local PD we use the PD tracker gave us
+	public String restart() throws RemoteException {
+		// TODO Auto-generated method stub
+		return "forced restart";
+	}
+
 	public ArrayList<ChunkID> getStored() {
 		return data.getStored();
 	}
