@@ -141,7 +141,7 @@ public class Peer implements Invocation {
 		// Validate args and associate them with the variables
 
 		if (!validArgs(args)) {
-			return;
+			System.exit(0);
 		}
 
 		// OPEN TCP TRACKER SOCKET
@@ -182,8 +182,10 @@ public class Peer implements Invocation {
 		}
 
 		try {
-			serverAddress = InetAddress.getByName("localhost"); // to be replaced with args[7]
-			remoteSocket = new Socket(serverAddress, 4444);     // to be replaced with args[8]
+			serverAddress = InetAddress.getByName(args[7]);
+			remoteSocket = new Socket(serverAddress, Integer.parseInt(args[8])); 
+			//serverAddress = InetAddress.getByName("localhost"); // to be replaced with args[7]
+			//remoteSocket = new Socket(serverAddress, 4444);     // to be replaced with args[8]
 			
 			instance.in = new BufferedReader(new InputStreamReader(
 					remoteSocket.getInputStream()));
@@ -305,19 +307,19 @@ public class Peer implements Invocation {
 	 */
 	public static boolean validArgs(String[] args) {
 
-		if (args.length != 7) {
+		if (args.length != 9) {
 			System.out.println("Incorrect number of args." + " You gave: "
 					+ args.length);
 			System.out
-					.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port>");
+					.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port> <Tracker_host> <Tracker_port>");
 			return false;
 		}
 
 		if (!Extra.isNumeric(args[0]) || !Extra.isNumeric(args[2])
-				|| !Extra.isNumeric(args[4]) || !Extra.isNumeric(args[6])) {
+				|| !Extra.isNumeric(args[4]) || !Extra.isNumeric(args[6]) || !Extra.isNumeric(args[8])) {
 			System.out.println("Server ID and ports must be valid numbers");
 			System.out
-					.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port>");
+					.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port> <Tracker_host> <Tracker_port>");
 			return false;
 		}
 
@@ -346,6 +348,8 @@ public class Peer implements Invocation {
 
 	public static void closeConnectionToTracker() {
 		try {
+			instance.out.close();
+			instance.in.close();
 			remoteSocket.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

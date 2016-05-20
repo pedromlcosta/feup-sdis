@@ -7,6 +7,7 @@ import java.net.Socket;
 import java.util.HashMap;
 
 import data.PeerData;
+import extra.Extra;
 import monitor.Monitor;
 
 public class Tracker extends Thread {
@@ -33,14 +34,19 @@ public class Tracker extends Thread {
 
 	public static void main(String[] args) throws IOException{
 		// Check if args are all ok and well written
-		// Check if args are all ok and well written
 		if (args.length != 1) {
-			System.out.println("Proper Usage is: java Server <srvc_port>");
+			System.out.println("Proper argument usage is: <srvc_port>");
 			System.exit(0);
 		} else {
+			
+			if(!Extra.isNumeric(args[0])){
+				System.out.println("<srvc_port> must be an integer.");
+				System.exit(0);
+			}
+			
 			// Call the server
 			try{
-				instance = new Tracker();
+				instance = new Tracker(Integer.parseInt(args[0]));
 			}catch (IOException e){
 				return;
 			}
@@ -53,8 +59,8 @@ public class Tracker extends Thread {
 		
 	}
 	
-	public Tracker() throws IOException {
-		serverSocket = new ServerSocket(4444); // PORT 444 JUST TO TEST
+	public Tracker(int port) throws IOException {
+		serverSocket = new ServerSocket(port); // PORT 444 JUST TO TEST
 	}
 
 	/*
