@@ -21,13 +21,13 @@ public class TestApp {
 		String filePath;
 
 		// Check if arguments are valid
-		boolean valid = validArgs(args);
-
-		if (valid) {
+		//boolean valid = validArgs(args);
+		
+		if (true) {
 			try {
 				remoteName = args[0];
 				subProtocol = args[1].toLowerCase();
-				filePath = args[2];
+				//filePath = args[2];
 
 
 				Registry registry = LocateRegistry.getRegistry("localhost");
@@ -36,6 +36,7 @@ public class TestApp {
 				String response = null;
 
 				switch (subProtocol) {
+				/*
 				case "backup":
 
 					response = stub.backup(filePath, Integer.parseInt(args[3]));
@@ -49,9 +50,13 @@ public class TestApp {
 				case "reclaim":
 					response = stub.reclaim(Integer.parseInt(args[2]));
 					break;
+				*/
+				case "testtcp":
+					response = stub.testTCP();
+					break;
 				}
 
-				System.out.println("Response: " + response);
+				//System.out.println("Response: " + response);
 
 			} catch (Exception e) {
 				System.err.println("Client exception: " + e.toString());

@@ -53,4 +53,6 @@ public interface Invocation extends Remote {
 	String reclaim(int reclaimSpace) throws RemoteException;
 
 	String restart() throws RemoteException;
+
+	String testTCP() throws RemoteException;
 }

@@ -1,10 +1,14 @@
 package service;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.NotSerializableException;
+import java.io.PrintWriter;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -61,6 +65,7 @@ public class Peer implements Invocation {
 	private String folderPath;
 	// connection to monitor need port since addr will be localhost
 	private UDPConnection monitorConnection;
+	
 	// Monitor Stuff
 	private Timer timer = new Timer();
 	private boolean monitorAlive = false;
@@ -69,6 +74,14 @@ public class Peer implements Invocation {
 	private final int LIMIT_OF_ATTEMPTS = 3;
 	private int nTries;
 	private Set<FileID> filesDeleted;
+	
+	//Tracker connection data fields
+	static int clientPort = 1111;  //Global, the client will use its 1111 port to connect to the socket
+	static int serverPort;
+	static InetAddress serverAddress;
+
+	static Socket remoteSocket;	
+	static String message = "Default command message";
 
 	/**
 	 * Default Peer constructor. Initializes receiver servers and PeerData
@@ -81,6 +94,7 @@ public class Peer implements Invocation {
 		restoreChannel = new MDRReceiver();
 		data = new PeerData();
 		filesDeleted = new HashSet<FileID>();
+		
 	}
 
 	/**
@@ -128,6 +142,16 @@ public class Peer implements Invocation {
 			return;
 		}
 
+		// OPEN TCP TRACKER SOCKET
+		
+		try {
+			serverAddress = InetAddress.getByName("localhost");
+			remoteSocket = new Socket(serverAddress, 4444);
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			e2.printStackTrace();
+		}
+		
 		try {
 
 			rmiName = args[0];
@@ -244,7 +268,7 @@ public class Peer implements Invocation {
 			} else {
 				if (nTries >= LIMIT_OF_ATTEMPTS) {
 					monitorResurrectedAttempted = true;
-					attemptMontiorResurrection();
+					attemptMonitorResurrection();
 				}
 				nTries++;
 			}
@@ -254,7 +278,7 @@ public class Peer implements Invocation {
 		timer.schedule(new monitorBeepTask(), randomGenerator.nextInt(2) * 1000);
 	}
 
-	private void attemptMontiorResurrection() {
+	private void attemptMonitorResurrection() {
 	}
 
 	/**
@@ -282,6 +306,34 @@ public class Peer implements Invocation {
 
 	}
 
+	public static int sendMessageToTrackerTest(String message) throws IOException {
+
+		BufferedReader in = new BufferedReader(new InputStreamReader(remoteSocket.getInputStream()));
+		PrintWriter out = new PrintWriter(remoteSocket.getOutputStream(), true);
+		
+		// SEND CLIENT REQUEST
+		out.println(message);
+		
+		// RECEIVE SERVER REPLY
+		String receivedString = in.readLine();
+		System.out.println("Client received: " + receivedString);
+
+		
+		in.close();
+		out.close();
+		
+		return 1;
+	}
+	
+	public static void closeConnectionToTracker(){
+		try {
+			remoteSocket.close();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	// Methods
 	/**
 	 * registers RMI with the remote name
@@ -363,6 +415,20 @@ public class Peer implements Invocation {
 		reclaim.start();
 		System.out.println("reclaim called");
 		return "reclaim sent";
+	}
+	
+
+	@Override
+	public String testTCP() throws RemoteException {
+	
+		try {
+			sendMessageToTrackerTest("test message");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return "";
 	}
 
 	// TODO 2 instances when restart can be called
@@ -669,5 +735,6 @@ public class Peer implements Invocation {
 	public int getLIMIT_OF_ATTEMPTS() {
 		return LIMIT_OF_ATTEMPTS;
 	}
+
 
 }

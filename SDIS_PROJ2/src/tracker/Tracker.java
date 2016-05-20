@@ -54,22 +54,31 @@ public class Tracker extends Thread {
 	}
 	
 	public Tracker() throws IOException {
-		serverSocket = new ServerSocket(444); // PORT 444 JUST TO TEST
+		serverSocket = new ServerSocket(4444); // PORT 444 JUST TO TEST
 	}
 
+	/*
+	 * Starts accepting connections
+	 */
 	public void serverStart(){
-		
 		
 		while(!serverSocket.isClosed()){
 			
 			Socket remoteSocket;
 			try {
 				remoteSocket = serverSocket.accept();
+				System.out.println("Accepted new connection. Waiting for messages.");
 			} catch (IOException e) {
 				continue;
 			}
 			
-			Thread serverListener = new ServerListener(remoteSocket);
+			Thread serverListener;
+			try {
+				serverListener = new ServerListener(remoteSocket);
+			} catch (IOException e) {
+				continue;
+			}
+			
 			serverListener.start();
 			
 		}
