@@ -6,6 +6,8 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
 
+import javax.net.ssl.SSLServerSocketFactory;
+
 import data.PeerData;
 import extra.Extra;
 import monitor.Monitor;
@@ -26,7 +28,7 @@ public class Tracker extends Thread {
 	}
 
 	boolean serverEnd = false;
-	ServerSocket serverSocket;
+	ServerSocket sslServerSocket;
 	// Record of monitors
 	private HashMap<Integer, Monitor> monitorList;
 	// Record of Peers
@@ -60,7 +62,9 @@ public class Tracker extends Thread {
 	}
 	
 	public Tracker(int port) throws IOException {
-		serverSocket = new ServerSocket(port); // PORT 444 JUST TO TEST
+		
+		SSLServerSocketFactory serverSocketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+		sslServerSocket =  serverSocketFactory.createServerSocket(port); // PORT 444 JUST TO TEST
 	}
 
 	/*
@@ -68,11 +72,11 @@ public class Tracker extends Thread {
 	 */
 	public void serverStart(){
 		
-		while(!serverSocket.isClosed()){
+		while(!sslServerSocket.isClosed()){
 			
 			Socket remoteSocket;
 			try {
-				remoteSocket = serverSocket.accept();
+				remoteSocket = sslServerSocket.accept();
 				System.out.println("Accepted new connection. Waiting for messages.");
 			} catch (IOException e) {
 				continue;

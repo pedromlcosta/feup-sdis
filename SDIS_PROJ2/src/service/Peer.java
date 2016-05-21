@@ -22,6 +22,9 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 import channels.MCReceiver;
 import channels.MDBReceiver;
 import channels.MDRReceiver;
@@ -81,7 +84,7 @@ public class Peer implements Invocation {
 	static int serverPort;
 	static InetAddress serverAddress;
 
-	static Socket remoteSocket;
+	static SSLSocket remoteSocket;
 	static String message = "Default command message";
 	BufferedReader in;
 	PrintWriter out;
@@ -183,7 +186,9 @@ public class Peer implements Invocation {
 
 		try {
 			serverAddress = InetAddress.getByName(args[7]);
-			remoteSocket = new Socket(serverAddress, Integer.parseInt(args[8])); 
+			int port = Integer.parseInt(args[8]);
+			SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+			remoteSocket = (SSLSocket) socketFactory.createSocket(serverAddress, port); 
 			//serverAddress = InetAddress.getByName("localhost"); // to be replaced with args[7]
 			//remoteSocket = new Socket(serverAddress, 4444);     // to be replaced with args[8]
 			
