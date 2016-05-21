@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.HashMap;
 import channels.MCReceiver;
+import data.FileID;
 import extra.Extra;
 import extra.FileHandler;
 import messages.Message;
@@ -38,14 +39,16 @@ public class WakeProtocol extends Thread {
 		if (!dir.isDirectory())
 			throw new IllegalStateException("Not a directoray");
 		for (File file : dir.listFiles()) {
+			System.out.println(file.getName());
 			String sufix = "_\\d+";
 			String fileName = file.getName();
 			// Example: sadsadasdasdasdasda_10 it will
 			// return sadsadasdasdasdasda
 			String[] fileIDs = fileName.split(sufix);
 			if (fileIDs.length > 0) {
+				System.out.println("SENDING MSGS");
 				String fileID = fileIDs[0];
-				if (chunkStored.get(fileID) != null) {
+				if (chunkStored.get(fileID) == null) {
 					chunkStored.put(fileID, true);
 					String args[] = new String[3];
 					args[0] = Peer.getCurrentVersion();
@@ -64,6 +67,7 @@ public class WakeProtocol extends Thread {
 
 	public void sendWakeUp(String args[]) {
 		// will send the msg to the network
+		System.out.println("SENDING MSG");
 		Message msg = new WakeMsg();
 		msg.createMessage(null, args);
 		System.out.println(msg.getMessageToSend());
@@ -85,8 +89,12 @@ public class WakeProtocol extends Thread {
 	}
 
 	public void receiveWakeUp(Message msg) {
-		 
-		String fileID =msg.getFileId();
+		System.out.println("RECEIVED A WAKEUP ");
+		String fileID = msg.getFileId();
+		if (peer.getFilesDeleted().size() == 0)
+			System.out.println("Deleted is 0");
+		for (FileID id : peer.getFilesDeleted())
+			System.out.println("FILE WITH ID : " + id.getID());
 		// defeats the purpose of being a Set
 		if (peer.getFilesDeleted().contains(fileID)) {
 			// send a delete

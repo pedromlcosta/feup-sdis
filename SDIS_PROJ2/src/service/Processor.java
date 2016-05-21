@@ -463,6 +463,7 @@ public class Processor extends Thread {
 	 * @param wakeupMSG
 	 */
 	public void wakeupHandler() {
+		System.out.println("receved Wake up calling ");
 		(new WakeProtocol()).receiveWakeUp(msg);
 	}
 
