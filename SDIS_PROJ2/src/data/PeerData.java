@@ -257,4 +257,15 @@ public class PeerData implements Serializable {
 		this.filesDeleted = filesDeleted;
 	}
 
+	public void resetChunkData() {
+		Set<ChunkID> serversWhoAnswered = serverAnsweredCommand.keySet();
+		for (ChunkID id : stored)
+			id.setActualRepDegree(0);
+
+		for (ChunkID id : serversWhoAnswered) {
+			ArrayList<Integer> servers = serverAnsweredCommand.get(id);
+			servers.clear();
+		}
+	}
+
 }

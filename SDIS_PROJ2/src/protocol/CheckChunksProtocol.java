@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.Set;
 
 import channels.MCReceiver;
+import chunk.ChunkID;
 import data.FileID;
 import extra.Extra;
 import extra.FileHandler;
@@ -44,6 +45,9 @@ public class CheckChunksProtocol extends Thread {
 	public void sendCheckChunks() {
 		HashMap<String, ArrayList<FileID>> filesSent = peer.getFilesSent();
 		Set<String> keySet = filesSent.keySet();
+		HashMap<ChunkID, ArrayList<Integer>> chunksStored = peer.getAnsweredCommand();
+		Set<ChunkID> chunkIDs = chunksStored.keySet();
+		peer.resetChunkData();
 		for (String key : keySet) {
 			ArrayList<FileID> file = filesSent.get(key);
 			int size = file.size();
@@ -61,6 +65,20 @@ public class CheckChunksProtocol extends Thread {
 
 			}
 		}
+
+		for (ChunkID c : chunkIDs) {
+			c.getFileID();
+			Message msg = new CheckChunkMsg();
+			String args[] = new String[3];
+			args[0] = getVersion();
+			args[1] = peer.getServerID().toString();
+			args[2] = c.getFileID();
+			new Thread(() -> {
+				sendCheckChunksMsg(msg, args);
+			}).start();
+
+		}
+
 	}
 
 	// CHECKCHUNK <Version> <SenderId> <FileId><CRLF><CRLF>

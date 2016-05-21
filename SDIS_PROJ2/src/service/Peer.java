@@ -757,4 +757,13 @@ public class Peer implements Invocation {
 		// send message
 		// wait response?
 	}
+
+	/**
+	 * responsible for making the actualRepDegree = 0 and take the servers who
+	 * answered
+	 */
+	public void resetChunkData() {
+		data.resetChunkData();
+
+	}
 }
