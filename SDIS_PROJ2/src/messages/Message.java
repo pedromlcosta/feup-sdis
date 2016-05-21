@@ -23,7 +23,7 @@ public class Message {
 	static final String EMPTY_STRING = "";
 
 	public static enum MESSAGE_TYPE {
-		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED, WAKEUP, TRACKER, MONITOR,CHECK_CHUNK_NUMBER
+		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED, WAKEUP, TRACKER, MONITOR, CHECK_CHUNK_NUMBER
 	}
 
 	public static final String EOL = "\r\n";
@@ -364,6 +364,12 @@ public class Message {
 
 	public static String getCheckChunkNumber() {
 		return CHECK_CHUNK_NUMBER;
+	}
+
+	@Override
+	public String toString() {
+		return "Message [messageToSend=" + messageToSend + ", type=" + type + ", version=" + version + ", senderID=" + senderID + ", fileId=" + fileId + ", chunkNo=" + chunkNo + ", replicationDeg="
+				+ replicationDeg + "]";
 	}
 
 }

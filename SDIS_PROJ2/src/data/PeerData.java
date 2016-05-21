@@ -113,6 +113,7 @@ public class PeerData implements Serializable {
 		if (obj instanceof PeerData) {
 			PeerData data = (PeerData) obj;
 			System.out.println("Finished loading PeerData");
+			System.out.println("DELTED FILES: " + data.getFilesDeleted().toString());
 			return data;
 		} else {
 			throw new ClassNotFoundException("Object read from PeerData.dat isn't a valid PeerData object.");
@@ -254,6 +255,17 @@ public class PeerData implements Serializable {
 
 	public void setFilesDeleted(Set<FileID> filesDeleted) {
 		this.filesDeleted = filesDeleted;
+	}
+
+	public void resetChunkData() {
+		Set<ChunkID> serversWhoAnswered = serverAnsweredCommand.keySet();
+		for (ChunkID id : stored)
+			id.setActualRepDegree(0);
+
+		for (ChunkID id : serversWhoAnswered) {
+			ArrayList<Integer> servers = serverAnsweredCommand.get(id);
+			servers.clear();
+		}
 	}
 
 }

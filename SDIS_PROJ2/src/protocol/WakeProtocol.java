@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.HashMap;
+import java.util.Random;
+
 import channels.MCReceiver;
 import data.FileID;
 import extra.Extra;
@@ -13,6 +15,8 @@ import messages.WakeMsg;
 import service.Peer;
 
 public class WakeProtocol extends Thread {
+	private static final int N_MESSAGES_SENT = 0;
+	private static final int SLEEP_TIME = 0;
 	// needs Access to Peer
 	// will go through Peer Data and send the WakeUpMessages
 	private Peer peer = Peer.getInstance();
@@ -39,14 +43,12 @@ public class WakeProtocol extends Thread {
 		if (!dir.isDirectory())
 			throw new IllegalStateException("Not a directoray");
 		for (File file : dir.listFiles()) {
-			System.out.println(file.getName());
 			String sufix = "_\\d+";
 			String fileName = file.getName();
 			// Example: sadsadasdasdasdasda_10 it will
 			// return sadsadasdasdasdasda
 			String[] fileIDs = fileName.split(sufix);
 			if (fileIDs.length > 0) {
-				System.out.println("SENDING MSGS");
 				String fileID = fileIDs[0];
 				if (chunkStored.get(fileID) == null) {
 					chunkStored.put(fileID, true);
@@ -67,13 +69,30 @@ public class WakeProtocol extends Thread {
 
 	public void sendWakeUp(String args[]) {
 		// will send the msg to the network
-		System.out.println("SENDING MSG");
 		Message msg = new WakeMsg();
 		msg.createMessage(null, args);
-		System.out.println(msg.getMessageToSend());
 		MCReceiver control = peer.getControlChannel();
 		DatagramPacket msgPacket = control.createDatagramPacket(msg.getMessageBytes()); //
+
+		for (int i = 0; i < N_MESSAGES_SENT; i++) {
+			int delay = new Random().nextInt(SLEEP_TIME);
+			try {
+				Thread.sleep(delay);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
 		control.writePacket(msgPacket);
+	}
+
+	public void receiveWakeUp(Message msg) {
+
+		FileID fileID = new FileID(msg.getFileId(), true);
+
+		for (FileID id : peer.getFilesDeleted()) {
+			if (id.equals(fileID))
+			(new DeleteProtocol()).sendDeleteMsg(fileID.getID());
+		}
 	}
 
 	public String getStoredChunksFolderPath() {
@@ -86,20 +105,5 @@ public class WakeProtocol extends Thread {
 
 	public String getVersion() {
 		return version;
-	}
-
-	public void receiveWakeUp(Message msg) {
-		System.out.println("RECEIVED A WAKEUP ");
-		String fileID = msg.getFileId();
-		if (peer.getFilesDeleted().size() == 0)
-			System.out.println("Deleted is 0");
-		for (FileID id : peer.getFilesDeleted())
-			System.out.println("FILE WITH ID : " + id.getID());
-		// defeats the purpose of being a Set
-		if (peer.getFilesDeleted().contains(fileID)) {
-			// send a delete
-			(new DeleteProtocol()).sendDeleteMsg(fileID);
-
-		}
 	}
 }

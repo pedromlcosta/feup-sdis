@@ -37,6 +37,7 @@ import extra.Extra;
 import extra.FileHandler;
 import monitor.Monitor;
 import protocol.BackupProtocol;
+import protocol.CheckChunksProtocol;
 import protocol.DeleteProtocol;
 import protocol.ReclaimProtocol;
 import protocol.RestoreProtocol;
@@ -84,7 +85,7 @@ public class Peer implements Invocation {
 									// to connect to the socket
 	static int serverPort;
 	static InetAddress serverAddress;
-	
+
 	static SSLSocket remoteSocket;
 	static String message = "Default command message";
 	BufferedReader in;
@@ -186,29 +187,28 @@ public class Peer implements Invocation {
 
 		// Socket initialization
 		try {
-			
+
 			System.setProperty("javax.net.ssl.keyStore", "client.keys");
 			System.setProperty("javax.net.ssl.keyStorePassword", "123456");
 			System.setProperty("javax.net.ssl.trustStore", "truststore");
 			System.setProperty("javax.net.ssl.trustStorePassword", "123456");
-			if(debug)
+			if (debug)
 				System.setProperty("javax.net.debug", "all");
-			
+
 			serverAddress = InetAddress.getByName(args[7]);
 
 			int port = Integer.parseInt(args[8]);
 			SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-			remoteSocket = (SSLSocket) socketFactory.createSocket(serverAddress, port); 
-			//serverAddress = InetAddress.getByName("localhost"); // to be replaced with args[7]
-			//remoteSocket = new Socket(serverAddress, 4444);     // to be replaced with args[8]
-			
-			instance.in = new BufferedReader(new InputStreamReader(
-					remoteSocket.getInputStream()));
-			instance.out = new PrintWriter(remoteSocket.getOutputStream(),
-					true);
-			
-			//remoteSocket.startHandshake();
-			
+			remoteSocket = (SSLSocket) socketFactory.createSocket(serverAddress, port);
+			// serverAddress = InetAddress.getByName("localhost"); // to be
+			// replaced with args[7]
+			// remoteSocket = new Socket(serverAddress, 4444); // to be replaced
+			// with args[8]
+
+			instance.in = new BufferedReader(new InputStreamReader(remoteSocket.getInputStream()));
+			instance.out = new PrintWriter(remoteSocket.getOutputStream(), true);
+
+			// remoteSocket.startHandshake();
 
 		} catch (IOException e2) {
 			// TODO Auto-generated catch block
@@ -340,16 +340,16 @@ public class Peer implements Invocation {
 
 			// SEND CLIENT REQUEST
 			System.out.println("Sending message:" + message);
-			try{
+			try {
 				instance.out.println(message);
-			}catch (Exception e){
+			} catch (Exception e) {
 				System.out.println("Error writing to out stream.");
 			}
 			System.out.println("Message sent");
 
 			// RECEIVE SERVER REPLY
-			//String receivedString = instance.in.readLine();
-			//System.out.println("Client received: " + receivedString);
+			// String receivedString = instance.in.readLine();
+			// System.out.println("Client received: " + receivedString);
 
 			return true;
 		}
@@ -465,12 +465,18 @@ public class Peer implements Invocation {
 	// if they match if not give prioraty to local peerdata
 	// and sent it to tracker and start the restart process
 	// if no local PD we use the PD tracker gave us
-	public String restart() throws RemoteException {
+	public String wakeUp() throws RemoteException {
 		System.out.println("Restart Called");
-		Thread reclaim = new WakeProtocol();
-		reclaim.start();
-
+		Thread wakeup = new WakeProtocol();
+		wakeup.start();
 		return "forced restart";
+	}
+
+	public String checkChunks() throws RemoteException {
+		System.out.println("Check Chunks Called");
+		Thread checkChunks = new CheckChunksProtocol();
+		checkChunks.start();
+		return "check Chunks";
 	}
 
 	public ArrayList<ChunkID> getStored() {
@@ -767,11 +773,25 @@ public class Peer implements Invocation {
 		return LIMIT_OF_ATTEMPTS;
 	}
 
+	public void restartProtocol() throws RemoteException {
+		wakeUp();
+		checkChunks();
+	}
+
 	public void sendData() {
 
 		// check for conection with tracker
 		// prepare message
 		// send message
 		// wait response?
+	}
+
+	/**
+	 * responsible for making the actualRepDegree = 0 and take the servers who
+	 * answered
+	 */
+	public void resetChunkData() {
+		data.resetChunkData();
+
 	}
 }
