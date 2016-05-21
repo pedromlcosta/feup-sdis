@@ -43,14 +43,12 @@ public class WakeProtocol extends Thread {
 		if (!dir.isDirectory())
 			throw new IllegalStateException("Not a directoray");
 		for (File file : dir.listFiles()) {
-			System.out.println(file.getName());
 			String sufix = "_\\d+";
 			String fileName = file.getName();
 			// Example: sadsadasdasdasdasda_10 it will
 			// return sadsadasdasdasdasda
 			String[] fileIDs = fileName.split(sufix);
 			if (fileIDs.length > 0) {
-				System.out.println("SENDING MSGS");
 				String fileID = fileIDs[0];
 				if (chunkStored.get(fileID) == null) {
 					chunkStored.put(fileID, true);
@@ -71,10 +69,8 @@ public class WakeProtocol extends Thread {
 
 	public void sendWakeUp(String args[]) {
 		// will send the msg to the network
-		System.out.println("SENDING MSG");
 		Message msg = new WakeMsg();
 		msg.createMessage(null, args);
-		System.out.println(msg.getMessageToSend());
 		MCReceiver control = peer.getControlChannel();
 		DatagramPacket msgPacket = control.createDatagramPacket(msg.getMessageBytes()); //
 
@@ -90,22 +86,12 @@ public class WakeProtocol extends Thread {
 	}
 
 	public void receiveWakeUp(Message msg) {
-		System.out.println("RECEIVED A WAKEUP ");
 
 		FileID fileID = new FileID(msg.getFileId(), true);
 
 		for (FileID id : peer.getFilesDeleted()) {
-			System.out.println("FILE WITH ID : " + id.getID());
 			if (id.equals(fileID))
-				System.out.println("ID OF DELETED FILE");
 			(new DeleteProtocol()).sendDeleteMsg(fileID.getID());
-		}
-		// defeats the purpose of being a Set
-		if (peer.getFilesDeleted().contains(fileID)) {
-			// send a delete
-			System.out.println("sending delete");
-			(new DeleteProtocol()).sendDeleteMsg(fileID.getID());
-
 		}
 	}
 

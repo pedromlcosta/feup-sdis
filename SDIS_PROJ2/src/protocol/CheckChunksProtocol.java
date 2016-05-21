@@ -83,7 +83,6 @@ public class CheckChunksProtocol extends Thread {
 
 	// CHECKCHUNK <Version> <SenderId> <FileId><CRLF><CRLF>
 	public void receiveCheckChunks(Message CheckChunksMsg) {
-		System.out.println("Received a CHECKCHUNK");
 		Message msg = new StoredMsg();
 		String fileID = CheckChunksMsg.getFileId();
 
@@ -91,14 +90,11 @@ public class CheckChunksProtocol extends Thread {
 		if (!dir.isDirectory())
 			throw new IllegalStateException("Not a dir");
 		String prefix = fileID + "_";
-		System.out.println("Prefix: " + prefix);
 		for (File file : dir.listFiles()) {
 
 			String fileName = file.getName();
-			System.out.println("FIle: " + fileName);
 			if (fileName.startsWith(prefix)) {
 				// STORED <Version> <SenderId> <FileId> <ChunkNo> <CRLF><CRLF>
-				System.out.println("Found Chunk");
 				// if so send msg
 				String args[] = new String[4];
 				// Version
