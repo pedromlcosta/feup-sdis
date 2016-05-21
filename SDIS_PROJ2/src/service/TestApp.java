@@ -28,7 +28,9 @@ public class TestApp {
 			try {
 				remoteName = args[0];
 				subProtocol = args[1].toLowerCase();
-				filePath = args[2];
+				filePath = null;
+				if (args.length > 2)
+					filePath = args[2];
 
 				Registry registry = LocateRegistry.getRegistry("localhost");
 				Invocation stub = (Invocation) registry.lookup(remoteName);
@@ -53,9 +55,16 @@ public class TestApp {
 					System.out.println("wakeup");
 					response = stub.restart();
 					break;
+				case "checkchunks":
+					System.out.println("checkChunks");
+					response = stub.checkChunks();
+					break;
 
 				case "testtcp":
 					response = stub.testTCP();
+					break;
+				default:
+					System.out.println("Operation not supported");
 					break;
 				}
 
@@ -63,7 +72,7 @@ public class TestApp {
 
 			} catch (Exception e) {
 				System.err.println("Client exception: " + e.toString());
-				// e.printStackTrace();
+				e.printStackTrace();
 				System.out.println("No host with that remoteName exists");
 			}
 		} else {

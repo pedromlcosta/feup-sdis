@@ -20,7 +20,6 @@ public class CheckChunkMsg extends Message {
 		setVersion(messageFields[1]);
 		setSenderID(messageFields[2]);
 		setFileId(messageFields[3]);
-		setChunkNo(Integer.parseInt(messageFields[4]));
 		setBody(null);
 	}
 

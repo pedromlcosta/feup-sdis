@@ -34,6 +34,7 @@ import extra.Extra;
 import extra.FileHandler;
 import monitor.Monitor;
 import protocol.BackupProtocol;
+import protocol.CheckChunksProtocol;
 import protocol.DeleteProtocol;
 import protocol.ReclaimProtocol;
 import protocol.RestoreProtocol;
@@ -443,10 +444,16 @@ public class Peer implements Invocation {
 	// if no local PD we use the PD tracker gave us
 	public String restart() throws RemoteException {
 		System.out.println("Restart Called");
-		Thread reclaim = new WakeProtocol();
-		reclaim.start();
-
+		Thread wakeup = new WakeProtocol();
+		wakeup.start();
 		return "forced restart";
+	}
+
+	public String checkChunks() throws RemoteException {
+		System.out.println("Check Chunks Called");
+		Thread checkChunks = new CheckChunksProtocol();
+		checkChunks.start();
+		return "check Chunks";
 	}
 
 	public ArrayList<ChunkID> getStored() {

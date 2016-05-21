@@ -54,5 +54,7 @@ public interface Invocation extends Remote {
 
 	String restart() throws RemoteException;
 
+	String checkChunks() throws RemoteException;
+
 	String testTCP() throws RemoteException;
 }

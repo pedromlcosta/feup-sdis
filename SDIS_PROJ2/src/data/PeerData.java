@@ -113,6 +113,7 @@ public class PeerData implements Serializable {
 		if (obj instanceof PeerData) {
 			PeerData data = (PeerData) obj;
 			System.out.println("Finished loading PeerData");
+			System.out.println("DELTED FILES: " + data.getFilesDeleted().toString());
 			return data;
 		} else {
 			throw new ClassNotFoundException("Object read from PeerData.dat isn't a valid PeerData object.");

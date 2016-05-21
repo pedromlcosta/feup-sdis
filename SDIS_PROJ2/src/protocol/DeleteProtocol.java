@@ -36,7 +36,7 @@ public class DeleteProtocol extends Thread {
 	/**
 	 * Runs the Delete Protocol
 	 */
-	//TODO check if changes no broke anything
+	// TODO check if changes no broke anything
 	public void run() {
 
 		ArrayList<FileID> fileSentVersions = peer.getFilesSent().get(filePath);
@@ -62,9 +62,10 @@ public class DeleteProtocol extends Thread {
 
 		// Save alterations to peer data
 		try {
-			peer.saveData();
 			peer.getFilesDeleted().add(file);
-			//unit of test, see if shall add a general function used whenever saving new Data
+			peer.saveData();
+			// unit of test, see if shall add a general function used whenever
+			// saving new Data
 			peer.sendData();
 		} catch (FileNotFoundException e) {
 			System.out.println("File to save Data not found");

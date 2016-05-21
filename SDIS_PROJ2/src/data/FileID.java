@@ -28,6 +28,10 @@ public class FileID implements Serializable {
 
 	}
 
+	public FileID(String fileID, boolean other) {
+		ID = fileID;
+	}
+
 	/**
 	 * Constructor for FileID
 	 * 

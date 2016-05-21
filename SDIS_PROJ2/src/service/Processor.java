@@ -149,7 +149,7 @@ public class Processor extends Thread {
 				messageFields = null;
 				wakeupHandler();
 				break;
-			case "":
+			case "CHECKCHUNK":
 				msg = new CheckChunkMsg(messageFields, messageBody);
 				messageFields = null;
 				checkChunkHandler();
