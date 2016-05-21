@@ -22,6 +22,9 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
+
 import channels.MCReceiver;
 import channels.MDBReceiver;
 import channels.MDRReceiver;
@@ -77,12 +80,13 @@ public class Peer implements Invocation {
 	private int nTries;
 
 	// Tracker connection data fields
+	static boolean debug = false;
 	static int clientPort = 1111; // Global, the client will use its 1111 port
 									// to connect to the socket
 	static int serverPort;
 	static InetAddress serverAddress;
-
-	static Socket remoteSocket;
+	
+	static SSLSocket remoteSocket;
 	static String message = "Default command message";
 	BufferedReader in;
 	PrintWriter out;
@@ -181,16 +185,31 @@ public class Peer implements Invocation {
 			return;
 		}
 
+		// Socket initialization
 		try {
+			
+			System.setProperty("javax.net.ssl.keyStore", "client.keys");
+			System.setProperty("javax.net.ssl.keyStorePassword", "123456");
+			System.setProperty("javax.net.ssl.trustStore", "truststore");
+			System.setProperty("javax.net.ssl.trustStorePassword", "123456");
+			if(debug)
+				System.setProperty("javax.net.debug", "all");
+			
 			serverAddress = InetAddress.getByName(args[7]);
-			remoteSocket = new Socket(serverAddress, Integer.parseInt(args[8]));
-			// serverAddress = InetAddress.getByName("localhost"); // to be
-			// replaced with args[7]
-			// remoteSocket = new Socket(serverAddress, 4444); // to be replaced
-			// with args[8]
 
-			instance.in = new BufferedReader(new InputStreamReader(remoteSocket.getInputStream()));
-			instance.out = new PrintWriter(remoteSocket.getOutputStream(), true);
+			int port = Integer.parseInt(args[8]);
+			SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+			remoteSocket = (SSLSocket) socketFactory.createSocket(serverAddress, port); 
+			//serverAddress = InetAddress.getByName("localhost"); // to be replaced with args[7]
+			//remoteSocket = new Socket(serverAddress, 4444);     // to be replaced with args[8]
+			
+			instance.in = new BufferedReader(new InputStreamReader(
+					remoteSocket.getInputStream()));
+			instance.out = new PrintWriter(remoteSocket.getOutputStream(),
+					true);
+			
+			//remoteSocket.startHandshake();
+			
 
 		} catch (IOException e2) {
 			// TODO Auto-generated catch block
@@ -322,11 +341,16 @@ public class Peer implements Invocation {
 
 			// SEND CLIENT REQUEST
 			System.out.println("Sending message:" + message);
-			instance.out.println(message);
+			try{
+				instance.out.println(message);
+			}catch (Exception e){
+				System.out.println("Error writing to out stream.");
+			}
+			System.out.println("Message sent");
 
 			// RECEIVE SERVER REPLY
-			String receivedString = instance.in.readLine();
-			System.out.println("Client received: " + receivedString);
+			//String receivedString = instance.in.readLine();
+			//System.out.println("Client received: " + receivedString);
 
 			return true;
 		}
