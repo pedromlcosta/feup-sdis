@@ -12,6 +12,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import chunk.Chunk;
 import chunk.ChunkID;
@@ -32,7 +34,7 @@ public class PeerData implements Serializable {
 	private final static long DISK_SIZE = Chunk.getChunkSize() * 100000;
 	private static String dataPath = "";
 	private static final String fileName = "PeerData.dat";
-
+	private Set<FileID> filesDeleted;
 	// CONSTRUCTOR
 
 	/**
@@ -44,6 +46,7 @@ public class PeerData implements Serializable {
 		filesSent = new HashMap<String, ArrayList<FileID>>();
 		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
 		deleted = new HashMap<ChunkID, Integer>();
+		filesDeleted = new HashSet<FileID>();
 	}
 
 	// SERIAL FUNCTIONS
@@ -244,4 +247,13 @@ public class PeerData implements Serializable {
 	public void setRemoveLookup(ArrayList<ChunkID> removeLookup) {
 		this.removeLookup = removeLookup;
 	}
+
+	public Set<FileID> getFilesDeleted() {
+		return filesDeleted;
+	}
+
+	public void setFilesDeleted(Set<FileID> filesDeleted) {
+		this.filesDeleted = filesDeleted;
+	}
+
 }

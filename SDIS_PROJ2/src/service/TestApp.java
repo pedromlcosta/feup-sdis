@@ -11,7 +11,8 @@ public class TestApp {
 	/**
 	 * Runs the testapp, contacting a certain peer to execute a subprotocol
 	 * 
-	 * @param args arguments for the testapp
+	 * @param args
+	 *            arguments for the testapp
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
@@ -22,13 +23,12 @@ public class TestApp {
 
 		// Check if arguments are valid
 		/*boolean valid = validArgs(args);*/ boolean valid = true;
-		
+
 		if (valid) {
 			try {
 				remoteName = args[0];
 				subProtocol = args[1].toLowerCase();
-				//filePath = args[2];
-
+				filePath = args[2];
 
 				Registry registry = LocateRegistry.getRegistry("localhost");
 				Invocation stub = (Invocation) registry.lookup(remoteName);
@@ -36,7 +36,6 @@ public class TestApp {
 				String response = null;
 
 				switch (subProtocol) {
-				/*
 				case "backup":
 
 					response = stub.backup(filePath, Integer.parseInt(args[3]));
@@ -50,13 +49,17 @@ public class TestApp {
 				case "reclaim":
 					response = stub.reclaim(Integer.parseInt(args[2]));
 					break;
-				*/
+				case "wakeup":
+					System.out.println("wakeup");
+					response = stub.restart();
+					break;
+
 				case "testtcp":
 					response = stub.testTCP();
 					break;
 				}
 
-				//System.out.println("Response: " + response);
+				// System.out.println("Response: " + response);
 
 			} catch (Exception e) {
 				System.err.println("Client exception: " + e.toString());
@@ -80,7 +83,8 @@ public class TestApp {
 
 	/**
 	 * 
-	 * @param args arguments received from testapp, to be validated
+	 * @param args
+	 *            arguments received from testapp, to be validated
 	 * @return true if the args are in a valid formate, false otherwise
 	 */
 	static boolean validArgs(String[] args) {

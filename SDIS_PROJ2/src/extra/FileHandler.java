@@ -103,7 +103,7 @@ public class FileHandler {
 	 */
 	public byte[] splitFile() throws IOException {
 
-		if (file.exists()) {
+		if (file != null && file.exists()) {
 			byte[] chunk = new byte[Chunk.getChunkSize()];
 			int bytesRead = fileReader.read(chunk, 0, Chunk.getChunkSize());
 			// TODO return null or return byte[0]
