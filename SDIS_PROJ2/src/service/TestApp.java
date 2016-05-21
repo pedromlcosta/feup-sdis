@@ -53,7 +53,7 @@ public class TestApp {
 					break;
 				case "wakeup":
 					System.out.println("wakeup");
-					response = stub.restart();
+					response = stub.wakeUp();
 					break;
 				case "checkchunks":
 					System.out.println("checkChunks");

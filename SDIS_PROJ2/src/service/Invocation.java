@@ -52,7 +52,7 @@ public interface Invocation extends Remote {
 	 */
 	String reclaim(int reclaimSpace) throws RemoteException;
 
-	String restart() throws RemoteException;
+	String wakeUp() throws RemoteException;
 
 	String checkChunks() throws RemoteException;
 
