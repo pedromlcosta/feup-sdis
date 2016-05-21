@@ -79,11 +79,12 @@ public class Peer implements Invocation {
 	private Set<FileID> filesDeleted;
 
 	// Tracker connection data fields
+	static boolean debug = false;
 	static int clientPort = 1111; // Global, the client will use its 1111 port
 									// to connect to the socket
 	static int serverPort;
 	static InetAddress serverAddress;
-
+	
 	static SSLSocket remoteSocket;
 	static String message = "Default command message";
 	BufferedReader in;
@@ -184,7 +185,16 @@ public class Peer implements Invocation {
 			return;
 		}
 
+		// Socket initialization
 		try {
+			
+			System.setProperty("javax.net.ssl.keyStore", "client.keys");
+			System.setProperty("javax.net.ssl.keyStorePassword", "123456");
+			System.setProperty("javax.net.ssl.trustStore", "truststore");
+			System.setProperty("javax.net.ssl.trustStorePassword", "123456");
+			if(debug)
+				System.setProperty("javax.net.debug", "all");
+			
 			serverAddress = InetAddress.getByName(args[7]);
 			int port = Integer.parseInt(args[8]);
 			SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
@@ -196,6 +206,8 @@ public class Peer implements Invocation {
 					remoteSocket.getInputStream()));
 			instance.out = new PrintWriter(remoteSocket.getOutputStream(),
 					true);
+			
+			//remoteSocket.startHandshake();
 			
 		} catch (IOException e2) {
 			// TODO Auto-generated catch block
@@ -340,11 +352,16 @@ public class Peer implements Invocation {
 
 			// SEND CLIENT REQUEST
 			System.out.println("Sending message:" + message);
-			instance.out.println(message);
+			try{
+				instance.out.println(message);
+			}catch (Exception e){
+				System.out.println("Error writing to out stream.");
+			}
+			System.out.println("Message sent");
 
 			// RECEIVE SERVER REPLY
-			String receivedString = instance.in.readLine();
-			System.out.println("Client received: " + receivedString);
+			//String receivedString = instance.in.readLine();
+			//System.out.println("Client received: " + receivedString);
 
 			return true;
 		}
