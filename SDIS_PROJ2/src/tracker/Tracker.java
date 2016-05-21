@@ -90,6 +90,7 @@ public class Tracker extends Thread {
 		}
 		
 	}
+	
 	public HashMap<Integer, PeerData> getPeerDataList() {
 		return peerDataList;
 	}
@@ -105,5 +106,4 @@ public class Tracker extends Thread {
 	public void setMonitorList(HashMap<Integer, Monitor> monitorList) {
 		this.monitorList = monitorList;
 	}
-
 }

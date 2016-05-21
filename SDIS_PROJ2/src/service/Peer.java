@@ -63,10 +63,11 @@ public class Peer implements Invocation {
 	private static Registry rmiRegistry;
 	private static String rmiName;
 	private String folderPath;
+	
 	// connection to monitor need port since addr will be localhost
 	private UDPConnection monitorConnection;
 
-	// Monitor Stuff
+	// Monitor Information
 	private Timer timer = new Timer();
 	private boolean monitorAlive = false;
 	private boolean monitorResurrectedAttempted = false;
@@ -370,11 +371,7 @@ public class Peer implements Invocation {
 
 			// Register object to rmi registry
 			rmiRegistry = LocateRegistry.getRegistry();
-			/*
-			 * try{ rmiRegistry = LocateRegistry.createRegistry(1099);
-			 * }catch(Exception e){ System.out.println("Caught ya, bitch");
-			 * rmiRegistry = LocateRegistry.getRegistry(); }
-			 */
+			
 			try {
 				rmiRegistry.bind(rmiName, stub);
 			} catch (Exception e) {
@@ -769,5 +766,12 @@ public class Peer implements Invocation {
 	public int getLIMIT_OF_ATTEMPTS() {
 		return LIMIT_OF_ATTEMPTS;
 	}
-
+	
+	public void sendData(){
+		
+		//check for conection with tracker
+		//prepare message
+		//send message
+		//wait response?
+	}
 }

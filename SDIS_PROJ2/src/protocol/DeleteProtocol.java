@@ -64,6 +64,8 @@ public class DeleteProtocol extends Thread {
 		try {
 			peer.saveData();
 			peer.getFilesDeleted().add(file);
+			//unit of test, see if shall add a general function used whenever saving new Data
+			peer.sendData();
 		} catch (FileNotFoundException e) {
 			System.out.println("File to save Data not found");
 		} catch (IOException e) {

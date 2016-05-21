@@ -21,9 +21,9 @@ public class TestApp {
 		String filePath;
 
 		// Check if arguments are valid
-		//boolean valid = validArgs(args);
+		/*boolean valid = validArgs(args);*/ boolean valid = true;
 		
-		if (true) {
+		if (valid) {
 			try {
 				remoteName = args[0];
 				subProtocol = args[1].toLowerCase();
