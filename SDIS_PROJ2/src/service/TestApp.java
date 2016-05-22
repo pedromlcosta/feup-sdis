@@ -22,8 +22,8 @@ public class TestApp {
 		String filePath;
 
 		// Check if arguments are valid
-		/*boolean valid = validArgs(args);*/ boolean valid = true;
-
+		boolean valid = validArgs(args);
+		
 		if (valid) {
 			try {
 				remoteName = args[0];
@@ -38,8 +38,8 @@ public class TestApp {
 				String response = null;
 
 				switch (subProtocol) {
+				
 				case "backup":
-
 					response = stub.backup(filePath, Integer.parseInt(args[3]));
 					break;
 				case "restore":
@@ -59,7 +59,6 @@ public class TestApp {
 					System.out.println("checkChunks");
 					response = stub.checkChunks();
 					break;
-
 				case "testtcp":
 					response = stub.testTCP();
 					break;

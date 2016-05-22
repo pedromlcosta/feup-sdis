@@ -9,6 +9,7 @@ import java.io.NotSerializableException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -241,7 +242,21 @@ public class PeerData implements Serializable {
 		return index;
 	}
 
-	public ArrayList<ChunkID> getRemoveLookup() {
+	public String getData() throws IOException{
+		
+		String dirPath = "";
+
+		try {
+			dirPath = Extra.createDirectory(dataPath);
+		} catch (IOException e1) {
+			throw new IOException(e1.getMessage() + " Couldn't create directory.");
+		}
+
+		File file = new File(dirPath + File.separator + fileName);
+		return new String(Files.readAllBytes(file.toPath()));
+	}
+	
+ 	public ArrayList<ChunkID> getRemoveLookup() {
 		return removeLookup;
 	}
 
@@ -268,5 +283,4 @@ public class PeerData implements Serializable {
 			servers.clear();
 		}
 	}
-
 }

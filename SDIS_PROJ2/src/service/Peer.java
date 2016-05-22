@@ -8,7 +8,6 @@ import java.io.InputStreamReader;
 import java.io.NotSerializableException;
 import java.io.PrintWriter;
 import java.net.InetAddress;
-import java.net.Socket;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -16,7 +15,6 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 import java.util.Timer;
@@ -35,6 +33,7 @@ import data.FileID;
 import data.PeerData;
 import extra.Extra;
 import extra.FileHandler;
+import messages.Message;
 import monitor.Monitor;
 import protocol.BackupProtocol;
 import protocol.CheckChunksProtocol;
@@ -102,6 +101,8 @@ public class Peer implements Invocation {
 		restoreChannel = new MDRReceiver();
 		data = new PeerData();
 
+		//Tmp message
+		tempTCP();
 	}
 
 	/**
@@ -777,18 +778,44 @@ public class Peer implements Invocation {
 	public int getLIMIT_OF_ATTEMPTS() {
 		return LIMIT_OF_ATTEMPTS;
 	}
+	
+	public void tempTCP(){
+		
+		try {
+			serverAddress = InetAddress.getByName("localhost");
+			serverPort = 4444;
+			SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+			remoteSocket = (SSLSocket) socketFactory.createSocket(serverAddress,serverPort);
+			out = new PrintWriter(remoteSocket.getOutputStream(), true);
+			in = new BufferedReader(new InputStreamReader(remoteSocket.getInputStream()));
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public void sendData(){
+		
+		//prepare message
+		try {
+			message = data.getData();
+			message = "STORE" + " " + serverID + Message.EOL + Message.EOL + message;
+			System.out.println(message);
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
+		//send message
+		out.println(message);
+		//wait response
+		try {
+			message = in.readLine();
+		} catch (IOException e) {
+			System.out.println("Error reading from socket");
+		}
+	}
 
 	public void restartProtocol() throws RemoteException {
 		wakeUp();
 		checkChunks();
-	}
-
-	public void sendData() {
-
-		// check for conection with tracker
-		// prepare message
-		// send message
-		// wait response?
 	}
 
 	/**
@@ -797,6 +824,5 @@ public class Peer implements Invocation {
 	 */
 	public synchronized void resetChunkData() {
 		data.resetChunkData();
-
 	}
 }
