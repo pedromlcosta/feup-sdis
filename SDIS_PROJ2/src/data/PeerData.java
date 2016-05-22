@@ -264,6 +264,7 @@ public class PeerData implements Serializable {
 
 		for (ChunkID id : serversWhoAnswered) {
 			ArrayList<Integer> servers = serverAnsweredCommand.get(id);
+			id.setActualRepDegree(0);
 			servers.clear();
 		}
 	}

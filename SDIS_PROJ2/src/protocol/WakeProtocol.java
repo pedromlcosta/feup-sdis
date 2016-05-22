@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.util.HashMap;
 import java.util.Random;
+import java.util.Set;
 
 import channels.MCReceiver;
 import data.FileID;
@@ -35,10 +36,12 @@ public class WakeProtocol extends Thread {
 		return peer;
 	}
 
+	// synchronized
 	public void run() {
 		// TODO CHUNKS DOS "NOSSOS" FILES
 		// Find out about the chunks from other files
-		HashMap<String, Boolean> chunkStored = new HashMap<String, Boolean>();
+		// HashMap<String, Boolean> chunkStored = new HashMap<String,
+		// Boolean>();
 		File dir = new File(StoredChunksFolderPath);
 		if (!dir.isDirectory())
 			throw new IllegalStateException("Not a directoray");
@@ -50,15 +53,15 @@ public class WakeProtocol extends Thread {
 			String[] fileIDs = fileName.split(sufix);
 			if (fileIDs.length > 0) {
 				String fileID = fileIDs[0];
-				if (chunkStored.get(fileID) == null) {
-					chunkStored.put(fileID, true);
-					String args[] = new String[3];
-					args[0] = Peer.getCurrentVersion();
-					args[1] = Integer.toString(peer.getServerID());
-					args[2] = fileID;
-					sendWakeUp(args);
-					// The rest of the work need to be done at the processor
-				}
+				// if (chunkStored.get(fileID) == null) {
+				// chunkStored.put(fileID, true);
+				String args[] = new String[3];
+				args[0] = Peer.getCurrentVersion();
+				args[1] = Integer.toString(peer.getServerID());
+				args[2] = fileID;
+				sendWakeUp(args);
+				// The rest of the work need to be done at the processor
+				// }
 			}
 		}
 	}
@@ -85,13 +88,15 @@ public class WakeProtocol extends Thread {
 		control.writePacket(msgPacket);
 	}
 
-	public void receiveWakeUp(Message msg) {
+	public synchronized void receiveWakeUp(Message msg) {
 
 		FileID fileID = new FileID(msg.getFileId(), true);
-
-		for (FileID id : peer.getFilesDeleted()) {
-			if (id.equals(fileID))
-			(new DeleteProtocol()).sendDeleteMsg(fileID.getID());
+		Set<FileID> filesDeleted = peer.getFilesDeleted();
+		synchronized (filesDeleted) {
+			for (FileID id : filesDeleted) {
+				if (id.equals(fileID))
+					(new DeleteProtocol()).sendDeleteMsg(fileID.getID());
+			}
 		}
 	}
 

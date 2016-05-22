@@ -254,9 +254,11 @@ public class Peer implements Invocation {
 		}
 
 		registerRMI();
-		for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
+		for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet()) {
 			System.out.println("Size: " + Peer.getInstance().getAnsweredCommand().get(c).size() + "  " + c.getActualRepDegree() + " " + c.getFileID() + "_" + c.getChunkNumber());
-
+			for (Integer i : Peer.getInstance().getAnsweredCommand().get(c))
+				System.out.println("Server has chunk: " + i);
+		}
 	}
 
 	/**
@@ -658,6 +660,9 @@ public class Peer implements Invocation {
 			synchronized (answered) {
 
 				if (answered.isEmpty() || !answered.contains(senderID)) {
+					System.out.println("Adding Sender as answered in Chunk: " + senderID);
+					System.out.println(" " + chunkID.getFileID() + "\n" + answered.isEmpty());
+					System.out.println(answered.toString());
 					answered.add(senderID);
 					for (ChunkID toUpdate : command.keySet())
 						if (toUpdate.equals(chunkID))
@@ -790,7 +795,7 @@ public class Peer implements Invocation {
 	 * responsible for making the actualRepDegree = 0 and take the servers who
 	 * answered
 	 */
-	public void resetChunkData() {
+	public synchronized void resetChunkData() {
 		data.resetChunkData();
 
 	}

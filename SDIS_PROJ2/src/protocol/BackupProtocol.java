@@ -224,6 +224,7 @@ public class BackupProtocol extends Thread {
 		System.out.println("End Backup Of Chunk");
 
 		// Failed the chunk backup
+		// TODO remove chunks here when it fails
 		if (nMessagesSent >= 5 || chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree()) {
 			System.out.println("The backup of the file of the chunk Number: " + chunkNumber + " has failed to reach the desired Replication Degree: " + wantedRepDegree
 					+ " instead the actual degree is: " + chunkToSend.getActualRepDegree());
