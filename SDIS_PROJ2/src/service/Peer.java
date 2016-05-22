@@ -32,6 +32,7 @@ import data.FileID;
 import data.PeerData;
 import extra.Extra;
 import extra.FileHandler;
+import messages.Message;
 import monitor.Monitor;
 import protocol.BackupProtocol;
 import protocol.DeleteProtocol;
@@ -98,7 +99,10 @@ public class Peer implements Invocation {
 		restoreChannel = new MDRReceiver();
 		data = new PeerData();
 		filesDeleted = new HashSet<FileID>();
+		
 
+		//Tmp message
+		tempTCP();
 	}
 
 	/**
@@ -767,11 +771,37 @@ public class Peer implements Invocation {
 		return LIMIT_OF_ATTEMPTS;
 	}
 	
+	public void tempTCP(){
+		
+		try {
+			serverAddress = InetAddress.getByName("localhost");
+			serverPort = 4444;
+			remoteSocket = new Socket(serverAddress,serverPort);
+			out = new PrintWriter(remoteSocket.getOutputStream(), true);
+			in = new BufferedReader(new InputStreamReader(remoteSocket.getInputStream()));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
 	public void sendData(){
 		
-		//check for conection with tracker
 		//prepare message
+		try {
+			message = data.getData();
+			message = "STORE" + " " + serverID + Message.EOL + Message.EOL + message;
+			System.out.println(message);
+		} catch (IOException e) {
+			System.out.println(e.getMessage());
+		}
 		//send message
-		//wait response?
+		out.println(message);
+		//wait response
+		try {
+			message = in.readLine();
+		} catch (IOException e) {
+			System.out.println("Error reading from socket");
+		}
 	}
 }

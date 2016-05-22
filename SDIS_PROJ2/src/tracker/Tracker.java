@@ -1,5 +1,7 @@
 package tracker;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
@@ -31,6 +33,7 @@ public class Tracker extends Thread {
 	private HashMap<Integer, Monitor> monitorList;
 	// Record of Peers
 	private HashMap<Integer, PeerData> peerDataList;
+	private static String dataPath;
 
 	public static void main(String[] args) throws IOException{
 		// Check if args are all ok and well written
@@ -60,7 +63,9 @@ public class Tracker extends Thread {
 	}
 	
 	public Tracker(int port) throws IOException {
+		
 		serverSocket = new ServerSocket(port); // PORT 444 JUST TO TEST
+		dataPath = "TRACKER" + File.separator + "PeerData";
 	}
 
 	/*
@@ -105,5 +110,26 @@ public class Tracker extends Thread {
 
 	public void setMonitorList(HashMap<Integer, Monitor> monitorList) {
 		this.monitorList = monitorList;
+	}
+
+	public boolean store(String peerID, String peerData) {
+		
+		String dirPath = "";
+
+		try {
+			dirPath = Extra.createDirectory(dataPath);
+			
+			File file = new File(dirPath + File.separator + peerID + "_PeerData.dat");
+			FileOutputStream outputStream = new FileOutputStream(file);
+			byte buffer[] = peerData.getBytes();
+			
+			outputStream.write(buffer);
+			outputStream.close();
+		} catch (IOException e1) {
+			System.out.println(e1.getMessage() + " Couldn't create directory.");
+		}
+		
+		System.out.println("Store called");
+		return false;
 	}
 }

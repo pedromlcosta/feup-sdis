@@ -1,17 +1,18 @@
 package tracker;
 
-import java.io.BufferedReader;
+import java.io.DataInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.SocketException;
 
 public class ServerListener extends Thread {
 
-	BufferedReader in;
-	PrintWriter out;
+	private DataInputStream in;
+	private PrintWriter out;
 	private Socket remoteSocket;
+	private byte[] messageByte;
+	private static int MAX_MESSAGE_LENGTH = 64000;
+	private static String EOL = "\r\n";
 
 	public void run() {
 		try {
@@ -19,11 +20,12 @@ public class ServerListener extends Thread {
 			while (!remoteSocket.isClosed()) {
 				// RECEIVE CLIENT REQUEST
 				
-				String receivedString = in.readLine();
-				System.out.println("Server Received: " + receivedString);
-
+				int bytesRead = in.read(messageByte);
+				String message = new String(messageByte, 0, bytesRead);
+				System.out.println("Server Received: " + message);
+				
 				// SEND SERVER REPLY
-				String response = processClientRequest(receivedString);
+				String response = processClientRequest(message);
 				out.println(response);
 				out.flush();
 
@@ -46,9 +48,10 @@ public class ServerListener extends Thread {
 	public ServerListener(Socket remoteSocket) throws IOException {
 		this.remoteSocket = remoteSocket;
 
-		in = new BufferedReader(new InputStreamReader(
-				remoteSocket.getInputStream()));
+		in = new DataInputStream(remoteSocket.getInputStream());
 		out = new PrintWriter(remoteSocket.getOutputStream());
+		
+		messageByte = new byte[MAX_MESSAGE_LENGTH];
 	}
 
 	public Socket getRemoteSocket() {
@@ -62,16 +65,35 @@ public class ServerListener extends Thread {
 	public static String processClientRequest(String request) {
 
 		String response = null;
-		String[] tokens = request.split(" ");
-
-		/*
-		 * if(tokens[0].equals("LOOKUP")){ if (tokens.length != 2){ response =
-		 * "ERROR: Command has invalid arguments"; }else{ response =
-		 * lookup(tokens[1]); } }
-		 */
-
-		response = "Response";
+		
+		int index = request.indexOf(EOL+EOL);
+		if(index == -1){
+			response = "NULL"+ " " + "ERROR" + EOL + EOL + "No header especified";
+			return response;
+			
+		}
+		String header = request.substring(0,index);
+		String body = request.substring(index+1);
+		String[] tokens = header.split(" ");
+		
+		Tracker tracker = Tracker.getInstance();
+		
+		if(tokens[0] != null){
+			switch(tokens[0]){
+			case "STORE":
+				response = tokens[0] + " ";
+				if(tracker.store(tokens[1],body))
+					response += "SUCCESS" + EOL + EOL;
+				else
+					response += "ERROR" + EOL + EOL;
+				break;
+			default:
+				response = tokens[0] + " " + "ERROR" + EOL + EOL + "Cannot recognize request";
+			}
+		}
+		else
+			response = "NULL"+ " " + "ERROR" + EOL + EOL + "Header Format incorrect";
+		
 		return response;
-
 	}
 }
