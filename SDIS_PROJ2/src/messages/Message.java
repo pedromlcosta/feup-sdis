@@ -14,6 +14,7 @@ public class Message {
 	static final String REMOVED = "REMOVED";
 	static final String PUTCHUNK = "PUTCHUNK";
 	static final String STORED = "STORED";
+	static final String BEEP = "BEEP";
 	// TODO changes
 	static final String WAKEUP = "WAKEUP";
 	static final String CHECK_CHUNK_NUMBER = "CHECKCHUNK";
@@ -23,7 +24,7 @@ public class Message {
 	static final String EMPTY_STRING = "";
 
 	public static enum MESSAGE_TYPE {
-		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED, WAKEUP, TRACKER, MONITOR,CHECK_CHUNK_NUMBER
+		GETCHUNK, CHUNK, DELETE, REMOVED, PUTCHUNK, STORED, WAKEUP, TRACKER, MONITOR,CHECK_CHUNK_NUMBER,BEEP
 	}
 
 	public static final String EOL = "\r\n";
