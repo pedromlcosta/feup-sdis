@@ -70,15 +70,16 @@ public class BackupProtocol extends Thread {
 			if (sentFiles.containsKey(filePath)) {
 				// "File already in List";
 				fileList = sentFiles.get(filePath);
-				synchronized (fileList) {
-					// File added
-					if (!fileList.contains(fileID)) {
-						fileList.add(fileID);
-					} else {
-						System.out.println("File already backed up");
-						return;
+				if (fileList != null && fileID != null)
+					synchronized (fileList) {
+						// File added
+						if (!fileList.contains(fileID)) {
+							fileList.add(fileID);
+						} else {
+							System.out.println("File already backed up");
+							return;
+						}
 					}
-				}
 			} else {
 				// System.out.println("File not in List");
 				fileList = new ArrayList<FileID>();
@@ -361,7 +362,7 @@ public class BackupProtocol extends Thread {
 	 * @param msg
 	 * @param args
 	 */
-	//TODO CHECK CHANGE TO STATIC
+	// TODO CHECK CHANGE TO STATIC
 	public static void sendStoredMsg(Message msg, String[] args) {
 		// create message and packets
 		msg.createMessage(null, args);

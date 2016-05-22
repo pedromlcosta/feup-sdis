@@ -5,18 +5,26 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.net.Socket;
 
+import javax.net.ssl.SSLSocket;
+
 public class ServerListener extends Thread {
 
 	private DataInputStream in;
 	private PrintWriter out;
-	private Socket remoteSocket;
 	private byte[] messageByte;
 	private static int MAX_MESSAGE_LENGTH = 64000;
 	private static String EOL = "\r\n";
+	private SSLSocket remoteSocket;
 
 	public void run() {
+		
+		
+		//System.out.println(remoteSocket.getSession());
+		//System.out.println("Here");
+		
 		try {
-
+			
+			
 			while (!remoteSocket.isClosed()) {
 				// RECEIVE CLIENT REQUEST
 				
@@ -30,6 +38,8 @@ public class ServerListener extends Thread {
 				out.flush();
 
 			}
+			System.out.println("Socket was closed.");
+			
 		} catch (IOException e) {
 			// Close stuff
 			try {
@@ -37,15 +47,16 @@ public class ServerListener extends Thread {
 				out.close();
 				remoteSocket.close();
 			} catch (IOException e1) {
-				// TODO Auto-generated catch block
-				e1.printStackTrace();
+				System.out.println("Failed at closing streams. They are already closed, maybe socket was closed?");
 			}
-
 			e.printStackTrace();
-		}
+			System.out.println("Socket was closed.");
+			// DO SOCKET CLOSED STUFF HERE.
+		} 
+		
 	}
 
-	public ServerListener(Socket remoteSocket) throws IOException {
+	public ServerListener(SSLSocket remoteSocket) throws IOException {
 		this.remoteSocket = remoteSocket;
 
 		in = new DataInputStream(remoteSocket.getInputStream());
@@ -58,7 +69,7 @@ public class ServerListener extends Thread {
 		return remoteSocket;
 	}
 
-	public void setRemoteSocket(Socket remoteSocket) {
+	public void setRemoteSocket(SSLSocket remoteSocket) {
 		this.remoteSocket = remoteSocket;
 	}
 

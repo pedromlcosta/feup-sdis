@@ -11,7 +11,8 @@ public class TestApp {
 	/**
 	 * Runs the testapp, contacting a certain peer to execute a subprotocol
 	 * 
-	 * @param args arguments for the testapp
+	 * @param args
+	 *            arguments for the testapp
 	 * @throws IOException
 	 */
 	public static void main(String[] args) throws IOException {
@@ -27,7 +28,9 @@ public class TestApp {
 			try {
 				remoteName = args[0];
 				subProtocol = args[1].toLowerCase();
-				filePath = args[2];
+				filePath = null;
+				if (args.length > 2)
+					filePath = args[2];
 
 				Registry registry = LocateRegistry.getRegistry("localhost");
 				Invocation stub = (Invocation) registry.lookup(remoteName);
@@ -37,7 +40,6 @@ public class TestApp {
 				switch (subProtocol) {
 				
 				case "backup":
-
 					response = stub.backup(filePath, Integer.parseInt(args[3]));
 					break;
 				case "restore":
@@ -49,14 +51,27 @@ public class TestApp {
 				case "reclaim":
 					response = stub.reclaim(Integer.parseInt(args[2]));
 					break;
+				case "wakeup":
+					System.out.println("wakeup");
+					response = stub.wakeUp();
+					break;
+				case "checkchunks":
+					System.out.println("checkChunks");
+					response = stub.checkChunks();
+					break;
 				case "testtcp":
 					response = stub.testTCP();
 					break;
+				default:
+					System.out.println("Operation not supported");
+					break;
 				}
+
+				// System.out.println("Response: " + response);
 
 			} catch (Exception e) {
 				System.err.println("Client exception: " + e.toString());
-				// e.printStackTrace();
+				e.printStackTrace();
 				System.out.println("No host with that remoteName exists");
 			}
 		} else {
@@ -76,7 +91,8 @@ public class TestApp {
 
 	/**
 	 * 
-	 * @param args arguments received from testapp, to be validated
+	 * @param args
+	 *            arguments received from testapp, to be validated
 	 * @return true if the args are in a valid formate, false otherwise
 	 */
 	static boolean validArgs(String[] args) {

@@ -149,7 +149,7 @@ public class Processor extends Thread {
 				messageFields = null;
 				wakeupHandler();
 				break;
-			case "":
+			case "CHECKCHUNK":
 				msg = new CheckChunkMsg(messageFields, messageBody);
 				messageFields = null;
 				checkChunkHandler();
@@ -463,6 +463,7 @@ public class Processor extends Thread {
 	 * @param wakeupMSG
 	 */
 	public void wakeupHandler() {
+		System.out.println("receved Wake up calling ");
 		(new WakeProtocol()).receiveWakeUp(msg);
 	}
 

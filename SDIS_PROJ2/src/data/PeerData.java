@@ -13,6 +13,8 @@ import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Set;
 
 import chunk.Chunk;
 import chunk.ChunkID;
@@ -33,7 +35,7 @@ public class PeerData implements Serializable {
 	private final static long DISK_SIZE = Chunk.getChunkSize() * 100000;
 	private static String dataPath = "";
 	private static final String fileName = "PeerData.dat";
-
+	private Set<FileID> filesDeleted;
 	// CONSTRUCTOR
 
 	/**
@@ -45,6 +47,7 @@ public class PeerData implements Serializable {
 		filesSent = new HashMap<String, ArrayList<FileID>>();
 		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
 		deleted = new HashMap<ChunkID, Integer>();
+		filesDeleted = new HashSet<FileID>();
 	}
 
 	// SERIAL FUNCTIONS
@@ -111,6 +114,7 @@ public class PeerData implements Serializable {
 		if (obj instanceof PeerData) {
 			PeerData data = (PeerData) obj;
 			System.out.println("Finished loading PeerData");
+			System.out.println("DELTED FILES: " + data.getFilesDeleted().toString());
 			return data;
 		} else {
 			throw new ClassNotFoundException("Object read from PeerData.dat isn't a valid PeerData object.");
@@ -260,18 +264,22 @@ public class PeerData implements Serializable {
 		this.removeLookup = removeLookup;
 	}
 
-	/*
-	public static void main(String[] args){
-		
-		PeerData data = new PeerData();
-		PeerData.setDataPath(2);
-		data.dataPath = "bin\\" + data.dataPath;
-		try {
-			data.getData();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+	public Set<FileID> getFilesDeleted() {
+		return filesDeleted;
+	}
+
+	public void setFilesDeleted(Set<FileID> filesDeleted) {
+		this.filesDeleted = filesDeleted;
+	}
+
+	public void resetChunkData() {
+		Set<ChunkID> serversWhoAnswered = serverAnsweredCommand.keySet();
+		for (ChunkID id : stored)
+			id.setActualRepDegree(0);
+
+		for (ChunkID id : serversWhoAnswered) {
+			ArrayList<Integer> servers = serverAnsweredCommand.get(id);
+			servers.clear();
 		}
 	}
-	*/
 }
