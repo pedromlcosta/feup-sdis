@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 package service;
 
 import java.io.ByteArrayOutputStream;
@@ -105,8 +104,7 @@ public class Peer implements Invocation {
 		restoreChannel = new MDRReceiver();
 		data = new PeerData();
 		
-		//Tmp message
-		tempTCP();
+		os = new ByteArrayOutputStream();
 		messageByte = new byte[64000];
 	}
 
@@ -813,23 +811,6 @@ public class Peer implements Invocation {
 		return LIMIT_OF_ATTEMPTS;
 	}
 	
-	public void tempTCP(){
-	
-		/*
-		try {
-			serverAddress = InetAddress.getByName("localhost");
-			serverPort = 4444;
-			remoteSocket = new Socket(serverAddress,serverPort);
-			out = new DataOutputStream(remoteSocket.getOutputStream());
-			in = new DataInputStream(remoteSocket.getInputStream());
-			os = new ByteArrayOutputStream();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		*/
-	}
-	
 	private String endHeader() {
 		
 		return Message.EOL + Message.EOL;
@@ -893,10 +874,8 @@ public class Peer implements Invocation {
 				data.cleanupLocal(tmpPeerData,dirPath);
 				tmpPeerData.cleanupData(data,dirPath);
 				data = tmpPeerData;
-				System.out.println("Tracker data is most recent");
 			}
-			else
-				System.out.println("Local is most recent");
+			//else keep current peerData
 		}
 	}
 	

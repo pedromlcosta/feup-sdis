@@ -322,8 +322,8 @@ public class BackupProtocol extends Thread {
 			// Save alterations to peer data
 			try {
 				peer.saveData();
-				//peer.sendData();
-				peer.requestData();
+				peer.sendData();
+				//peer.requestData();
 			} catch (FileNotFoundException e) {
 				System.out.println("File to save Data not found");
 			} catch (IOException e) {

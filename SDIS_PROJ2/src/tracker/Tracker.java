@@ -86,10 +86,14 @@ public class Tracker extends Thread {
 		setSystemProperties();
 		
 		this.port = port;
+		try{
+			SSLServerSocketFactory serverSocketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
+			sslServerSocket = (SSLServerSocket) serverSocketFactory.createServerSocket(port);
+		}
+		catch(IOException e){
+			e.printStackTrace();
+		}
 		
-		SSLServerSocketFactory serverSocketFactory = (SSLServerSocketFactory) SSLServerSocketFactory.getDefault();
-		sslServerSocket = (SSLServerSocket) serverSocketFactory.createServerSocket(port);
-
 		sslServerSocket.setNeedClientAuth(true);
 		dataPath = "TRACKER" + File.separator + "PeerData";
 	}
@@ -101,9 +105,8 @@ public class Tracker extends Thread {
 	    keyGen.init(256,random); 
 	    peerEncryptionKey = keyGen.generateKey();
 	    
-	    System.out.println(Base64.getEncoder().encodeToString(peerEncryptionKey.getEncoded()));
-	    System.out.println(peerEncryptionKey.getEncoded().length);
-		
+	    //System.out.println(Base64.getEncoder().encodeToString(peerEncryptionKey.getEncoded()));
+	    //System.out.println(peerEncryptionKey.getEncoded().length);
 	}
 
 	private void setSystemProperties() {
@@ -187,7 +190,8 @@ public class Tracker extends Thread {
 			dirPath = Extra.createDirectory(dataPath);
 			
 			File file = new File(dirPath + File.separator + peerID + "_PeerData.dat");
-			return Files.readAllBytes(file.toPath());
+			if(file.exists())
+				return Files.readAllBytes(file.toPath());
 		} catch (IOException e1) {
 			System.out.println(e1.getMessage() + " Couldn't create directory.");
 		}
