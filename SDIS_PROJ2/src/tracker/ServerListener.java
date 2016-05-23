@@ -1,16 +1,19 @@
 package tracker;
 
+import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Arrays;
 
 import javax.net.ssl.SSLSocket;
 
 public class ServerListener extends Thread {
 
 	private DataInputStream in;
-	private PrintWriter out;
+	private DataOutputStream out;
+	private ByteArrayOutputStream os;
 	private byte[] messageByte;
 	private static int MAX_MESSAGE_LENGTH = 64000;
 	private static String EOL = "\r\n";
@@ -30,13 +33,10 @@ public class ServerListener extends Thread {
 				
 				int bytesRead = in.read(messageByte);
 				String message = new String(messageByte, 0, bytesRead);
-				System.out.println("Server Received: " + message);
 				
 				// SEND SERVER REPLY
-				String response = processClientRequest(message);
-				out.println(response);
-				out.flush();
-
+				byte[] response = processClientRequest(message, bytesRead);
+				out.write(response);
 			}
 			System.out.println("Socket was closed.");
 			
@@ -60,7 +60,8 @@ public class ServerListener extends Thread {
 		this.remoteSocket = remoteSocket;
 
 		in = new DataInputStream(remoteSocket.getInputStream());
-		out = new PrintWriter(remoteSocket.getOutputStream());
+		out = new DataOutputStream(remoteSocket.getOutputStream());
+		os = new ByteArrayOutputStream();
 		
 		messageByte = new byte[MAX_MESSAGE_LENGTH];
 	}
@@ -73,38 +74,61 @@ public class ServerListener extends Thread {
 		this.remoteSocket = remoteSocket;
 	}
 
-	public static String processClientRequest(String request) {
+	public byte[] processClientRequest(String request, int length) {
 
-		String response = null;
+		byte[] response = null;
 		
-		int index = request.indexOf(EOL+EOL);
+		int index = request.indexOf(endHeader());
 		if(index == -1){
-			response = "NULL"+ " " + "ERROR" + EOL + EOL + "No header especified";
+			response = ("NULL"+ " " + "ERROR" + endHeader() + "No header especified").getBytes();
 			return response;
 			
 		}
 		String header = request.substring(0,index);
-		String body = request.substring(index+1);
+		int interval = endHeader().getBytes().length;
+		byte[] body = Arrays.copyOfRange(messageByte,index+interval,length);
 		String[] tokens = header.split(" ");
 		
 		Tracker tracker = Tracker.getInstance();
 		
-		if(tokens[0] != null){
-			switch(tokens[0]){
-			case "STORE":
-				response = tokens[0] + " ";
-				if(tracker.store(tokens[1],body))
-					response += "SUCCESS" + EOL + EOL;
-				else
-					response += "ERROR" + EOL + EOL;
-				break;
-			default:
-				response = tokens[0] + " " + "ERROR" + EOL + EOL + "Cannot recognize request";
+		try{
+			if(tokens[0] != null){
+				switch(tokens[0]){
+				case "STORE":
+					os.write((tokens[0] + " ").getBytes());
+					if(tracker.store(tokens[1],body))
+						os.write(("SUCCESS" + endHeader()).getBytes());
+					else
+						os.write(("ERROR" + endHeader()).getBytes());
+					response = os.toByteArray();
+					os.reset();
+					break;
+				case "DATAREQUEST":
+					response = tracker.getPeerData(tokens[1]);
+					if(response != null){
+						os.write((tokens[0] + " " + "SUCCESS" + endHeader()).getBytes());
+						os.write(response);
+						response = os.toByteArray();
+						os.reset();
+					}
+					else
+						response = (tokens[0] + " " + "ERROR" + endHeader() + "Cannot find a peerData with given id").getBytes();
+					break;
+				default:
+					response = (tokens[0] + " " + "ERROR" + endHeader() + "Cannot recognize request").getBytes();
+				}
 			}
+			else
+				response = ("NULL"+ " " + "ERROR" + endHeader() + "Header Format incorrect").getBytes();
 		}
-		else
-			response = "NULL"+ " " + "ERROR" + EOL + EOL + "Header Format incorrect";
-		
+		catch(IOException e){
+			e.printStackTrace();
+		}
 		return response;
+	}
+	
+	private String endHeader(){
+		
+		return EOL + EOL;
 	}
 }

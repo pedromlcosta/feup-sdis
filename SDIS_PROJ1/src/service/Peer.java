@@ -223,11 +223,6 @@ public class Peer implements Invocation {
 
 			// Register object to rmi registry
 			rmiRegistry = LocateRegistry.getRegistry();
-			/*
-			 * try{ rmiRegistry = LocateRegistry.createRegistry(1099);
-			 * }catch(Exception e){ System.out.println("Caught ya, bitch");
-			 * rmiRegistry = LocateRegistry.getRegistry(); }
-			 */
 			try {
 				rmiRegistry.bind(rmiName, stub);
 			} catch (Exception e) {

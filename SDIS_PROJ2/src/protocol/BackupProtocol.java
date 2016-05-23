@@ -96,6 +96,7 @@ public class BackupProtocol extends Thread {
 			// Finished backing up, save?
 			try {
 				peer.saveData();
+				//peer.sendData();
 			} catch (FileNotFoundException e) {
 				System.out.println("File to save Data not found");
 			} catch (IOException e) {
@@ -224,6 +225,7 @@ public class BackupProtocol extends Thread {
 		System.out.println("End Backup Of Chunk");
 
 		// Failed the chunk backup
+		// TODO remove chunks here when it fails
 		if (nMessagesSent >= 5 || chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree()) {
 			System.out.println("The backup of the file of the chunk Number: " + chunkNumber + " has failed to reach the desired Replication Degree: " + wantedRepDegree
 					+ " instead the actual degree is: " + chunkToSend.getActualRepDegree());
@@ -320,6 +322,8 @@ public class BackupProtocol extends Thread {
 			// Save alterations to peer data
 			try {
 				peer.saveData();
+				//peer.sendData();
+				peer.requestData();
 			} catch (FileNotFoundException e) {
 				System.out.println("File to save Data not found");
 			} catch (IOException e) {

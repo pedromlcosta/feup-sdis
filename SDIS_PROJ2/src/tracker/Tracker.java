@@ -3,9 +3,7 @@ package tracker;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.net.InetAddress;
-import java.net.ServerSocket;
-import java.net.Socket;
+import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.Base64;
@@ -124,7 +122,6 @@ public class Tracker extends Thread {
 	 */
 	public void serverStart() {
 
-
 		while (!sslServerSocket.isClosed()) {
 
 			SSLSocket remoteSocket;
@@ -144,9 +141,7 @@ public class Tracker extends Thread {
 			}
 
 			serverListener.start();
-
 		}
-
 	}
 	
 	public HashMap<Integer, PeerData> getPeerDataList() {
@@ -165,7 +160,7 @@ public class Tracker extends Thread {
 		this.monitorList = monitorList;
 	}
 
-	public boolean store(String peerID, String peerData) {
+	public boolean store(String peerID, byte[] body) {
 		
 		String dirPath = "";
 
@@ -174,15 +169,29 @@ public class Tracker extends Thread {
 			
 			File file = new File(dirPath + File.separator + peerID + "_PeerData.dat");
 			FileOutputStream outputStream = new FileOutputStream(file);
-			byte buffer[] = peerData.getBytes();
-			
-			outputStream.write(buffer);
+			outputStream.write(body);
 			outputStream.close();
+			return true;
 		} catch (IOException e1) {
 			System.out.println(e1.getMessage() + " Couldn't create directory.");
 		}
 		
-		System.out.println("Store called");
 		return false;
+	}
+
+	public byte[] getPeerData(String peerID) {
+		
+		String dirPath = "";
+
+		try {
+			dirPath = Extra.createDirectory(dataPath);
+			
+			File file = new File(dirPath + File.separator + peerID + "_PeerData.dat");
+			return Files.readAllBytes(file.toPath());
+		} catch (IOException e1) {
+			System.out.println(e1.getMessage() + " Couldn't create directory.");
+		}
+		
+		return null;
 	}
 }

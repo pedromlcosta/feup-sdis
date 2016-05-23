@@ -11,8 +11,12 @@ import java.io.ObjectOutputStream;
 import java.io.Serializable;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
+import java.io.ByteArrayInputStream;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -31,6 +35,7 @@ public class PeerData implements Serializable {
 	private HashMap<String, ArrayList<FileID>> filesSent;
 	private HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand;
 	private HashMap<ChunkID, Integer> deleted;
+	private Date currentTime;
 	private ArrayList<ChunkID> removeLookup = new ArrayList<ChunkID>();
 	private final static long DISK_SIZE = Chunk.getChunkSize() * 100000;
 	private static String dataPath = "";
@@ -47,6 +52,7 @@ public class PeerData implements Serializable {
 		filesSent = new HashMap<String, ArrayList<FileID>>();
 		serverAnsweredCommand = new HashMap<ChunkID, ArrayList<Integer>>();
 		deleted = new HashMap<ChunkID, Integer>();
+		currentTime = Calendar.getInstance().getTime();
 		filesDeleted = new HashSet<FileID>();
 	}
 
@@ -67,13 +73,13 @@ public class PeerData implements Serializable {
 			throw new IOException(e1.getMessage() + " Couldn't create directory.");
 		}
 
+		currentTime = Calendar.getInstance().getTime();
 		FileOutputStream fileOut = new FileOutputStream(dirPath + File.separator + fileName);
 		ObjectOutputStream objOut = new ObjectOutputStream(fileOut);
 
 		objOut.writeObject(this);
 		fileOut.close();
 		objOut.close();
-
 	}
 
 	/**
@@ -148,6 +154,11 @@ public class PeerData implements Serializable {
 		this.filesSent = filesSent;
 	}
 
+	public Date getCurrentTime() {
+		
+		return currentTime;
+	}
+	
 	// OTHER FUNCTIONS
 
 	public void addChunk(ChunkID id) {
@@ -242,7 +253,7 @@ public class PeerData implements Serializable {
 		return index;
 	}
 
-	public String getData() throws IOException{
+	public byte[] getData() throws IOException{
 		
 		String dirPath = "";
 
@@ -253,7 +264,7 @@ public class PeerData implements Serializable {
 		}
 
 		File file = new File(dirPath + File.separator + fileName);
-		return new String(Files.readAllBytes(file.toPath()));
+		return Files.readAllBytes(file.toPath());
 	}
 	
  	public ArrayList<ChunkID> getRemoveLookup() {
@@ -262,6 +273,45 @@ public class PeerData implements Serializable {
 
 	public void setRemoveLookup(ArrayList<ChunkID> removeLookup) {
 		this.removeLookup = removeLookup;
+	}
+
+	public static PeerData getPeerData(byte[] t) {
+	
+		try{
+			ByteArrayInputStream bi = new ByteArrayInputStream(t);
+		    ObjectInputStream si = new ObjectInputStream(bi);
+		    return (PeerData)si.readObject();
+		}
+		 catch (IOException e) {
+			System.out.println("Exception converting bytes to peerData");
+		} catch (ClassNotFoundException e) {
+			System.out.println("PeerData Class Not Found");
+		}
+		
+		return null;
+	}
+
+	public boolean oldest(PeerData tmpPeerData) {
+		
+		return currentTime.before(tmpPeerData.currentTime);
+	}
+
+	public void cleanupLocal(PeerData tmpPeerData, String dirPath) {
+		
+		for(ChunkID chunk: stored)
+		  if(!tmpPeerData.hasChunkStored(chunk)){
+			  File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
+			  file.delete();
+		  }
+	}
+
+	public void cleanupData(PeerData data, String dirPath) {		
+		
+		for (Iterator<ChunkID> it = stored.iterator(); it.hasNext();) {
+			ChunkID chunk = it.next();
+			if (!data.hasChunkStored(chunk))
+				it.remove();
+		}
 	}
 
 	public Set<FileID> getFilesDeleted() {
@@ -279,7 +329,26 @@ public class PeerData implements Serializable {
 
 		for (ChunkID id : serversWhoAnswered) {
 			ArrayList<Integer> servers = serverAnsweredCommand.get(id);
+			id.setActualRepDegree(0);
 			servers.clear();
 		}
 	}
+	
+	/*
+	public static void main(String[] args){
+		
+		PeerData data = new PeerData();
+		PeerData other;
+		
+		PeerData.setDataPath(2);
+		data.dataPath = "bin\\" + data.dataPath;
+		try {
+			byte[] t = data.getData();
+			other = PeerData.getPeerData(t);
+			System.out.println(other.currentTime);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}*/
 }

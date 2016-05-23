@@ -42,7 +42,7 @@ public class CheckChunksProtocol extends Thread {
 
 	}
 
-	public void sendCheckChunks() {
+	public synchronized void sendCheckChunks() {
 		HashMap<String, ArrayList<FileID>> filesSent = peer.getFilesSent();
 		Set<String> keySet = filesSent.keySet();
 		HashMap<ChunkID, ArrayList<Integer>> chunksStored = peer.getAnsweredCommand();
@@ -82,7 +82,7 @@ public class CheckChunksProtocol extends Thread {
 	}
 
 	// CHECKCHUNK <Version> <SenderId> <FileId><CRLF><CRLF>
-	public void receiveCheckChunks(Message CheckChunksMsg) {
+	public synchronized void receiveCheckChunks(Message CheckChunksMsg) {
 		Message msg = new StoredMsg();
 		String fileID = CheckChunksMsg.getFileId();
 

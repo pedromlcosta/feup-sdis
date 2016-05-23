@@ -38,7 +38,6 @@ public class TestApp {
 				String response = null;
 
 				switch (subProtocol) {
-				
 				case "backup":
 					response = stub.backup(filePath, Integer.parseInt(args[3]));
 					break;
@@ -66,19 +65,15 @@ public class TestApp {
 					System.out.println("Operation not supported");
 					break;
 				}
-
-				// System.out.println("Response: " + response);
-
+				
 			} catch (Exception e) {
 				System.err.println("Client exception: " + e.toString());
 				e.printStackTrace();
 				System.out.println("No host with that remoteName exists");
 			}
 		} else {
-
 			return;
 		}
-
 	}
 
 	// Restrictions:
@@ -171,5 +166,4 @@ public class TestApp {
 
 		return true;
 	}
-
 }
