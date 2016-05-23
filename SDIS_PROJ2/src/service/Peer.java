@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 package service;
 
 import java.io.ByteArrayOutputStream;
