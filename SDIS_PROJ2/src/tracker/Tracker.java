@@ -198,4 +198,10 @@ public class Tracker extends Thread {
 		
 		return null;
 	}
+
+	
+	public byte[] getKey() {
+		
+		return peerEncryptionKey.getEncoded();
+	}
 }

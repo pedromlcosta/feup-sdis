@@ -859,6 +859,25 @@ public class Peer implements Invocation {
 			System.out.println("Error reading from socket");
 		}
 	}
+	
+	public void requestKey(){
+		
+		//prepare message
+		byte[] message = ("KEYREQUEST" + " " + serverID + endHeader()).getBytes();
+		
+		//wait response
+		try{
+			//send message
+			out.write(message);
+			
+			int bytesRead = in.read(messageByte);
+			String answer = new String(messageByte, 0, bytesRead);
+			processServerAnswer(answer, bytesRead);
+		} catch(IOException e){
+			System.out.println("Error reading from socket");
+		
+		}
+	}
 
 	public void verifyPeerData(byte[] peerData){
 		
@@ -906,6 +925,13 @@ public class Peer implements Invocation {
 				else
 					verifyPeerData(body);
 					break;
+			case "KEYREQUEST":
+				if(tokens[1] == null || tokens[1] == "ERROR")
+					System.out.println("Error requesting key in tracker");
+				else{
+					//TODO keySave - key will be in body in byte[]
+				}
+				break;
 			default:
 				System.out.println("Tracker answer: Tracker couldn't find request function");
 			}

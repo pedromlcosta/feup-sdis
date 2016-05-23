@@ -114,6 +114,16 @@ public class ServerListener extends Thread {
 					else
 						response = (tokens[0] + " " + "ERROR" + endHeader() + "Cannot find a peerData with given id").getBytes();
 					break;
+				case "KEYREQUEST":
+					response = tracker.getKey();
+					if(response != null){
+						os.write((tokens[0] + " " + "SUCCESS" + endHeader()).getBytes());
+						os.write(response);
+						response = os.toByteArray();
+					}
+					else
+						response = (tokens[0] + " " + "ERROR" + endHeader() + "Cannot retrieve a key").getBytes();
+					break;
 				default:
 					response = (tokens[0] + " " + "ERROR" + endHeader() + "Cannot recognize request").getBytes();
 				}
