@@ -261,7 +261,7 @@ public class BackupProtocol extends Thread {
 
 	/**
 	 * 
-	 * Receives a putChunk message
+	 * Receives a </putChunk message
 	 * 
 	 * @param putchunkMSG
 	 * @param fullBackup
@@ -428,5 +428,4 @@ public class BackupProtocol extends Thread {
 	public static int getInitialWaitingTime() {
 		return INITIAL_WAITING_TIME;
 	}
-
 }
