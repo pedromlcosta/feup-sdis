@@ -883,7 +883,12 @@ public class Peer implements Invocation {
 		
 		PeerData tmpPeerData = PeerData.getPeerData(peerData);
 		if(tmpPeerData != null){
-			if(data.oldest(tmpPeerData)){
+			if(data == null){
+				data = tmpPeerData;
+				return;
+			}
+			
+			else if(data.oldest(tmpPeerData)){
 				String dirPath = "";
 				try {
 					dirPath = Extra.createDirectory(Integer.toString(Peer.getInstance().getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
