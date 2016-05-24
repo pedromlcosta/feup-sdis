@@ -50,6 +50,8 @@ public class Tracker extends Thread {
 	// Record of Peers
 	private HashMap<Integer, PeerData> peerDataList;
 	private static String dataPath;
+	private HashMap<Integer,ServerListener> listeners;
+	
 
 	public static void main(String[] args) throws IOException {
 		// Check if args are all ok and well written

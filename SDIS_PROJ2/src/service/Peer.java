@@ -59,6 +59,7 @@ public class Peer implements Invocation {
 	}
 
 	private PeerData data;
+	private static boolean disabled = true; // TELLS IF THE PEER IS DISABLED
 
 	private MCReceiver controlChannel;
 	private MDBReceiver dataChannel;
@@ -80,18 +81,9 @@ public class Peer implements Invocation {
 	private int nTries;
 
 	// Tracker connection data fields
-	static boolean debug = false;
-	static int clientPort = 1111; // Global, the client will use its 1111 port
-									// to connect to the socket
+	private PeerTCPHandler trackerConnection;
 	static int serverPort;
 	static InetAddress serverAddress;
-
-	static SSLSocket remoteSocket;
-	private ByteArrayOutputStream os;
-	DataInputStream in;
-	DataOutputStream out;
-
-	private byte[] messageByte;
 
 	/**
 	 * Default Peer constructor. Initializes receiver servers and PeerData
@@ -103,9 +95,6 @@ public class Peer implements Invocation {
 		dataChannel = new MDBReceiver();
 		restoreChannel = new MDRReceiver();
 		data = new PeerData();
-
-		os = new ByteArrayOutputStream();
-		messageByte = new byte[64000];
 	}
 
 	/**
@@ -189,39 +178,40 @@ public class Peer implements Invocation {
 			return;
 		}
 
-		// Socket initialization
-		try {
+		while (disabled) {
 
-			System.setProperty("javax.net.ssl.keyStore", "client.keys");
-			System.setProperty("javax.net.ssl.keyStorePassword", "123456");
-			System.setProperty("javax.net.ssl.trustStore", "truststore");
-			System.setProperty("javax.net.ssl.trustStorePassword", "123456");
-			if (debug)
-				System.setProperty("javax.net.debug", "all");
+			// TCP Handler Initialization
+			try {
+				serverAddress = InetAddress.getByName(args[7]);
+				int port = Integer.parseInt(args[8]);
 
-			serverAddress = InetAddress.getByName(args[7]);
+				// Initialize socket
+				SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+				SSLSocket remoteSocket = (SSLSocket) socketFactory.createSocket(serverAddress, port);
 
-			int port = Integer.parseInt(args[8]);
-			SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory
-					.getDefault();
-			remoteSocket = (SSLSocket) socketFactory.createSocket(
-					serverAddress, port);
-			// serverAddress = InetAddress.getByName("localhost"); // to be
-			// replaced with args[7]
-			// remoteSocket = new Socket(serverAddress, 4444); // to be replaced
-			// with args[8]
+				// Initialize streams
+				DataInputStream in = new DataInputStream(remoteSocket.getInputStream());
+				DataOutputStream out = new DataOutputStream(remoteSocket.getOutputStream());
 
-			instance.in = new DataInputStream(remoteSocket.getInputStream());
-			instance.out = new DataOutputStream(remoteSocket.getOutputStream());
+				PeerTCPHandler tcpHandler = new PeerTCPHandler(instance, serverAddress, port, remoteSocket,
+						in, out);
+				instance.setTrackerConnection(tcpHandler);
+				tcpHandler.run();
 
-			// remoteSocket.startHandshake();
+				// Reaches this point, is ok
+				disabled = false;
 
-		} catch (IOException e2) {
-			// TODO Auto-generated catch block
-			// e2.printStackTrace();
-			System.out
-					.println("No Server  is open on the address and port given. Will retry in X seconds");
+			} catch (IOException e2) {
+				System.out.println("Problem connecting to server (wrong address or port?). Will retry in 2 seconds");
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+
+			}
 		}
+		System.out.println("Connected to tracker.");
 
 		peer.getRestoreChannel().start();
 		peer.getDataChannel().start();
@@ -235,8 +225,7 @@ public class Peer implements Invocation {
 			// It was peer data therefore it need to "recount"
 			(new WakeProtocol()).start();
 		} catch (FileNotFoundException e) {
-			System.out
-					.println("There wasn't a peerData file, creating one now");
+			System.out.println("There wasn't a peerData file, creating one now");
 			System.out.println(e.getMessage());
 			// e.printStackTrace(); // Remove these stack traces after
 			// There wasn't a file, so we're creating one now!
@@ -250,8 +239,7 @@ public class Peer implements Invocation {
 		} catch (NotSerializableException e) {
 			System.out.println("PeerData is not Serializable");
 		} catch (IOException e) {
-			System.out
-					.println("IOException while loading PeerData for the first time");
+			System.out.println("IOException while loading PeerData for the first time");
 			System.out.println(e.getMessage());
 			// e.printStackTrace();
 			return;
@@ -264,10 +252,8 @@ public class Peer implements Invocation {
 
 		registerRMI();
 		for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
-			System.out.println("Size: "
-					+ Peer.getInstance().getAnsweredCommand().get(c).size()
-					+ "  " + c.getActualRepDegree() + " " + c.getFileID() + "_"
-					+ c.getChunkNumber());
+			System.out.println("Size: " + Peer.getInstance().getAnsweredCommand().get(c).size() + "  "
+					+ c.getActualRepDegree() + " " + c.getFileID() + "_" + c.getChunkNumber());
 
 	}
 
@@ -280,8 +266,7 @@ public class Peer implements Invocation {
 	 * @param portMC
 	 * @throws IOException
 	 */
-	public void startMonitor(InetAddress addrUDP, int portUDP,
-			InetAddress addrMC, int portMC) throws IOException {
+	public void startMonitor(InetAddress addrUDP, int portUDP, InetAddress addrMC, int portMC) throws IOException {
 
 		new Monitor(addrUDP, portUDP, addrMC, portMC);
 	}
@@ -340,16 +325,14 @@ public class Peer implements Invocation {
 	public static boolean validArgs(String[] args) {
 
 		if (args.length != 9) {
-			System.out.println("Incorrect number of args." + " You gave: "
-					+ args.length);
+			System.out.println("Incorrect number of args." + " You gave: " + args.length);
 			System.out
 					.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port> <Tracker_host> <Tracker_port>");
 			return false;
 		}
 
-		if (!Extra.isNumeric(args[0]) || !Extra.isNumeric(args[2])
-				|| !Extra.isNumeric(args[4]) || !Extra.isNumeric(args[6])
-				|| !Extra.isNumeric(args[8])) {
+		if (!Extra.isNumeric(args[0]) || !Extra.isNumeric(args[2]) || !Extra.isNumeric(args[4])
+				|| !Extra.isNumeric(args[6]) || !Extra.isNumeric(args[8])) {
 			System.out.println("Server ID and ports must be valid numbers");
 			System.out
 					.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port> <Tracker_host> <Tracker_port>");
@@ -360,34 +343,15 @@ public class Peer implements Invocation {
 
 	}
 
-	public static boolean sendMessageToTrackerTest(String message)
-			throws IOException {
+	public void sendMessageToTrackerTest(String message) throws IOException {
 
-		if (!remoteSocket.isClosed()) {
-
-			// SEND CLIENT REQUEST
-			System.out.println("Sending message:" + message);
-			try {
-				instance.out.write(message.getBytes());
-			} catch (Exception e) {
-				System.out.println("Error writing to out stream.");
-			}
-			System.out.println("Message sent");
-
-			// RECEIVE SERVER REPLY
-			// String receivedString = instance.in.readLine();
-			// System.out.println("Client received: " + receivedString);
-
-			return true;
-		}
-		return false;
+		trackerConnection.sendMessageToTrackerTest(message);
+		
 	}
 
-	public static void closeConnectionToTracker() {
+	public void closeConnectionToTracker() {
 		try {
-			instance.out.close();
-			instance.in.close();
-			remoteSocket.close();
+			trackerConnection.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -402,8 +366,7 @@ public class Peer implements Invocation {
 		// Create and export object
 		try {
 
-			Invocation stub = (Invocation) UnicastRemoteObject.exportObject(
-					instance, 0);
+			Invocation stub = (Invocation) UnicastRemoteObject.exportObject(instance, 0);
 
 			// Register object to rmi registry
 			rmiRegistry = LocateRegistry.getRegistry();
@@ -411,8 +374,7 @@ public class Peer implements Invocation {
 			try {
 				rmiRegistry.bind(rmiName, stub);
 			} catch (Exception e) {
-				System.out
-						.println("Couldnt bind, try another remote name, this one is in use");
+				System.out.println("Couldnt bind, try another remote name, this one is in use");
 				e.printStackTrace();
 			}
 
@@ -426,15 +388,13 @@ public class Peer implements Invocation {
 	 * Backup function for the RMI call - starts the backup protocol
 	 */
 	@Override
-	public synchronized String backup(String filePath, int desiredRepDegree)
-			throws RemoteException {
+	public synchronized String backup(String filePath, int desiredRepDegree) throws RemoteException {
 		// O dispatcher vai ter as cenas do socket necessarias
 		// e os metodos para enviar para os canais que queremos as cenas
 
 		// Call backup protocol through dispatcher
 		System.out.println(desiredRepDegree);
-		new BackupProtocol(filePath, desiredRepDegree, "1.0",
-				Peer.getInstance()).start();
+		new BackupProtocol(filePath, desiredRepDegree, "1.0", Peer.getInstance()).start();
 
 		System.out.println("backup called");
 		return "backup sent";
@@ -551,8 +511,7 @@ public class Peer implements Invocation {
 		return data.getServerAnsweredCommand();
 	}
 
-	public void setAnsweredCommand(
-			HashMap<ChunkID, ArrayList<Integer>> answeredCommand) {
+	public void setAnsweredCommand(HashMap<ChunkID, ArrayList<Integer>> answeredCommand) {
 		data.setServerAnsweredCommand(answeredCommand);
 	}
 
@@ -600,8 +559,7 @@ public class Peer implements Invocation {
 		return data.getServerAnsweredCommand();
 	}
 
-	public void setServerAnsweredCommand(
-			HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand) {
+	public void setServerAnsweredCommand(HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand) {
 		data.setServerAnsweredCommand(serverAnsweredCommand);
 	}
 
@@ -617,11 +575,9 @@ public class Peer implements Invocation {
 		this.serverID = serverID;
 		try {
 			createPeerFolder();
-			Extra.createDirectory(Integer.toString(this.serverID)
-					+ File.separator + FileHandler.BACKUP_FOLDER_NAME);
+			Extra.createDirectory(Integer.toString(this.serverID) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
-			System.out
-					.println("IOException when creating the Peer and Backup folders.");
+			System.out.println("IOException when creating the Peer and Backup folders.");
 			e1.printStackTrace();
 		}
 	}
@@ -665,8 +621,7 @@ public class Peer implements Invocation {
 	 * @throws ClassNotFoundException
 	 * @throws IOException
 	 */
-	public void loadData() throws FileNotFoundException,
-			ClassNotFoundException, IOException {
+	public void loadData() throws FileNotFoundException, ClassNotFoundException, IOException {
 		this.data = data.loadPeerData();
 	}
 
@@ -743,10 +698,8 @@ public class Peer implements Invocation {
 		// System.out.println("Testing " + PeerData.getDiskSize() + " " +
 		// backupFolderSize + " " + dataSize);
 		if (PeerData.getDiskSize() - (backupFolderSize + dataSize) < 0) {
-			System.out.println("!!Starting Disk Reclaim!!  "
-					+ PeerData.getDiskSize() + "   " + backupFolderSize);
-			return (new ReclaimProtocol(Chunk.getChunkSize()))
-					.nonPriorityReclaim();
+			System.out.println("!!Starting Disk Reclaim!!  " + PeerData.getDiskSize() + "   " + backupFolderSize);
+			return (new ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();
 		}
 		return true;
 	}
@@ -796,8 +749,7 @@ public class Peer implements Invocation {
 		return monitorResurrectedAttempted;
 	}
 
-	public void setMonitorResurrectedAttempted(
-			boolean monitorResurrectedAttempted) {
+	public void setMonitorResurrectedAttempted(boolean monitorResurrectedAttempted) {
 		this.monitorResurrectedAttempted = monitorResurrectedAttempted;
 	}
 
@@ -829,143 +781,12 @@ public class Peer implements Invocation {
 		return LIMIT_OF_ATTEMPTS;
 	}
 
-	private String endHeader() {
-
-		return Message.EOL + Message.EOL;
+	public PeerTCPHandler getTrackerConnection() {
+		return trackerConnection;
 	}
 
-	public void sendData() {
-
-		byte[] message = null;
-		// prepare message
-		try {
-			os.write(("STORE" + " " + serverID + endHeader()).getBytes());
-			os.write(data.getData());
-			message = os.toByteArray();
-			os.reset();
-
-			// send message
-			out.write(message);
-		} catch (IOException e) {
-			System.out.println(e.getMessage());
-		}
-
-		// wait response
-		try {
-			int bytesRead = in.read(messageByte);
-			String answer = new String(messageByte, 0, bytesRead);
-			processServerAnswer(answer, bytesRead);
-		} catch (IOException e) {
-			System.out.println("Error reading from socket");
-		}
+	public void setTrackerConnection(PeerTCPHandler trackerConnection) {
+		this.trackerConnection = trackerConnection;
 	}
 
-	public void requestData() {
-
-		// prepare message
-		byte[] message = ("DATAREQUEST" + " " + serverID + endHeader())
-				.getBytes();
-
-		// send message
-		try {
-			out.write(message);
-		} catch (IOException e1) {
-			System.out.println("Error writing to socket");
-		}
-
-		
-	}
-
-	public void requestKey() {
-
-		// prepare message
-		byte[] message = ("KEYREQUEST" + " " + serverID + endHeader())
-				.getBytes();
-
-		// send message
-		try {
-			out.write(message);
-		} catch (IOException e1) {
-			System.out.println("Error writing to socket");
-		}
-
-		// wait response
-		try {
-
-			int bytesRead = in.read(messageByte);
-			String answer = new String(messageByte, 0, bytesRead);
-			processServerAnswer(answer, bytesRead);
-		} catch (IOException e) {
-			System.out.println("Error reading from socket");
-
-		}
-	}
-	
-	public void TCPListener(){
-		
-	}
-
-	public void verifyPeerData(byte[] peerData) {
-
-		PeerData tmpPeerData = PeerData.getPeerData(peerData);
-		if (tmpPeerData != null) {
-			if (data.oldest(tmpPeerData)) {
-				String dirPath = "";
-				try {
-					dirPath = Extra.createDirectory(Integer.toString(Peer
-							.getInstance().getServerID())
-							+ File.separator
-							+ FileHandler.BACKUP_FOLDER_NAME);
-				} catch (IOException e) {
-					System.out.println("Couldn't create or use directory");
-				}
-				data.cleanupLocal(tmpPeerData, dirPath);
-				tmpPeerData.cleanupData(data, dirPath);
-				data = tmpPeerData;
-			}
-			// else keep current peerData
-		}
-	}
-
-	public void processServerAnswer(String request, int length) {
-
-		System.out.println("Request:" + request);
-
-		int index = request.indexOf(endHeader());
-		if (index == -1) {
-			System.out.println("Tracker answer: No header especified");
-			return;
-		}
-
-		String header = request.substring(0, index);
-		int interval = endHeader().getBytes().length;
-		byte[] body = Arrays.copyOfRange(messageByte, index + interval, length);
-		String[] tokens = header.split(" ");
-
-		if (tokens[0] != null) {
-			switch (tokens[0]) {
-			case "STORE":
-				if (tokens[1] == null || tokens[1] == "ERROR")
-					System.out.println("Error storing peerdata in tracker");
-				break;
-			case "DATAREQUEST":
-				if (tokens[1] == null || tokens[1] == "ERROR")
-					System.out.println("Error requesting peerdata in tracker");
-				else
-					verifyPeerData(body);
-				break;
-			case "KEYREQUEST":
-				if (tokens[1] == null || tokens[1] == "ERROR")
-					System.out.println("Error requesting key in tracker");
-				else {
-					// TODO keySave - key will be in body in byte[]
-				}
-				break;
-			default:
-				System.out
-						.println("Tracker answer: Tracker couldn't find request function");
-			}
-		} else
-			System.out.println("Tracker answer: Header format incorrect");
-	}
 }

@@ -293,7 +293,10 @@ public class PeerData implements Serializable {
 
 	public boolean oldest(PeerData tmpPeerData) {
 		
-		return currentTime.before(tmpPeerData.currentTime);
+		if(currentTime != null && tmpPeerData.currentTime != null)
+			return currentTime.before(tmpPeerData.currentTime);
+		
+		return false;
 	}
 
 	public void cleanupLocal(PeerData tmpPeerData, String dirPath) {
