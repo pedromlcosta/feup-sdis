@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.net.DatagramPacket;
 import java.net.SocketException;
+import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Random;
@@ -89,14 +90,18 @@ public class BackupProtocol extends Thread {
 
 			try {
 				backupFile(split, fileID);
+			} catch (NoSuchFileException e) {
+				System.out.println("The file you are tying to bakcup does not exist");
+				return;
 			} catch (Exception e) {
-				e.printStackTrace();
+				System.out.println(e.getMessage());
+				return;
 			}
 
 			// Finished backing up, save?
 			try {
 				peer.saveData();
-				//peer.sendData();
+				// peer.sendData();
 			} catch (FileNotFoundException e) {
 				System.out.println("File to save Data not found");
 			} catch (IOException e) {
@@ -323,7 +328,7 @@ public class BackupProtocol extends Thread {
 			try {
 				peer.saveData();
 				peer.getTrackerConnection().sendData();
-				//peer.requestData();
+
 			} catch (FileNotFoundException e) {
 				System.out.println("File to save Data not found");
 			} catch (IOException e) {

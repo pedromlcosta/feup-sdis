@@ -328,7 +328,7 @@ public class PeerData implements Serializable {
 	public void resetChunkData() {
 		Set<ChunkID> serversWhoAnswered = serverAnsweredCommand.keySet();
 		for (ChunkID id : stored)
-			id.setActualRepDegree(0);
+			id.setActualRepDegree(1);
 
 		for (ChunkID id : serversWhoAnswered) {
 			ArrayList<Integer> servers = serverAnsweredCommand.get(id);
