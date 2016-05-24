@@ -299,7 +299,6 @@ public class BackupProtocol extends Protocol {
 
 			// Save alterations to peer data
 			try {
-				/// peer.sendData();
 				peer.saveData();
 				peer.getTrackerConnection().sendData();
 
