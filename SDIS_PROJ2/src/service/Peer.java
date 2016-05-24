@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.NotSerializableException;
+import java.net.ConnectException;
 import java.net.InetAddress;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -56,7 +57,7 @@ public class Peer implements Invocation {
 	}
 
 	private PeerData data;
-	private static boolean disabled = true; // TELLS IF THE PEER IS DISABLED
+	private static boolean connectedTracker = true; // TELLS IF THE PEER IS CONNECTED TO THE TRACKER
 
 	private MCReceiver controlChannel;
 	private MDBReceiver dataChannel;
@@ -177,8 +178,7 @@ public class Peer implements Invocation {
 			return;
 		}
 
-		while (disabled) {
-
+		while (connectedTracker) {
 			// TCP Handler Initialization
 			try {
 				serverAddress = InetAddress.getByName(args[7]);
@@ -194,19 +194,21 @@ public class Peer implements Invocation {
 
 				PeerTCPHandler tcpHandler = new PeerTCPHandler(instance, serverAddress, port, remoteSocket, in, out);
 				instance.setTrackerConnection(tcpHandler);
-				tcpHandler.run();
+				tcpHandler.start();
 
 				// Reaches this point, is ok
-				disabled = false;
+				connectedTracker = false;
 
-			} catch (IOException e2) {
+			} catch (ConnectException e2) {
 				System.out.println("Problem connecting to server (wrong address or port?). Will retry in 2 seconds");
+				
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-
+			} catch (IOException e3){
+				System.out.println("Error creating input streams");
 			}
 		}
 		System.out.println("Connected to tracker.");

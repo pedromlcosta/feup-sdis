@@ -15,11 +15,10 @@ import data.PeerData;
 import extra.Extra;
 import extra.FileHandler;
 
-public class PeerTCPHandler extends Thread{
+public class PeerTCPHandler extends Thread {
 
 	// Final Data fields
-	final static String pathToStorage = System.getProperty("user.dir")
-			+ "\\storage\\";
+	final static String pathToStorage = System.getProperty("user.dir") + "\\storage\\";
 	final static String keyStoreFile = "client.keys";
 	final static String passwd = "123456";
 	final boolean debug = false;
@@ -29,14 +28,14 @@ public class PeerTCPHandler extends Thread{
 	private int serverPort;
 	private InetAddress serverAddress;
 	private SSLSocket remoteSocket;
-	
+
 	private ByteArrayOutputStream os;
 	private DataInputStream in;
 	private DataOutputStream out;
 	private byte[] messageByte;
 
-	PeerTCPHandler(Peer peer, InetAddress serverAddress, int port,
-			SSLSocket remoteSocket, DataInputStream in, DataOutputStream out) {
+	PeerTCPHandler(Peer peer, InetAddress serverAddress, int port, SSLSocket remoteSocket, DataInputStream in,
+			DataOutputStream out) {
 		setSystemProperties();
 
 		peerInstance = peer;
@@ -51,36 +50,24 @@ public class PeerTCPHandler extends Thread{
 	}
 
 	public void run() {
-
-		// System.out.println(remoteSocket.getSession());
-		// System.out.println("Here");
-
 		try {
 
 			while (!remoteSocket.isClosed()) {
-				// RECEIVE CLIENT REQUEST
+				// RECEIVE SERVER MESSAGE
 
-				/*
-				 * int bytesRead = in.read(messageByte); String message = new
-				 * String(messageByte, 0, bytesRead);
-				 * 
-				 * // SEND SERVER REPLY byte[] response =
-				 * processClientRequest(message, bytesRead);
-				 */
-				out.write(new byte[2]);
-
+				int bytesRead = in.read(messageByte);
+				String answer = new String(messageByte, 0, bytesRead);
+				processServerMessage(answer, bytesRead);
+				
 			}
 			System.out.println("Socket was closed.");
 
 		} catch (IOException e) {
 			// Close stuff
 			try {
-				in.close();
-				out.close();
-				remoteSocket.close();
+				close();
 			} catch (IOException e1) {
-				System.out
-						.println("Failed at closing streams. They are already closed, maybe socket was closed?");
+				System.out.println("Failed at closing streams. They are already closed, maybe socket was closed?");
 			}
 			e.printStackTrace();
 			System.out.println("Socket was closed.");
@@ -105,15 +92,12 @@ public class PeerTCPHandler extends Thread{
 	}
 
 	public void close() throws IOException {
-
 		out.close();
 		in.close();
 		remoteSocket.close();
-
 	}
-	
-	private String endHeader() {
 
+	private String endHeader() {
 		return Message.EOL + Message.EOL;
 	}
 
@@ -133,14 +117,6 @@ public class PeerTCPHandler extends Thread{
 			System.out.println(e.getMessage());
 		}
 
-		// wait response
-		try {
-			int bytesRead = in.read(messageByte);
-			String answer = new String(messageByte, 0, bytesRead);
-			processServerAnswer(answer, bytesRead);
-		} catch (IOException e) {
-			System.out.println("Error reading from socket");
-		}
 	}
 
 	public void requestData() {
@@ -169,18 +145,7 @@ public class PeerTCPHandler extends Thread{
 			System.out.println("Error writing to socket");
 		}
 
-		// wait response
-		try {
-
-			int bytesRead = in.read(messageByte);
-			String answer = new String(messageByte, 0, bytesRead);
-			processServerAnswer(answer, bytesRead);
-		} catch (IOException e) {
-			System.out.println("Error reading from socket");
-
-		}
 	}
-
 
 	public void verifyPeerData(byte[] peerData) {
 
@@ -207,7 +172,7 @@ public class PeerTCPHandler extends Thread{
 		}
 	}
 
-	public void processServerAnswer(String request, int length) {
+	public void processServerMessage(String request, int length) {
 
 		System.out.println("Request:" + request);
 
@@ -265,7 +230,7 @@ public class PeerTCPHandler extends Thread{
 			// System.out.println("Client received: " + receivedString);
 
 		}
-		
+
 	}
 
 }
