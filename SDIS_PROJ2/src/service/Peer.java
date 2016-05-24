@@ -181,19 +181,15 @@ public class Peer implements Invocation {
 		while (connectedTracker) {
 			// TCP Handler Initialization
 			try {
+				System.out.println("Connecting");
 				serverAddress = InetAddress.getByName(args[7]);
 				int port = Integer.parseInt(args[8]);
 
-				// Initialize socket
-				SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-				SSLSocket remoteSocket = (SSLSocket) socketFactory.createSocket(serverAddress, port);
+				
 
-				// Initialize streams
-				DataInputStream in = new DataInputStream(remoteSocket.getInputStream());
-				DataOutputStream out = new DataOutputStream(remoteSocket.getOutputStream());
-
-				PeerTCPHandler tcpHandler = new PeerTCPHandler(instance, serverAddress, port, remoteSocket, in, out);
+				PeerTCPHandler tcpHandler = new PeerTCPHandler(instance, serverAddress, port);
 				instance.setTrackerConnection(tcpHandler);
+				tcpHandler.initializeConnection();
 				tcpHandler.start();
 
 				// Reaches this point, is ok

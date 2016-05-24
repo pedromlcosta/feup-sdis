@@ -1,9 +1,12 @@
 package tracker;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.Socket;
 import java.util.Arrays;
 
@@ -11,6 +14,7 @@ import javax.net.ssl.SSLSocket;
 
 public class ServerListener extends Thread {
 
+	private Tracker tracker;
 	private DataInputStream in;
 	private DataOutputStream out;
 	private ByteArrayOutputStream os;
@@ -18,7 +22,11 @@ public class ServerListener extends Thread {
 	private static int MAX_MESSAGE_LENGTH = 64000;
 	private static String EOL = "\r\n";
 	private SSLSocket remoteSocket;
-
+	
+	// TEST STUFF
+	BufferedReader input;
+	PrintWriter output;
+	
 	public void run() {
 		
 		
@@ -28,7 +36,7 @@ public class ServerListener extends Thread {
 		try {
 			
 			
-			while (!remoteSocket.isClosed()) {
+			while (!remoteSocket.isClosed() || !remoteSocket.isOutputShutdown() || remoteSocket.isInputShutdown()) {
 				// RECEIVE CLIENT REQUEST
 				
 				int bytesRead = in.read(messageByte);
@@ -38,25 +46,28 @@ public class ServerListener extends Thread {
 				byte[] response = processClientRequest(message, bytesRead);
 				out.write(response);
 			}
-			System.out.println("Socket was closed.");
+			System.out.println("Socket with peer" + "1" +" was closed.");
 			
 		} catch (IOException e) {
 			// Close stuff
 			try {
-				in.close();
-				out.close();
+				//in.close();
+				//out.close();
 				remoteSocket.close();
 			} catch (IOException e1) {
 				System.out.println("Failed at closing streams. They are already closed, maybe socket was closed?");
 			}
-			e.printStackTrace();
+			//e.printStackTrace();
 			System.out.println("Socket was closed.");
+			return;
 			// DO SOCKET CLOSED STUFF HERE.
 		} 
 		
 	}
 
-	public ServerListener(SSLSocket remoteSocket) throws IOException {
+	public ServerListener(SSLSocket remoteSocket, Tracker tracker) throws IOException {
+		
+		this.tracker = tracker;
 		this.remoteSocket = remoteSocket;
 
 		in = new DataInputStream(remoteSocket.getInputStream());

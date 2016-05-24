@@ -1,14 +1,19 @@
 package service;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.util.Arrays;
 
 import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 import messages.Message;
 import data.PeerData;
@@ -34,35 +39,43 @@ public class PeerTCPHandler extends Thread {
 	private DataOutputStream out;
 	private byte[] messageByte;
 
-	PeerTCPHandler(Peer peer, InetAddress serverAddress, int port, SSLSocket remoteSocket, DataInputStream in,
-			DataOutputStream out) {
+	PeerTCPHandler(Peer peer, InetAddress serverAddress, int port) {
 		setSystemProperties();
 
 		peerInstance = peer;
 		this.serverAddress = serverAddress;
 		this.serverPort = port;
-		this.remoteSocket = remoteSocket;
 
-		this.in = in;
-		this.out = out;
-		ByteArrayOutputStream os = new ByteArrayOutputStream();
+		os = new ByteArrayOutputStream();
 		messageByte = new byte[64000];
+	}
+
+	public void initializeConnection() throws IOException {
+		// Initialize socket
+		SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+		remoteSocket = (SSLSocket) socketFactory.createSocket(serverAddress, serverPort);
+
+		// Initialize streams
+		in = new DataInputStream(remoteSocket.getInputStream());
+		out = new DataOutputStream(remoteSocket.getOutputStream());
 	}
 
 	public void run() {
 		try {
-
+			
 			while (!remoteSocket.isClosed()) {
 				// RECEIVE SERVER MESSAGE
 
+				// TODO: Needs synchronized or something?
+				
 				int bytesRead = in.read(messageByte);
 				String answer = new String(messageByte, 0, bytesRead);
 				processServerMessage(answer, bytesRead);
-				
+
 			}
 			System.out.println("Socket was closed.");
 
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// Close stuff
 			try {
 				close();
@@ -214,21 +227,44 @@ public class PeerTCPHandler extends Thread {
 	}
 
 	public void sendMessageToTrackerTest(String message) {
+		
+		BufferedReader input = null;
+		PrintWriter output = null;
+				 
+		 try {
+			input = new BufferedReader(new InputStreamReader(remoteSocket.getInputStream()));
+			output = new PrintWriter(remoteSocket.getOutputStream(), true);
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		
 		if (!remoteSocket.isClosed()) {
 
 			// SEND CLIENT REQUEST
 			System.out.println("Sending message:" + message);
+			System.out.println("Peer remotesocket port: " + remoteSocket.getPort());
 			try {
-				out.write(message.getBytes());
+				output.println("hi");
+				//output.flush();
+								
+				//remoteSocket.close();
+				//out.write(message.getBytes());
 			} catch (Exception e) {
 				System.out.println("Error writing to out stream.");
 			}
 			System.out.println("Message sent");
 
+			/*
 			// RECEIVE SERVER REPLY
-			// String receivedString = instance.in.readLine();
+			try {
+				String receivedString = input.readLine();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			// System.out.println("Client received: " + receivedString);
-
+			*/
 		}
 
 	}

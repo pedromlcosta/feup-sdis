@@ -37,10 +37,9 @@ public class Tracker extends Thread {
 	final static String pathToStorage = System.getProperty("user.dir") + "\\storage\\";
 	final static String keyStoreFile = "server.keys";
 	final static String passwd = "123456";
+	final static boolean debug = false;
 	
 	// Normal Data fields
-	
-	boolean debug = false;
 	boolean serverEnd = false;
 	int port;
 	SSLServerSocket sslServerSocket;
@@ -93,7 +92,9 @@ public class Tracker extends Thread {
 			sslServerSocket = (SSLServerSocket) serverSocketFactory.createServerSocket(port);
 		}
 		catch(IOException e){
-			e.printStackTrace();
+			System.out.println("Couldn't create socket. Check key files and/or try another port.");
+			throw e;
+			//e.printStackTrace();
 		}
 		
 		sslServerSocket.setNeedClientAuth(true);
@@ -133,6 +134,7 @@ public class Tracker extends Thread {
 
 			try {
 				remoteSocket = (SSLSocket) sslServerSocket.accept();
+				System.out.println("Port: " + remoteSocket.getPort());
 				System.out.println("Accepted new connection. Waiting for messages.");
 			} catch (IOException e) {
 				continue;
@@ -140,7 +142,7 @@ public class Tracker extends Thread {
 			Thread serverListener;
 			try {
 
-				serverListener = new ServerListener(remoteSocket);
+				serverListener = new ServerListener(remoteSocket, instance);
 			} catch (IOException e) {
 				continue;
 			}
