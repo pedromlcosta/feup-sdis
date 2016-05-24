@@ -18,9 +18,7 @@ import messages.Message;
 import messages.StoredMsg;
 import service.Peer;
 
-public class CheckChunksProtocol extends Thread {
-	private static final int SLEEP_TIME = 400;
-	private static final int N_MESSAGES_SENT = 5;
+public class CheckChunksProtocol extends Protocol {
 	private Peer peer = Peer.getInstance();
 	private String StoredChunksFolderPath;
 	private String version;
@@ -107,7 +105,7 @@ public class CheckChunksProtocol extends Thread {
 				// return 10
 				args[3] = fileName.substring(fileName.indexOf(prefix) + prefix.length(), fileName.length());
 
-				BackupProtocol.sendStoredMsg(msg, args);
+				sendStoredMsg(msg, args);
 			}
 		}
 		// if not ignore
@@ -118,7 +116,7 @@ public class CheckChunksProtocol extends Thread {
 		Peer peer = Peer.getInstance();
 		DatagramPacket packet = peer.getControlChannel().createDatagramPacket(msg.getMessageBytes());
 		MCReceiver control = peer.getControlChannel();
-		for (int i = 0; i < N_MESSAGES_SENT; i++) {
+		for (int i = 0; i < MAX_MESSAGES_TO_SEND; i++) {
 			// 0 and 400 ms random delay
 			int delay = new Random().nextInt(SLEEP_TIME);
 			try {
@@ -127,6 +125,7 @@ public class CheckChunksProtocol extends Thread {
 				e.printStackTrace();
 			}
 			// send message
+		 
 			control.writePacket(packet);
 		}
 	}
@@ -147,9 +146,6 @@ public class CheckChunksProtocol extends Thread {
 		return SLEEP_TIME;
 	}
 
-	public static int getnMessagesSent() {
-		return N_MESSAGES_SENT;
-	}
 
 	public void setPeer(Peer peer) {
 		this.peer = peer;

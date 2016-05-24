@@ -15,12 +15,9 @@ import messages.Message;
 import messages.WakeMsg;
 import service.Peer;
 
-public class WakeProtocol extends Thread {
-	private static final int N_MESSAGES_SENT = 0;
-	private static final int SLEEP_TIME = 0;
+public class WakeProtocol extends Protocol {
 	// needs Access to Peer
 	// will go through Peer Data and send the WakeUpMessages
-	private Peer peer = Peer.getInstance();
 	private String StoredChunksFolderPath;
 	private String version;
 
@@ -77,7 +74,7 @@ public class WakeProtocol extends Thread {
 		MCReceiver control = peer.getControlChannel();
 		DatagramPacket msgPacket = control.createDatagramPacket(msg.getMessageBytes()); //
 
-		for (int i = 0; i < N_MESSAGES_SENT; i++) {
+		for (int i = 0; i < MAX_MESSAGES_TO_SEND; i++) {
 			int delay = new Random().nextInt(SLEEP_TIME);
 			try {
 				Thread.sleep(delay);

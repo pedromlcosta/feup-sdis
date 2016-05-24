@@ -14,13 +14,11 @@ import messages.Message;
 import messages.RemovedMsg;
 import service.Peer;
 
-public class ReclaimProtocol extends Thread {
+public class ReclaimProtocol extends Protocol {
 
 	private static final int SLEEP_TIME = 1000;
-	private static final long WAIT_STORED = 400;
 	private int reclaimSpace;
 	private int amountReclaimed;
-	private static Peer peer = Peer.getInstance();
 
 	/**
 	 * Constructor for Reclaim protocol that deletes a file and sends REMOVED message
@@ -92,7 +90,7 @@ public class ReclaimProtocol extends Thread {
 				peer.getData().getRemoveLookup().add(chunk);
 				
 				try {
-					Thread.sleep(WAIT_STORED);
+					Thread.sleep(SLEEP_TIME);
 				} catch (InterruptedException e1) {
 					System.out.println("Unexpected wake up of a thread sleeping");
 				}

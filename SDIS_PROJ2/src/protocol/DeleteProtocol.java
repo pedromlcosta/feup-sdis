@@ -10,14 +10,11 @@ import chunk.ChunkID;
 import data.FileID;
 import messages.DeleteMsg;
 import messages.Message;
-import service.Peer;
 
-public class DeleteProtocol extends Thread {
+public class DeleteProtocol extends Protocol {
 
-	private static Peer peer = Peer.getInstance();
 	private static FileID file;
 	private String filePath;
-	private static int MAX_SENT = 5;
 
 	/**
 	 * Constructor for Delete protocol that deletes a file and sends DELETE
@@ -80,7 +77,7 @@ public class DeleteProtocol extends Thread {
 
 		MCReceiver mc = peer.getControlChannel();
 		DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
-		while (nMessagesSent < MAX_SENT) {
+		while (nMessagesSent < MAX_MESSAGES_TO_SEND) {
 			mc.writePacket(msgPacket);
 			try {
 				Thread.sleep(200);

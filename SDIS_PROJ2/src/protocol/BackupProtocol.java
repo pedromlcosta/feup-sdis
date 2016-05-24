@@ -23,13 +23,10 @@ import messages.PutChunkMsg;
 import messages.StoredMsg;
 import service.Peer;
 
-public class BackupProtocol extends Thread {
+public class BackupProtocol extends Protocol {
 
-	private static final int SLEEP_TIME = 401;
 	private static final int INITIAL_WAITING_TIME = 1;
 	// A peer must never store the chunks of its own files.
-	private Peer peer;
-	private String filePath;
 	private int wantedRepDegree;
 	private String version = "1.0";
 
@@ -226,7 +223,7 @@ public class BackupProtocol extends Thread {
 
 			// Double the waiting time
 			waitTime *= 2;
-		} while (nMessagesSent < 5 && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
+		} while (nMessagesSent <  MAX_MESSAGES_TO_SEND && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
 		System.out.println("End Backup Of Chunk");
 
 		// Failed the chunk backup
@@ -238,30 +235,6 @@ public class BackupProtocol extends Thread {
 		}
 
 		return chunkStatus;
-	}
-
-	/**
-	 * waits to see if it has enough stored msg per chunk
-	 * 
-	 * @param chunkToSend
-	 * @param chunkToSendID
-	 * @param waitTime
-	 * @return
-	 */
-	public void waitForStoredMsg(Chunk chunkToSend, ChunkID chunkToSendID, long waitTime) {
-		long startTime = System.nanoTime();
-		ArrayList<Integer> serverWhoAnswered;
-		do {
-			if ((serverWhoAnswered = Peer.getInstance().getAnsweredCommand().get(chunkToSendID)) != null && !serverWhoAnswered.isEmpty()) {
-				synchronized (serverWhoAnswered) {
-					int size = serverWhoAnswered.size();
-					if (chunkToSend.getDesiredRepDegree() == size) {
-						chunkToSend.setActualRepDegree(size);
-						break;
-					}
-				}
-			}
-		} while ((System.nanoTime() - startTime) < waitTime);
 	}
 
 	/**
@@ -327,7 +300,7 @@ public class BackupProtocol extends Thread {
 			// Save alterations to peer data
 			try {
 				peer.saveData();
-				peer.sendData();
+				/// peer.sendData();
 				// peer.requestData();
 			} catch (FileNotFoundException e) {
 				System.out.println("File to save Data not found");
@@ -365,29 +338,6 @@ public class BackupProtocol extends Thread {
 		}
 	}
 
-	/**
-	 * Sends a stored message to the control channel
-	 * 
-	 * @param msg
-	 * @param args
-	 */
-	// TODO CHECK CHANGE TO STATIC
-	public static void sendStoredMsg(Message msg, String[] args) {
-		// create message and packets
-		msg.createMessage(null, args);
-		Peer peer = Peer.getInstance();
-		DatagramPacket packet = peer.getControlChannel().createDatagramPacket(msg.getMessageBytes());
-
-		// 0 and 400 ms random delay
-		int delay = new Random().nextInt(SLEEP_TIME);
-		try {
-			Thread.sleep(delay);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		// send message
-		peer.getControlChannel().writePacket(packet);
-	}
 
 	// return the number of server who have answered the putchunk msg
 	public int checkMessagesReceivedForChunk(ChunkID chunkToSendID) {

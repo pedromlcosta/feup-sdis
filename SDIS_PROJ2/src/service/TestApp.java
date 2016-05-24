@@ -23,7 +23,7 @@ public class TestApp {
 
 		// Check if arguments are valid
 		boolean valid = validArgs(args);
-		
+
 		if (valid) {
 			try {
 				remoteName = args[0];
@@ -65,7 +65,7 @@ public class TestApp {
 					System.out.println("Operation not supported");
 					break;
 				}
-				
+
 			} catch (Exception e) {
 				System.err.println("Client exception: " + e.toString());
 				e.printStackTrace();
@@ -112,6 +112,7 @@ public class TestApp {
 			}
 
 			String protocol = args[1].toLowerCase();
+			System.out.println("PROTOCOL: " + protocol);
 
 			if (protocol.equals("backup")) {
 				if (args.length != 4) {
@@ -152,15 +153,27 @@ public class TestApp {
 					System.out.println("Correct usage: java TestApp <peer_ap> RECLAIM <space>. ");
 					return false;
 				}
-
 				if (!Extra.isNumeric(args[2])) {
 					System.out.println("Reclaim expects <opnd_1> to be a numeric value.");
 					System.out.println("Correct usage: java TestApp <peer_ap> RECLAIM <space>. ");
 					return false;
 				}
 
+			} else if (protocol.equals("wakeup")) {
+				if (args.length != 2) {
+					System.out.println("Incorrect number of args.");
+					System.out.println("Correct usage: java TestApp <peer_ap> WAKEUP. ");
+					return false;
+				}
+
+			} else if (protocol.equals("checkchunks")) {
+				if (args.length != 2) {
+					System.out.println("Incorrect number of args.");
+					System.out.println("Correct usage: java TestApp <peer_ap> CHECKCHUNKS. ");
+					return false;
+				}
 			} else {
-				System.out.println("<protocol> must be one of the following: Backup, restore, delete or reclaim.");
+				System.out.println("<protocol> must be one of the following: backup, restore, delete, reclaim, wakeup or checkchunks.");
 			}
 		}
 

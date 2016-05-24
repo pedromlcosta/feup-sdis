@@ -155,10 +155,10 @@ public class PeerData implements Serializable {
 	}
 
 	public Date getCurrentTime() {
-		
+
 		return currentTime;
 	}
-	
+
 	// OTHER FUNCTIONS
 
 	public void addChunk(ChunkID id) {
@@ -253,8 +253,8 @@ public class PeerData implements Serializable {
 		return index;
 	}
 
-	public byte[] getData() throws IOException{
-		
+	public byte[] getData() throws IOException {
+
 		String dirPath = "";
 
 		try {
@@ -266,8 +266,8 @@ public class PeerData implements Serializable {
 		File file = new File(dirPath + File.separator + fileName);
 		return Files.readAllBytes(file.toPath());
 	}
-	
- 	public ArrayList<ChunkID> getRemoveLookup() {
+
+	public ArrayList<ChunkID> getRemoveLookup() {
 		return removeLookup;
 	}
 
@@ -276,40 +276,39 @@ public class PeerData implements Serializable {
 	}
 
 	public static PeerData getPeerData(byte[] t) {
-	
-		try{
+
+		try {
 			ByteArrayInputStream bi = new ByteArrayInputStream(t);
-		    ObjectInputStream si = new ObjectInputStream(bi);
-		    return (PeerData)si.readObject();
-		}
-		 catch (IOException e) {
+			ObjectInputStream si = new ObjectInputStream(bi);
+			return (PeerData) si.readObject();
+		} catch (IOException e) {
 			System.out.println("Exception converting bytes to peerData");
 		} catch (ClassNotFoundException e) {
 			System.out.println("PeerData Class Not Found");
 		}
-		
+
 		return null;
 	}
 
 	public boolean oldest(PeerData tmpPeerData) {
-		
-		if(currentTime != null && tmpPeerData.currentTime != null)
+
+		if (currentTime != null && tmpPeerData.currentTime != null)
 			return currentTime.before(tmpPeerData.currentTime);
-		
+
 		return false;
 	}
 
 	public void cleanupLocal(PeerData tmpPeerData, String dirPath) {
-		
-		for(ChunkID chunk: stored)
-		  if(!tmpPeerData.hasChunkStored(chunk)){
-			  File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
-			  file.delete();
-		  }
+
+		for (ChunkID chunk : stored)
+			if (!tmpPeerData.hasChunkStored(chunk)) {
+				File file = new File(dirPath + File.separator + chunk.getFileID() + "_" + chunk.getChunkNumber());
+				file.delete();
+			}
 	}
 
-	public void cleanupData(PeerData data, String dirPath) {		
-		
+	public void cleanupData(PeerData data, String dirPath) {
+
 		for (Iterator<ChunkID> it = stored.iterator(); it.hasNext();) {
 			ChunkID chunk = it.next();
 			if (!data.hasChunkStored(chunk))
@@ -327,16 +326,16 @@ public class PeerData implements Serializable {
 
 	public void resetChunkData() {
 		Set<ChunkID> serversWhoAnswered = serverAnsweredCommand.keySet();
-		for (ChunkID id : stored)
-			id.setActualRepDegree(1);
-
 		for (ChunkID id : serversWhoAnswered) {
 			ArrayList<Integer> servers = serverAnsweredCommand.get(id);
 			id.setActualRepDegree(0);
 			servers.clear();
 		}
+		for (ChunkID id : stored)
+			id.setActualRepDegree(1);
+
 	}
-	
+
 	/*
 	public static void main(String[] args){
 		
