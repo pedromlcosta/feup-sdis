@@ -1,6 +1,5 @@
 package service;
 
-import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
@@ -14,7 +13,6 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
@@ -34,7 +32,6 @@ import data.FileID;
 import data.PeerData;
 import extra.Extra;
 import extra.FileHandler;
-import messages.Message;
 import monitor.Monitor;
 import protocol.BackupProtocol;
 import protocol.CheckChunksProtocol;
@@ -59,6 +56,7 @@ public class Peer implements Invocation {
 	}
 
 	private PeerData data;
+	private static boolean disabled = true; // TELLS IF THE PEER IS DISABLED
 
 	private MCReceiver controlChannel;
 	private MDBReceiver dataChannel;
@@ -82,18 +80,9 @@ public class Peer implements Invocation {
 	private int nTries;
 
 	// Tracker connection data fields
-	static boolean debug = false;
-	static int clientPort = 1111; // Global, the client will use its 1111 port
-									// to connect to the socket
+	private PeerTCPHandler trackerConnection;
 	static int serverPort;
 	static InetAddress serverAddress;
-
-	static SSLSocket remoteSocket;
-	private ByteArrayOutputStream os;
-	DataInputStream in;
-	DataOutputStream out;
-
-	private byte[] messageByte;
 
 	/**
 	 * Default Peer constructor. Initializes receiver servers and PeerData
@@ -105,9 +94,6 @@ public class Peer implements Invocation {
 		dataChannel = new MDBReceiver();
 		restoreChannel = new MDRReceiver();
 		data = new PeerData();
-
-		os = new ByteArrayOutputStream();
-		messageByte = new byte[64000];
 	}
 
 	/**
@@ -191,36 +177,39 @@ public class Peer implements Invocation {
 			return;
 		}
 
-		// Socket initialization
-		try {
+		while (disabled) {
 
-			System.setProperty("javax.net.ssl.keyStore", "client.keys");
-			System.setProperty("javax.net.ssl.keyStorePassword", "123456");
-			System.setProperty("javax.net.ssl.trustStore", "truststore");
-			System.setProperty("javax.net.ssl.trustStorePassword", "123456");
-			if (debug)
-				System.setProperty("javax.net.debug", "all");
+			// TCP Handler Initialization
+			try {
+				serverAddress = InetAddress.getByName(args[7]);
+				int port = Integer.parseInt(args[8]);
 
-			serverAddress = InetAddress.getByName(args[7]);
+				// Initialize socket
+				SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
+				SSLSocket remoteSocket = (SSLSocket) socketFactory.createSocket(serverAddress, port);
 
-			int port = Integer.parseInt(args[8]);
-			SSLSocketFactory socketFactory = (SSLSocketFactory) SSLSocketFactory.getDefault();
-			remoteSocket = (SSLSocket) socketFactory.createSocket(serverAddress, port);
-			// serverAddress = InetAddress.getByName("localhost"); // to be
-			// replaced with args[7]
-			// remoteSocket = new Socket(serverAddress, 4444); // to be replaced
-			// with args[8]
+				// Initialize streams
+				DataInputStream in = new DataInputStream(remoteSocket.getInputStream());
+				DataOutputStream out = new DataOutputStream(remoteSocket.getOutputStream());
 
-			instance.in = new DataInputStream(remoteSocket.getInputStream());
-			instance.out = new DataOutputStream(remoteSocket.getOutputStream());
+				PeerTCPHandler tcpHandler = new PeerTCPHandler(instance, serverAddress, port, remoteSocket, in, out);
+				instance.setTrackerConnection(tcpHandler);
+				tcpHandler.run();
 
-			// remoteSocket.startHandshake();
+				// Reaches this point, is ok
+				disabled = false;
 
-		} catch (IOException e2) {
-			// TODO Auto-generated catch block
-			// e2.printStackTrace();
-			System.out.println("No Server  is open on the address and port given. Will retry in X seconds");
+			} catch (IOException e2) {
+				System.out.println("Problem connecting to server (wrong address or port?). Will retry in 2 seconds");
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+
+			}
 		}
+		System.out.println("Connected to tracker.");
 
 		peer.getRestoreChannel().start();
 		peer.getDataChannel().start();
@@ -348,33 +337,15 @@ public class Peer implements Invocation {
 
 	}
 
-	public static boolean sendMessageToTrackerTest(String message) throws IOException {
+	public void sendMessageToTrackerTest(String message) throws IOException {
 
-		if (!remoteSocket.isClosed()) {
+		trackerConnection.sendMessageToTrackerTest(message);
 
-			// SEND CLIENT REQUEST
-			System.out.println("Sending message:" + message);
-			try {
-				instance.out.write(message.getBytes());
-			} catch (Exception e) {
-				System.out.println("Error writing to out stream.");
-			}
-			System.out.println("Message sent");
-
-			// RECEIVE SERVER REPLY
-			// String receivedString = instance.in.readLine();
-			// System.out.println("Client received: " + receivedString);
-
-			return true;
-		}
-		return false;
 	}
 
-	public static void closeConnectionToTracker() {
+	public void closeConnectionToTracker() {
 		try {
-			instance.out.close();
-			instance.in.close();
-			remoteSocket.close();
+			trackerConnection.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -489,6 +460,7 @@ public class Peer implements Invocation {
 			return "WakeUp";
 		} else
 			return "Already running WakeUp or Restart";
+
 	}
 
 	public String checkChunks() throws RemoteException {
@@ -508,10 +480,8 @@ public class Peer implements Invocation {
 			wakeUp();
 			checkChunks();
 			return "restart";
-		} else {
-
+		} else
 			return "Already running one restartProtocol";
-		}
 	}
 
 	/**
@@ -816,137 +786,12 @@ public class Peer implements Invocation {
 		return LIMIT_OF_ATTEMPTS;
 	}
 
-	private String endHeader() {
-
-		return Message.EOL + Message.EOL;
+	public PeerTCPHandler getTrackerConnection() {
+		return trackerConnection;
 	}
 
-	public void sendData() {
-
-		byte[] message = null;
-		// prepare message
-		try {
-			os.write(("STORE" + " " + serverID + endHeader()).getBytes());
-			os.write(data.getData());
-			message = os.toByteArray();
-			os.reset();
-
-			// send message
-			out.write(message);
-		} catch (IOException e) {
-			System.out.println(e.getMessage());
-		}
-
-		// wait response
-		try {
-			int bytesRead = in.read(messageByte);
-			String answer = new String(messageByte, 0, bytesRead);
-			processServerAnswer(answer, bytesRead);
-		} catch (IOException e) {
-			System.out.println("Error reading from socket");
-		}
-	}
-
-	public void requestData() {
-
-		// prepare message
-		byte[] message = ("DATAREQUEST" + " " + serverID + endHeader()).getBytes();
-
-		// wait response
-		try {
-			// send message
-			out.write(message);
-
-			int bytesRead = in.read(messageByte);
-			String answer = new String(messageByte, 0, bytesRead);
-			processServerAnswer(answer, bytesRead);
-		} catch (IOException e) {
-			System.out.println("Error reading from socket");
-		}
-	}
-
-	public void requestKey() {
-
-		// prepare message
-		byte[] message = ("KEYREQUEST" + " " + serverID + endHeader()).getBytes();
-
-		// wait response
-		try {
-			// send message
-			out.write(message);
-
-			int bytesRead = in.read(messageByte);
-			String answer = new String(messageByte, 0, bytesRead);
-			processServerAnswer(answer, bytesRead);
-		} catch (IOException e) {
-			System.out.println("Error reading from socket");
-
-		}
-	}
-
-	public void verifyPeerData(byte[] peerData) {
-
-		PeerData tmpPeerData = PeerData.getPeerData(peerData);
-		if (tmpPeerData != null) {
-			if (data == null) {
-				data = tmpPeerData;
-				return;
-			}
-
-			else if (data.oldest(tmpPeerData)) {
-				String dirPath = "";
-				try {
-					dirPath = Extra.createDirectory(Integer.toString(Peer.getInstance().getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
-				} catch (IOException e) {
-					System.out.println("Couldn't create or use directory");
-				}
-				data.cleanupLocal(tmpPeerData, dirPath);
-				tmpPeerData.cleanupData(data, dirPath);
-				data = tmpPeerData;
-			}
-			// else keep current peerData
-		}
-	}
-
-	public void processServerAnswer(String request, int length) {
-
-		System.out.println("Request:" + request);
-
-		int index = request.indexOf(endHeader());
-		if (index == -1) {
-			System.out.println("Tracker answer: No header especified");
-			return;
-		}
-
-		String header = request.substring(0, index);
-		int interval = endHeader().getBytes().length;
-		byte[] body = Arrays.copyOfRange(messageByte, index + interval, length);
-		String[] tokens = header.split(" ");
-
-		if (tokens[0] != null) {
-			switch (tokens[0]) {
-			case "STORE":
-				if (tokens[1] == null || tokens[1] == "ERROR")
-					System.out.println("Error storing peerdata in tracker");
-				break;
-			case "DATAREQUEST":
-				if (tokens[1] == null || tokens[1] == "ERROR")
-					System.out.println("Error requesting peerdata in tracker");
-				else
-					verifyPeerData(body);
-				break;
-			case "KEYREQUEST":
-				if (tokens[1] == null || tokens[1] == "ERROR")
-					System.out.println("Error requesting key in tracker");
-				else {
-					// TODO keySave - key will be in body in byte[]
-				}
-				break;
-			default:
-				System.out.println("Tracker answer: Tracker couldn't find request function");
-			}
-		} else
-			System.out.println("Tracker answer: Header format incorrect");
+	public void setTrackerConnection(PeerTCPHandler trackerConnection) {
+		this.trackerConnection = trackerConnection;
 	}
 
 	public boolean isRunningRestart() {
@@ -973,22 +818,6 @@ public class Peer implements Invocation {
 		this.runningWakeUp = runningWakeUp;
 	}
 
-	public static boolean isDebug() {
-		return debug;
-	}
-
-	public static void setDebug(boolean debug) {
-		Peer.debug = debug;
-	}
-
-	public static int getClientPort() {
-		return clientPort;
-	}
-
-	public static void setClientPort(int clientPort) {
-		Peer.clientPort = clientPort;
-	}
-
 	public static int getServerPort() {
 		return serverPort;
 	}
@@ -1003,46 +832,6 @@ public class Peer implements Invocation {
 
 	public static void setServerAddress(InetAddress serverAddress) {
 		Peer.serverAddress = serverAddress;
-	}
-
-	public static SSLSocket getRemoteSocket() {
-		return remoteSocket;
-	}
-
-	public static void setRemoteSocket(SSLSocket remoteSocket) {
-		Peer.remoteSocket = remoteSocket;
-	}
-
-	public ByteArrayOutputStream getOs() {
-		return os;
-	}
-
-	public void setOs(ByteArrayOutputStream os) {
-		this.os = os;
-	}
-
-	public DataInputStream getIn() {
-		return in;
-	}
-
-	public void setIn(DataInputStream in) {
-		this.in = in;
-	}
-
-	public DataOutputStream getOut() {
-		return out;
-	}
-
-	public void setOut(DataOutputStream out) {
-		this.out = out;
-	}
-
-	public byte[] getMessageByte() {
-		return messageByte;
-	}
-
-	public void setMessageByte(byte[] messageByte) {
-		this.messageByte = messageByte;
 	}
 
 }
