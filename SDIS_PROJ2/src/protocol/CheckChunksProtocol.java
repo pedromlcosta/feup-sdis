@@ -19,6 +19,7 @@ import messages.StoredMsg;
 import service.Peer;
 
 public class CheckChunksProtocol extends Protocol {
+	private static final int LOCAL_MAX = 3;
 	private Peer peer = Peer.getInstance();
 	private String StoredChunksFolderPath;
 	private String version;
@@ -116,17 +117,22 @@ public class CheckChunksProtocol extends Protocol {
 		Peer peer = Peer.getInstance();
 		DatagramPacket packet = peer.getControlChannel().createDatagramPacket(msg.getMessageBytes());
 		MCReceiver control = peer.getControlChannel();
-		for (int i = 0; i < MAX_MESSAGES_TO_SEND; i++) {
+		int delay;
+		// long waitTime = TimeUnit.SECONDS.toMillis(INITIAL_WAITING_TIME);
+		// HashMap<ChunkID, ArrayList<Integer>> chunksStored =
+		// peer.getAnsweredCommand();
+		for (int i = 0; i < LOCAL_MAX; i++) {
 			// 0 and 400 ms random delay
-			int delay = new Random().nextInt(SLEEP_TIME);
+			delay = randomSeed.nextInt(SLEEP_TIME);
 			try {
 				Thread.sleep(delay);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			// send message
-		 
+
 			control.writePacket(packet);
+
 		}
 	}
 
@@ -145,7 +151,6 @@ public class CheckChunksProtocol extends Protocol {
 	public static int getSleepTime() {
 		return SLEEP_TIME;
 	}
-
 
 	public void setPeer(Peer peer) {
 		this.peer = peer;

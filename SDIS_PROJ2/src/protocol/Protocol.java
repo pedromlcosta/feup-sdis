@@ -12,7 +12,9 @@ import service.Peer;
 public class Protocol extends Thread {
 	static final int SLEEP_TIME = 401;
 	static final int MAX_MESSAGES_TO_SEND = 5;
+	static final int INITIAL_WAITING_TIME = 1;
 	Peer peer = Peer.getInstance();
+	Random randomSeed = new Random();
 	String filePath;
 
 	/**

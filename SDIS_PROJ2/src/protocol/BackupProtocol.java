@@ -10,7 +10,6 @@ import java.net.SocketException;
 import java.nio.file.NoSuchFileException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 import chunk.Chunk;
@@ -25,7 +24,7 @@ import service.Peer;
 
 public class BackupProtocol extends Protocol {
 
-	private static final int INITIAL_WAITING_TIME = 1;
+	 
 	// A peer must never store the chunks of its own files.
 	private int wantedRepDegree;
 	private String version = "1.0";

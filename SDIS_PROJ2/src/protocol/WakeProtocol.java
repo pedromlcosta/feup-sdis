@@ -3,7 +3,6 @@ package protocol;
 import java.io.File;
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.util.HashMap;
 import java.util.Random;
 import java.util.Set;
 
@@ -19,6 +18,7 @@ public class WakeProtocol extends Protocol {
 	// needs Access to Peer
 	// will go through Peer Data and send the WakeUpMessages
 	private String StoredChunksFolderPath;
+	private static final int LOCAL_MAX = 3;
 	private String version;
 
 	public WakeProtocol() {
@@ -74,8 +74,8 @@ public class WakeProtocol extends Protocol {
 		MCReceiver control = peer.getControlChannel();
 		DatagramPacket msgPacket = control.createDatagramPacket(msg.getMessageBytes()); //
 
-		for (int i = 0; i < MAX_MESSAGES_TO_SEND; i++) {
-			int delay = new Random().nextInt(SLEEP_TIME);
+		for (int i = 0; i < LOCAL_MAX; i++) {
+			int delay = randomSeed.nextInt(SLEEP_TIME);
 			try {
 				Thread.sleep(delay);
 			} catch (InterruptedException e) {
