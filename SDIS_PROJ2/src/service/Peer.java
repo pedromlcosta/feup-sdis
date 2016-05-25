@@ -1,7 +1,5 @@
 package service;
 
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -20,9 +18,6 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-
 import channels.MCReceiver;
 import channels.MDBReceiver;
 import channels.MDRReceiver;
@@ -40,6 +35,8 @@ import protocol.DeleteProtocol;
 import protocol.ReclaimProtocol;
 import protocol.RestoreProtocol;
 import protocol.WakeProtocol;
+
+//TODO add sendData to every event saveData?
 
 //SINGLETON SYNCRONIZE ALL THREADS HAVE ACESS TO IT
 public class Peer implements Invocation {
@@ -185,8 +182,6 @@ public class Peer implements Invocation {
 				serverAddress = InetAddress.getByName(args[7]);
 				int port = Integer.parseInt(args[8]);
 
-				
-
 				PeerTCPHandler tcpHandler = new PeerTCPHandler(instance, serverAddress, port);
 				instance.setTrackerConnection(tcpHandler);
 				tcpHandler.initializeConnection();
@@ -245,7 +240,8 @@ public class Peer implements Invocation {
 			// e.printStackTrace();
 			return;
 		}
-
+		
+		peer.trackerConnection.requestKey();
 		registerRMI();
 		for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
 			System.out.println("Size: " + Peer.getInstance().getAnsweredCommand().get(c).size() + "  " + c.getActualRepDegree() + " " + c.getFileID() + "_" + c.getChunkNumber());
@@ -332,12 +328,6 @@ public class Peer implements Invocation {
 		}
 
 		return true;
-
-	}
-
-	public void sendMessageToTrackerTest(String message) throws IOException {
-
-		trackerConnection.sendMessageToTrackerTest(message);
 
 	}
 
@@ -429,18 +419,6 @@ public class Peer implements Invocation {
 		return "reclaim sent";
 	}
 
-	@Override
-	public String testTCP() throws RemoteException {
-
-		try {
-			sendMessageToTrackerTest("test message");
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-
-		return "";
-	}
 
 	// TODO 2 instances when restart can be called
 	// actually just one, after we ask for PD ( PeerData ) from tracker we will
@@ -832,4 +810,21 @@ public class Peer implements Invocation {
 		Peer.serverAddress = serverAddress;
 	}
 
+	public void sendMessageToTrackerTest(String message) throws IOException {
+
+		//trackerConnection.sendMessageToTrackerTest(message);
+	}
+	
+	@Override
+	public String testTCP() throws RemoteException {
+
+		try {
+			sendMessageToTrackerTest("test message");
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+
+		return "";
+	}
 }

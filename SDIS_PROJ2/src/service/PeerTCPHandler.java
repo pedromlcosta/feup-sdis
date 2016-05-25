@@ -1,14 +1,10 @@
 package service;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.util.Arrays;
 
@@ -71,7 +67,6 @@ public class PeerTCPHandler extends Thread {
 				int bytesRead = in.read(messageByte);
 				String answer = new String(messageByte, 0, bytesRead);
 				processServerMessage(answer, bytesRead);
-
 			}
 			System.out.println("Socket was closed.");
 
@@ -129,7 +124,6 @@ public class PeerTCPHandler extends Thread {
 		} catch (IOException e) {
 			System.out.println(e.getMessage());
 		}
-
 	}
 
 	public void requestData() {
@@ -226,6 +220,7 @@ public class PeerTCPHandler extends Thread {
 			System.out.println("Tracker answer: Header format incorrect");
 	}
 
+	/*
 	public void sendMessageToTrackerTest(String message) {
 		
 		BufferedReader input = null;
@@ -255,7 +250,7 @@ public class PeerTCPHandler extends Thread {
 			}
 			System.out.println("Message sent");
 
-			/*
+			
 			// RECEIVE SERVER REPLY
 			try {
 				String receivedString = input.readLine();
@@ -264,9 +259,7 @@ public class PeerTCPHandler extends Thread {
 				e.printStackTrace();
 			}
 			// System.out.println("Client received: " + receivedString);
-			*/
 		}
-
 	}
-
+	*/
 }

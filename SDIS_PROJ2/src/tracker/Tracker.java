@@ -1,13 +1,15 @@
 package tracker;
 
+//TODO definir melhor os intervalos de envio de keys
+
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
-import java.util.Base64;
 import java.util.HashMap;
+import java.util.Map.Entry;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -50,8 +52,8 @@ public class Tracker extends Thread {
 	private HashMap<Integer, PeerData> peerDataList;
 	private static String dataPath;
 	private HashMap<Integer,ServerListener> listeners;
+	private static int listenerIDgenerator = 1;
 	
-
 	public static void main(String[] args) throws IOException {
 		// Check if args are all ok and well written
 		if (args.length != 1) {
@@ -83,8 +85,10 @@ public class Tracker extends Thread {
 
 	public Tracker(int port) throws IOException, NoSuchAlgorithmException {
 		
+		listeners = new HashMap<Integer,ServerListener>();
 		generatePeerEncryptionKey();
 		setSystemProperties();
+		sendKeys();
 		
 		this.port = port;
 		try{
@@ -99,6 +103,35 @@ public class Tracker extends Thread {
 		
 		sslServerSocket.setNeedClientAuth(true);
 		dataPath = "TRACKER" + File.separator + "PeerData";
+	}
+
+	private void sendKeys() {
+		
+		Thread t = new Thread(){
+			
+			private int TIMER = 500;
+			private boolean run = true;
+			
+			public void run() {
+		        
+				while(run){
+					try {
+						Thread.sleep(TIMER);
+						
+				        for(Entry<Integer, ServerListener> entry: listeners.entrySet()){
+				        	System.out.println(entry.getKey());
+				        	ServerListener sl = entry.getValue();
+				        	sl.sendKey(getKey());
+				        }
+					} catch (InterruptedException e) {
+						System.out.println("Error in waiting between key messages delivering");
+						run = false;
+					}
+				}      	
+		    }
+		};
+		
+		t.start();
 	}
 
 	private void generatePeerEncryptionKey() throws NoSuchAlgorithmException {
@@ -134,15 +167,15 @@ public class Tracker extends Thread {
 
 			try {
 				remoteSocket = (SSLSocket) sslServerSocket.accept();
-				System.out.println("Port: " + remoteSocket.getPort());
 				System.out.println("Accepted new connection. Waiting for messages.");
 			} catch (IOException e) {
 				continue;
 			}
-			Thread serverListener;
+			ServerListener serverListener;
 			try {
-
-				serverListener = new ServerListener(remoteSocket, instance);
+				serverListener = new ServerListener(remoteSocket, instance, listenerIDgenerator);
+				listeners.put(listenerIDgenerator, serverListener);
+				listenerIDgenerator++;
 			} catch (IOException e) {
 				continue;
 			}
@@ -203,9 +236,14 @@ public class Tracker extends Thread {
 		return null;
 	}
 
-	
 	public byte[] getKey() {
 		
 		return peerEncryptionKey.getEncoded();
+	}
+
+	
+	public void removeListener(int id) {
+		
+		listeners.remove(id);
 	}
 }

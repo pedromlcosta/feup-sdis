@@ -1,13 +1,11 @@
 package tracker;
 
-import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.Arrays;
 
 import javax.net.ssl.SSLSocket;
@@ -22,19 +20,11 @@ public class ServerListener extends Thread {
 	private static int MAX_MESSAGE_LENGTH = 64000;
 	private static String EOL = "\r\n";
 	private SSLSocket remoteSocket;
-	
-	// TEST STUFF
-	BufferedReader input;
-	PrintWriter output;
+	private int id;
 	
 	public void run() {
 		
-		
-		//System.out.println(remoteSocket.getSession());
-		//System.out.println("Here");
-		
 		try {
-			
 			
 			while (!remoteSocket.isClosed() || !remoteSocket.isOutputShutdown() || remoteSocket.isInputShutdown()) {
 				// RECEIVE CLIENT REQUEST
@@ -48,24 +38,16 @@ public class ServerListener extends Thread {
 			}
 			System.out.println("Socket with peer" + "1" +" was closed.");
 			
-		} catch (IOException e) {
-			// Close stuff
-			try {
-				//in.close();
-				//out.close();
-				remoteSocket.close();
-			} catch (IOException e1) {
-				System.out.println("Failed at closing streams. They are already closed, maybe socket was closed?");
-			}
-			//e.printStackTrace();
-			System.out.println("Socket was closed.");
-			return;
-			// DO SOCKET CLOSED STUFF HERE.
+		} catch(SocketException e){
+			System.out.println("Socket conection lost");
+			tracker.removeListener(id);
+		}
+		catch (IOException e) {
+			System.out.println(e.getMessage());
 		} 
-		
 	}
 
-	public ServerListener(SSLSocket remoteSocket, Tracker tracker) throws IOException {
+	public ServerListener(SSLSocket remoteSocket, Tracker tracker, int listenerID) throws IOException {
 		
 		this.tracker = tracker;
 		this.remoteSocket = remoteSocket;
@@ -75,6 +57,7 @@ public class ServerListener extends Thread {
 		os = new ByteArrayOutputStream();
 		
 		messageByte = new byte[MAX_MESSAGE_LENGTH];
+		this.id = listenerID;
 	}
 
 	public Socket getRemoteSocket() {
@@ -99,8 +82,6 @@ public class ServerListener extends Thread {
 		int interval = endHeader().getBytes().length;
 		byte[] body = Arrays.copyOfRange(messageByte,index+interval,length);
 		String[] tokens = header.split(" ");
-		
-		Tracker tracker = Tracker.getInstance();
 		
 		try{
 			if(tokens[0] != null){
@@ -131,6 +112,7 @@ public class ServerListener extends Thread {
 						os.write((tokens[0] + " " + "SUCCESS" + endHeader()).getBytes());
 						os.write(response);
 						response = os.toByteArray();
+						os.reset();
 					}
 					else
 						response = (tokens[0] + " " + "ERROR" + endHeader() + "Cannot retrieve a key").getBytes();
@@ -151,5 +133,19 @@ public class ServerListener extends Thread {
 	private String endHeader(){
 		
 		return EOL + EOL;
+	}
+
+	public void sendKey(byte[] key) {
+		
+		try {
+			if(key != null){
+				os.write(("KEYREQUEST SUCCESS" + endHeader()).getBytes());
+				os.write(key);
+				out.write(os.toByteArray());
+				os.reset();
+			}
+		} catch (IOException e) {
+			System.out.println("Error sending the key");
+		}
 	}
 }
