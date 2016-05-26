@@ -181,8 +181,6 @@ public class PeerTCPHandler extends Thread {
 
 	public void processServerMessage(String request, int length) {
 
-		System.out.println("Request:" + request);
-
 		int index = request.indexOf(endHeader());
 		if (index == -1) {
 			System.out.println("Tracker answer: No header especified");
@@ -211,6 +209,7 @@ public class PeerTCPHandler extends Thread {
 					System.out.println("Error requesting key in tracker");
 				else {
 					// TODO keySave - key will be in body in byte[]
+					peerInstance.setKey(body);
 				}
 				break;
 			default:

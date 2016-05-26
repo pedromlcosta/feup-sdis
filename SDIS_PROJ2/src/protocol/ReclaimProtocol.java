@@ -57,6 +57,7 @@ public class ReclaimProtocol extends Protocol {
 		// Save alterations to peer data
 		try {
 			peer.saveData();
+			peer.getTrackerConnection().sendData();
 		} catch (FileNotFoundException e) {
 			System.out.println("File to save Data not found");
 		} catch (IOException e) {
@@ -110,6 +111,7 @@ public class ReclaimProtocol extends Protocol {
 		if (chunksRemoved)
 			try {
 				peer.saveData();
+				peer.getTrackerConnection().sendData();
 			} catch (FileNotFoundException e) {
 				System.out.println("File to save Data not found");
 			} catch (IOException e) {

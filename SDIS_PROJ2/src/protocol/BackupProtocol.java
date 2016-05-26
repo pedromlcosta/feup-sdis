@@ -97,7 +97,7 @@ public class BackupProtocol extends Protocol {
 			// Finished backing up, save?
 			try {
 				peer.saveData();
-				// peer.sendData();
+				peer.getTrackerConnection().sendData();
 			} catch (FileNotFoundException e) {
 				System.out.println("File to save Data not found");
 			} catch (IOException e) {
@@ -300,7 +300,6 @@ public class BackupProtocol extends Protocol {
 			try {
 				peer.saveData();
 				peer.getTrackerConnection().sendData();
-
 			} catch (FileNotFoundException e) {
 				System.out.println("File to save Data not found");
 			} catch (IOException e) {

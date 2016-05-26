@@ -18,6 +18,8 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.crypto.spec.SecretKeySpec;
+
 import channels.MCReceiver;
 import channels.MDBReceiver;
 import channels.MDRReceiver;
@@ -79,6 +81,7 @@ public class Peer implements Invocation {
 
 	// Tracker connection data fields
 	private PeerTCPHandler trackerConnection;
+	private SecretKeySpec encryptionKey;
 	static int serverPort;
 	static InetAddress serverAddress;
 
@@ -826,5 +829,10 @@ public class Peer implements Invocation {
 		}
 
 		return "";
+	}
+
+	public void setKey(byte[] key) {
+		
+		encryptionKey = new SecretKeySpec(key, 0, key.length, "AES");
 	}
 }

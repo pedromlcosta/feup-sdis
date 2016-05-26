@@ -119,7 +119,6 @@ public class Tracker extends Thread {
 						Thread.sleep(TIMER);
 						
 				        for(Entry<Integer, ServerListener> entry: listeners.entrySet()){
-				        	System.out.println(entry.getKey());
 				        	ServerListener sl = entry.getValue();
 				        	sl.sendKey(getKey());
 				        }
@@ -241,7 +240,6 @@ public class Tracker extends Thread {
 		return peerEncryptionKey.getEncoded();
 	}
 
-	
 	public void removeListener(int id) {
 		
 		listeners.remove(id);
