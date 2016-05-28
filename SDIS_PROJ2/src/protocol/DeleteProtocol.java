@@ -76,8 +76,13 @@ public class DeleteProtocol extends Protocol {
 		msg.createMessage(null, "1.0", Integer.toString(peer.getServerID()), fileID);
 
 		MCReceiver mc = peer.getControlChannel();
-		DatagramPacket msgPacket = mc.createDatagramPacket(msg.getMessageBytes());
+		byte[] msgBytes = msg.getMessageBytes();
+		int messageSize = msgBytes.length;
+		byte copyOfMessage[] = new byte[messageSize];
+		 
 		while (nMessagesSent < MAX_MESSAGES_TO_SEND) {
+			System.arraycopy(msgBytes, 0, copyOfMessage, 0, messageSize);
+			DatagramPacket msgPacket = mc.createDatagramPacket(copyOfMessage);
 			mc.writePacket(msgPacket);
 			try {
 				Thread.sleep(200);
