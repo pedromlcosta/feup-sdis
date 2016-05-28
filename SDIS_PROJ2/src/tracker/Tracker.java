@@ -10,6 +10,7 @@ import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 import java.util.HashMap;
 import java.util.Map.Entry;
+import java.util.concurrent.TimeUnit;
 
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
@@ -36,10 +37,12 @@ public class Tracker extends Thread {
 	}
 
 	// Final Data fields
-	final static String pathToStorage = System.getProperty("user.dir") + "\\storage\\";
+	final static String pathToStorage = System.getProperty("user.dir") ;
 	final static String keyStoreFile = "server.keys";
+	final static String trustStoreFile = "truststore";
 	final static String passwd = "123456";
 	final static boolean debug = false;
+	final static int MINUTES_REDISTRIBUTE_KEY = 120;
 	
 	// Normal Data fields
 	boolean serverEnd = false;
@@ -109,22 +112,28 @@ public class Tracker extends Thread {
 		
 		Thread t = new Thread(){
 			
-			private int TIMER = 500;
+			private long TIMER = TimeUnit.MINUTES.toMillis(MINUTES_REDISTRIBUTE_KEY);
 			private boolean run = true;
 			
 			public void run() {
 		        
 				while(run){
 					try {
+			
 						Thread.sleep(TIMER);
+						generatePeerEncryptionKey();
 						
 				        for(Entry<Integer, ServerListener> entry: listeners.entrySet()){
 				        	ServerListener sl = entry.getValue();
 				        	sl.sendKey(getKey());
 				        }
+				       
+				        
 					} catch (InterruptedException e) {
 						System.out.println("Error in waiting between key messages delivering");
 						run = false;
+					} catch (NoSuchAlgorithmException e) {
+						System.out.println("Error creating new key");
 					}
 				}      	
 		    }
@@ -137,7 +146,7 @@ public class Tracker extends Thread {
 		
 		KeyGenerator keyGen = KeyGenerator.getInstance("AES");
 	    SecureRandom random = new SecureRandom(); // cryptograph. secure random 
-	    keyGen.init(256,random); 
+	    keyGen.init(128,random); 
 	    peerEncryptionKey = keyGen.generateKey();
 	    
 	    //System.out.println(Base64.getEncoder().encodeToString(peerEncryptionKey.getEncoded()));
@@ -145,12 +154,13 @@ public class Tracker extends Thread {
 	}
 
 	private void setSystemProperties() {
-		String trustFileName = pathToStorage + "/" + keyStoreFile;
+		String storeFileName = pathToStorage + "/" + keyStoreFile;
+		String trustFileName = pathToStorage + "/" + trustStoreFile;
 		
-		System.setProperty("javax.net.ssl.keyStore", "server.keys");
-		System.setProperty("javax.net.ssl.keyStorePassword", "123456");
-		System.setProperty("javax.net.ssl.trustStore", "truststore");
-		System.setProperty("javax.net.ssl.trustStorePassword", "123456");
+		System.setProperty("javax.net.ssl.keyStore", storeFileName);
+		System.setProperty("javax.net.ssl.keyStorePassword", passwd);
+		System.setProperty("javax.net.ssl.trustStore", trustFileName);
+		System.setProperty("javax.net.ssl.trustStorePassword", passwd);
 		if(debug)
 			System.setProperty("javax.net.debug", "all");
 	}

@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 
 import channels.MCReceiver;
@@ -81,7 +82,8 @@ public class Peer implements Invocation {
 
 	// Tracker connection data fields
 	private PeerTCPHandler trackerConnection;
-	private SecretKeySpec encryptionKey;
+	
+	private SecretKey encryptionKey = null;
 	static int serverPort;
 	static InetAddress serverAddress;
 
@@ -91,9 +93,9 @@ public class Peer implements Invocation {
 	 */
 	public Peer() {
 
-		controlChannel = new MCReceiver();
-		dataChannel = new MDBReceiver();
-		restoreChannel = new MDRReceiver();
+		controlChannel = new MCReceiver(this);
+		dataChannel = new MDBReceiver(this);
+		restoreChannel = new MDRReceiver(this);
 		data = new PeerData();
 	}
 
@@ -245,6 +247,14 @@ public class Peer implements Invocation {
 		}
 		
 		peer.trackerConnection.requestKey();
+		
+		while(instance.encryptionKey == null){
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+			}
+		}
+		
 		registerRMI();
 		for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
 			System.out.println("Size: " + Peer.getInstance().getAnsweredCommand().get(c).size() + "  " + c.getActualRepDegree() + " " + c.getFileID() + "_" + c.getChunkNumber());
@@ -835,4 +845,13 @@ public class Peer implements Invocation {
 		
 		encryptionKey = new SecretKeySpec(key, 0, key.length, "AES");
 	}
+
+	public SecretKey getEncryptionKey() {
+		return encryptionKey;
+	}
+
+	public void setEncryptionKey(SecretKey encryptionKey) {
+		this.encryptionKey = encryptionKey;
+	}
+
 }

@@ -19,16 +19,19 @@ import extra.FileHandler;
 public class PeerTCPHandler extends Thread {
 
 	// Final Data fields
-	final static String pathToStorage = System.getProperty("user.dir") + "\\storage\\";
+	final static String pathToStorage = System.getProperty("user.dir");
 	final static String keyStoreFile = "client.keys";
+	final static String trustStoreFile = "truststore";
 	final static String passwd = "123456";
 	final boolean debug = false;
+	final static int RECONNECT_TIME = 2000;
 
 	private Peer peerInstance;
 
 	private int serverPort;
 	private InetAddress serverAddress;
 	private SSLSocket remoteSocket;
+	private boolean connectionOnline = false;
 
 	private ByteArrayOutputStream os;
 	private DataInputStream in;
@@ -54,6 +57,10 @@ public class PeerTCPHandler extends Thread {
 		// Initialize streams
 		in = new DataInputStream(remoteSocket.getInputStream());
 		out = new DataOutputStream(remoteSocket.getOutputStream());
+		
+		// Got to this point without exceptions = online again!
+		connectionOnline = true;
+		
 	}
 
 	public void run() {
@@ -77,21 +84,47 @@ public class PeerTCPHandler extends Thread {
 			} catch (IOException e1) {
 				System.out.println("Failed at closing streams. They are already closed, maybe socket was closed?");
 			}
-			e.printStackTrace();
-			System.out.println("Socket was closed.");
-			// DO SOCKET CLOSED STUFF HERE.
+			//e.printStackTrace();
+			connectionOnline = false;
+			System.out.println("Lost connection to the tracker.");
+			
+			while(!connectionOnline){
+				System.out.println("Trying to reconnect...");
+				
+				try {
+					
+					initializeConnection();
+					if(connectionOnline)
+						break;
+					else
+						Thread.sleep(RECONNECT_TIME);
+					
+				} catch (IOException e2) {
+					//e2.printStackTrace();
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				
+			}
+			
+			// Is connected again, run listener again
+			run();
+			
+			
 		}
 
 	}
 
 	private void setSystemProperties() {
-		String trustFileName = pathToStorage + "/" + keyStoreFile;
+		String storeFileName = pathToStorage + "/" + keyStoreFile;
+		String trustFileName = pathToStorage + "/" + trustStoreFile;
+		
 
 		// TODO: CHANGE TO TRUSTFILENAME AND PASSWD
-		System.setProperty("javax.net.ssl.keyStore", "client.keys");
-		System.setProperty("javax.net.ssl.keyStorePassword", "123456");
-		System.setProperty("javax.net.ssl.trustStore", "truststore");
-		System.setProperty("javax.net.ssl.trustStorePassword", "123456");
+		System.setProperty("javax.net.ssl.keyStore", storeFileName);
+		System.setProperty("javax.net.ssl.keyStorePassword", passwd);
+		System.setProperty("javax.net.ssl.trustStore", trustFileName);
+		System.setProperty("javax.net.ssl.trustStorePassword", passwd);
 
 		if (debug) {
 			System.setProperty("javax.net.debug", "all");
@@ -208,7 +241,6 @@ public class PeerTCPHandler extends Thread {
 				if (tokens[1] == null || tokens[1] == "ERROR")
 					System.out.println("Error requesting key in tracker");
 				else {
-					// TODO keySave - key will be in body in byte[]
 					peerInstance.setKey(body);
 				}
 				break;
@@ -261,4 +293,12 @@ public class PeerTCPHandler extends Thread {
 		}
 	}
 	*/
+	
+	public boolean isConnectionOnline() {
+		return connectionOnline;
+	}
+
+	public void setConnectionOnline(boolean connectionOnline) {
+		this.connectionOnline = connectionOnline;
+	}
 }

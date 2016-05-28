@@ -73,8 +73,8 @@ public class BackupProtocol extends Protocol {
 						if (!fileList.contains(fileID)) {
 							fileList.add(fileID);
 						} else {
-							System.out.println("File already backed up");
-							return;
+							//System.out.println("File already backed up");
+							//return;
 						}
 					}
 			} else {
