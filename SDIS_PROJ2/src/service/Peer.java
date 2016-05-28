@@ -196,7 +196,7 @@ public class Peer implements Invocation {
 				connectedTracker = false;
 
 			} catch (ConnectException e2) {
-				System.out.println("Problem connecting to server (wrong address or port?). Will retry in 2 seconds.");
+				System.out.println("Problem connecting to server (wrong address or port?). Will retry in 2 seconds");
 				
 				try {
 					Thread.sleep(2000);
@@ -204,15 +204,7 @@ public class Peer implements Invocation {
 					e.printStackTrace();
 				}
 			} catch (IOException e3){
-				
-				try {
-					Thread.sleep(2000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
-				
-				System.out.println("Problem connecting to server. Error creating input streams. Will retry in 2 seconds.");
-				System.out.println("Missing key files?");
+				System.out.println("Error creating input streams");
 			}
 		}
 		System.out.println("Connected to tracker.");

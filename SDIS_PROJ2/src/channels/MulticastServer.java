@@ -4,30 +4,19 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.InetAddress;
 import java.net.MulticastSocket;
-import java.security.AlgorithmParameters;
-import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.Key;
 import java.security.NoSuchAlgorithmException;
-import java.security.SecureRandom;
-import java.security.spec.InvalidParameterSpecException;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.Base64.Decoder;
 
 import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SecretKey;
-import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
-
-
-
-
-
-
-
 
 import chunk.Chunk;
 import messages.Message;
@@ -37,13 +26,13 @@ import service.Processor;
 public class MulticastServer extends Thread {
 
 	private static final int HEADER_SIZE = 512;
-	private static final String CIPHER_TYPE = "AES/CBC/PKCS5Padding";
+	private static final String CIPHER_TYPE = "AES";
 	private MulticastSocket socket = null;
 	private boolean quitFlag = false;
 	private int serverID;
 	private InetAddress addr;
 	private int port;
-	private byte[] buf = new byte[Chunk.getChunkSize()*2 + 512];
+	private byte[] buf = new byte[Chunk.getChunkSize() + 512];
 	protected Peer user;
 
 	/**
@@ -285,32 +274,21 @@ public class MulticastServer extends Thread {
 			//System.out.println(Base64.getEncoder().encodeToString(user.getEncryptionKey().getEncoded()));
 			
 			Cipher cipher = Cipher.getInstance(CIPHER_TYPE);
-
-			byte[] iv = cipher.getParameters().getParameterSpec(IvParameterSpec.class).getIV();
-			
-			IvParameterSpec ivSpec = new IvParameterSpec(iv);
 			cipher.init(Cipher.ENCRYPT_MODE, user.getEncryptionKey());
 			
-			System.out.println("Original length: " + p.getLength());
 			//System.out.println("Data straight to string: " + new String(p.getData()));
-			//String data = Base64.encodeBase64String(p.getData());
-			//data = new String(p.getData());
+			String data = Base64.getEncoder().encodeToString(p.getData());
+			data = new String(p.getData());
 			//System.out.println("Data to string with encode: " + data);
 			//byte[] dataUTF = data.getBytes("UTF-8");
 			//System.out.println("Before encrypt + encode: " + new String(p.getData()));
-			
-			
 			byte[] encryptedData = cipher.doFinal(p.getData());
-			System.out.println("Length after encryption: " + encryptedData.length);
 			byte[] encodedData = Base64.getEncoder().encode(encryptedData);
 			//System.out.println("After encrypt and before encode: " + new String(encryptedData));
 			//System.out.println("After encrypt + encode: " + new String(encodedData));
 			
 		
 			p.setData(encodedData);
-			p.setLength(encodedData.length);
-			
-			System.out.println("Sending packet with length: " + p.getLength() + " and data length: " + encodedData.length);
 			this.socket.send(p);
 		} catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException e) {
 			e.printStackTrace();
@@ -322,9 +300,6 @@ public class MulticastServer extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (BadPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidParameterSpecException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
@@ -340,35 +315,21 @@ public class MulticastServer extends Thread {
 	public DatagramPacket readPacket(DatagramPacket p) {
 		try {
 			
-			
-			
 			this.socket.receive(p);
 			
 			Cipher cipher = Cipher.getInstance(CIPHER_TYPE);
+			cipher.init(Cipher.DECRYPT_MODE, user.getEncryptionKey());
 			
-			byte[] iv = cipher.getParameters().getParameterSpec(IvParameterSpec.class).getIV();
-			
-			IvParameterSpec ivSpec = new IvParameterSpec(iv);
-			  
-			cipher.init(Cipher.DECRYPT_MODE, user.getEncryptionKey(), ivSpec);
-			
-			
-			byte[] data = new byte[p.getLength()];
-			System.arraycopy(p.getData(), 0, data, 0, p.getLength());
-			
-			System.out.println("Received packet with length: " + p.getLength() + " and encodedData with length: " + data.length);
+			String test = new String(p.getData(),0,p.getLength());
+			byte[] data = test.getBytes();
 			
 			//System.out.println("Before decode and decrypt: " + new String(data));
 			byte[] decodedData = Base64.getDecoder().decode(data);
 			//System.out.println("After decode and before decrypt: " + new String(decodedData));
-			System.out.println("Decoded data has length: " + decodedData.length);
 			byte[] decryptedData = cipher.doFinal(decodedData);
-			System.out.println("Successfully decrypted.");
-			System.out.println("");
 			//System.out.println("After decode + decrypt: " + new String(decryptedData));
 			
 			p.setData(decryptedData);
-			
 			
 			return p;
 		} catch (IOException e) {
@@ -387,12 +348,6 @@ public class MulticastServer extends Thread {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (NoSuchPaddingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidAlgorithmParameterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidParameterSpecException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
