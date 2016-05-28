@@ -19,8 +19,9 @@ import extra.FileHandler;
 public class PeerTCPHandler extends Thread {
 
 	// Final Data fields
-	final static String pathToStorage = System.getProperty("user.dir") + "\\storage\\";
+	final static String pathToStorage = System.getProperty("user.dir");
 	final static String keyStoreFile = "client.keys";
+	final static String trustStoreFile = "truststore";
 	final static String passwd = "123456";
 	final boolean debug = false;
 
@@ -85,13 +86,15 @@ public class PeerTCPHandler extends Thread {
 	}
 
 	private void setSystemProperties() {
-		String trustFileName = pathToStorage + "/" + keyStoreFile;
+		String storeFileName = pathToStorage + "/" + keyStoreFile;
+		String trustFileName = pathToStorage + "/" + trustStoreFile;
+		
 
 		// TODO: CHANGE TO TRUSTFILENAME AND PASSWD
-		System.setProperty("javax.net.ssl.keyStore", "client.keys");
-		System.setProperty("javax.net.ssl.keyStorePassword", "123456");
-		System.setProperty("javax.net.ssl.trustStore", "truststore");
-		System.setProperty("javax.net.ssl.trustStorePassword", "123456");
+		System.setProperty("javax.net.ssl.keyStore", storeFileName);
+		System.setProperty("javax.net.ssl.keyStorePassword", passwd);
+		System.setProperty("javax.net.ssl.trustStore", trustFileName);
+		System.setProperty("javax.net.ssl.trustStorePassword", passwd);
 
 		if (debug) {
 			System.setProperty("javax.net.debug", "all");
@@ -208,7 +211,6 @@ public class PeerTCPHandler extends Thread {
 				if (tokens[1] == null || tokens[1] == "ERROR")
 					System.out.println("Error requesting key in tracker");
 				else {
-					// TODO keySave - key will be in body in byte[]
 					peerInstance.setKey(body);
 				}
 				break;

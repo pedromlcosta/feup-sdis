@@ -2,13 +2,15 @@ package channels;
 
 import java.net.InetAddress;
 
+import service.Peer;
+
 public class MDBReceiver extends MulticastServer {
 	
 	/**
 	 * Default constructor for this subclass
 	 */
-	public MDBReceiver(){
-		
+	public MDBReceiver(Peer peer){
+		user = peer;
 	}
 
 	/**

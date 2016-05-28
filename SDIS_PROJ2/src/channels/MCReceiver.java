@@ -2,14 +2,16 @@ package channels;
 
 import java.net.InetAddress;
 
+import service.Peer;
+
 
 public class MCReceiver extends MulticastServer {
 
 	/**
 	 * Default constructor for this subclass
 	 */
-	public MCReceiver(){
-		
+	public MCReceiver(Peer peer){
+		user = peer;
 	}
 
 	/**

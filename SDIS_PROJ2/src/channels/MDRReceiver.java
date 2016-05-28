@@ -5,6 +5,7 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import service.Peer;
 import chunk.Chunk;
 import chunk.ChunkID;
 
@@ -17,8 +18,8 @@ public class MDRReceiver extends MulticastServer {
 	/**
 	 * Default constructor for this subclass
 	 */
-	public MDRReceiver(){
-		
+	public MDRReceiver(Peer peer){
+		user = peer;
 	}
 	
 	/**
