@@ -122,8 +122,8 @@ public class CheckChunksProtocol extends Protocol {
 		// HashMap<ChunkID, ArrayList<Integer>> chunksStored =
 		// peer.getAnsweredCommand();
 		for (int i = 0; i < LOCAL_MAX; i++) {
-			// 0 and 400 ms random delay
 			control.writePacket(packet);
+			// 0 and 400 ms random delay
 			delay = randomSeed.nextInt(SLEEP_TIME);
 			try {
 				Thread.sleep(delay);

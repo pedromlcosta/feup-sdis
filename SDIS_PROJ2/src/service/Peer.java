@@ -35,7 +35,6 @@ import monitor.Monitor;
 import protocol.BackupProtocol;
 import protocol.CheckChunksProtocol;
 import protocol.DeleteProtocol;
-import protocol.Protocol;
 import protocol.ReclaimProtocol;
 import protocol.RestoreProtocol;
 import protocol.WakeProtocol;
@@ -58,8 +57,7 @@ public class Peer implements Invocation {
 	}
 
 	private PeerData data;
-	private static boolean connectedTracker = true; // TELLS IF THE PEER IS
-													// CONNECTED TO THE TRACKER
+	private static boolean connectedTracker = true; // TELLS IF THE PEER IS CONNECTED TO THE TRACKER
 
 	private MCReceiver controlChannel;
 	private MDBReceiver dataChannel;
@@ -84,7 +82,7 @@ public class Peer implements Invocation {
 
 	// Tracker connection data fields
 	private PeerTCPHandler trackerConnection;
-
+	
 	private SecretKey encryptionKey = null;
 	static int serverPort;
 	static InetAddress serverAddress;
@@ -198,15 +196,23 @@ public class Peer implements Invocation {
 				connectedTracker = false;
 
 			} catch (ConnectException e2) {
-				System.out.println("Problem connecting to server (wrong address or port?). Will retry in 2 seconds");
-
+				System.out.println("Problem connecting to server (wrong address or port?). Will retry in 2 seconds.");
+				
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-			} catch (IOException e3) {
-				System.out.println("Error creating input streams");
+			} catch (IOException e3){
+				
+				try {
+					Thread.sleep(2000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+				
+				System.out.println("Problem connecting to server. Error creating input streams. Will retry in 2 seconds.");
+				System.out.println("Missing key files?");
 			}
 		}
 		System.out.println("Connected to tracker.");
@@ -247,16 +253,16 @@ public class Peer implements Invocation {
 			// e.printStackTrace();
 			return;
 		}
-
+		
 		peer.trackerConnection.requestKey();
-
-		while (instance.encryptionKey == null) {
+		
+		while(instance.encryptionKey == null){
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
 			}
 		}
-
+		
 		registerRMI();
 		for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
 			System.out.println("Size: " + Peer.getInstance().getAnsweredCommand().get(c).size() + "  " + c.getActualRepDegree() + " " + c.getFileID() + "_" + c.getChunkNumber());
@@ -391,14 +397,10 @@ public class Peer implements Invocation {
 
 		// Call backup protocol through dispatcher
 		System.out.println(desiredRepDegree);
-		// TODO check if we leave this static or not
-		if (Protocol.checkTrackerStatus()) {
-			new BackupProtocol(filePath, desiredRepDegree, "1.0", Peer.getInstance()).start();
+		new BackupProtocol(filePath, desiredRepDegree, "1.0", Peer.getInstance()).start();
 
-			System.out.println("backup called");
-			return "backup sent";
-		}
-		return "backup not sent";
+		System.out.println("backup called");
+		return "backup sent";
 	}
 
 	/**
@@ -407,14 +409,11 @@ public class Peer implements Invocation {
 	@Override
 	public String restore(String filePath) throws RemoteException {
 		// Call restore protocol
-		// TODO check if we leave this static or not
-		if (Protocol.checkTrackerStatus()) {
-			Thread restore = new RestoreProtocol(filePath);
-			restore.start();
-			System.out.println("restore called");
-			return "restore sent";
-		}
-		return "restore not sent";
+
+		Thread restore = new RestoreProtocol(filePath);
+		restore.start();
+		System.out.println("restore called");
+		return "restore sent";
 	}
 
 	/**
@@ -422,16 +421,11 @@ public class Peer implements Invocation {
 	 */
 	@Override
 	public synchronized String delete(String filePath) throws RemoteException {
-
-		// TODO check if we leave this static or not
-		if (Protocol.checkTrackerStatus()) {
-			// Call delete protocol
-			System.out.println("Before calling delete");
-			(new DeleteProtocol(filePath)).start();
-			System.out.println("delete called");
-			return "delete sent";
-		}
-		return "delete not sent";
+		// Call delete protocol
+		System.out.println("Before calling delete");
+		(new DeleteProtocol(filePath)).start();
+		System.out.println("delete called");
+		return "delete sent";
 	}
 
 	/**
@@ -439,16 +433,13 @@ public class Peer implements Invocation {
 	 */
 	@Override
 	public String reclaim(int reclaimSpace) throws RemoteException {
-		// TODO check if we leave this static or not
-		if (Protocol.checkTrackerStatus()) {
-			// Call reclaim protocol
-			Thread reclaim = new ReclaimProtocol(reclaimSpace);
-			reclaim.start();
-			System.out.println("reclaim called");
-			return "reclaim sent";
-		}
-		return "reclaim not sent";
+		// Call reclaim protocol
+		Thread reclaim = new ReclaimProtocol(reclaimSpace);
+		reclaim.start();
+		System.out.println("reclaim called");
+		return "reclaim sent";
 	}
+
 
 	// TODO 2 instances when restart can be called
 	// actually just one, after we ask for PD ( PeerData ) from tracker we will
@@ -458,47 +449,36 @@ public class Peer implements Invocation {
 	// if no local PD we use the PD tracker gave us
 
 	public String wakeUp() throws RemoteException {
-		// TODO check if we leave this static or not
-		if (Protocol.checkTrackerStatus()) {
-			if (isRunningWakeUp() || isRunningRestart()) {
-				System.out.println("WakeUp Called");
-				Thread wakeup = new WakeProtocol();
-				wakeup.start();
-				return "WakeUp sent";
-			} else
-				return "Already running WakeUp or Restart";
-		}
-		return "WakeUp not sent";
+
+		if (isRunningWakeUp() || isRunningRestart()) {
+			System.out.println("WakeUp Called");
+			Thread wakeup = new WakeProtocol();
+			wakeup.start();
+			return "WakeUp";
+		} else
+			return "Already running WakeUp or Restart";
 
 	}
 
 	public String checkChunks() throws RemoteException {
-		// TODO check if we leave this static or not
-		if (Protocol.checkTrackerStatus()) {
-			if (isRunningCheckChunks() || isRunningRestart()) {
-				System.out.println("Check Chunks Called");
-				Thread checkChunks = new CheckChunksProtocol();
-				checkChunks.start();
-				return "check Chunks sent";
-			} else
-				return "Already running CheckChunks or Restart";
-		}
-		return "check Chunks not sent";
+
+		if (isRunningCheckChunks() || isRunningRestart()) {
+			System.out.println("Check Chunks Called");
+			Thread checkChunks = new CheckChunksProtocol();
+			checkChunks.start();
+			return "check Chunks";
+		} else
+			return "Already running CheckChunks or Restart";
 	}
 
 	public String restartProtocol() throws RemoteException {
-		// TODO check if we leave this static or not
-		if (Protocol.checkTrackerStatus()) {
-
-			if (isRunningRestart()) {
-				data.resetChunkData();
-				wakeUp();
-				checkChunks();
-				return "restart sent";
-			} else
-				return "Already running one restartProtocol";
-		}
-		return "restart not sent";
+		if (isRunningRestart()) {
+			data.resetChunkData();
+			wakeUp();
+			checkChunks();
+			return "restart";
+		} else
+			return "Already running one restartProtocol";
 	}
 
 	/**
@@ -853,9 +833,9 @@ public class Peer implements Invocation {
 
 	public void sendMessageToTrackerTest(String message) throws IOException {
 
-		// trackerConnection.sendMessageToTrackerTest(message);
+		//trackerConnection.sendMessageToTrackerTest(message);
 	}
-
+	
 	@Override
 	public String testTCP() throws RemoteException {
 
@@ -870,7 +850,7 @@ public class Peer implements Invocation {
 	}
 
 	public void setKey(byte[] key) {
-
+		
 		encryptionKey = new SecretKeySpec(key, 0, key.length, "AES");
 	}
 

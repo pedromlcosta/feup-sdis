@@ -50,15 +50,15 @@ public class WakeProtocol extends Protocol {
 			String[] fileIDs = fileName.split(sufix);
 			if (fileIDs.length > 0) {
 				String fileID = fileIDs[0];
+				// if (chunkStored.get(fileID) == null) {
 				// chunkStored.put(fileID, true);
 				String args[] = new String[3];
 				args[0] = Peer.getCurrentVersion();
 				args[1] = Integer.toString(peer.getServerID());
 				args[2] = fileID;
-				new Thread(() -> {
-					sendWakeUp(args);
-				}).start();
+				sendWakeUp(args);
 				// The rest of the work need to be done at the processor
+				// }
 			}
 		}
 	}

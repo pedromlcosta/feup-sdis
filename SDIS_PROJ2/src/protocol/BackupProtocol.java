@@ -36,6 +36,7 @@ public class BackupProtocol extends Protocol {
 		this.peer = instance;
 	}
 
+	
 	public BackupProtocol(Peer instance) {
 		this.peer = instance;
 	}

@@ -10,7 +10,6 @@ import messages.Message;
 import service.Peer;
 
 public class Protocol extends Thread {
-	private static final int ONE_SEC_IN_MILI_SEC = 1000;
 	static final int SLEEP_TIME = 401;
 	static final int MAX_MESSAGES_TO_SEND = 5;
 	static final int INITIAL_WAITING_TIME = 1;
