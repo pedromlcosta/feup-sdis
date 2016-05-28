@@ -80,6 +80,10 @@ public class PeerData implements Serializable {
 		objOut.writeObject(this);
 		fileOut.close();
 		objOut.close();
+		for (ChunkID id : serverAnsweredCommand.keySet()) {
+			System.out.println("CHUNKID: " + id);
+			System.out.println(" " + serverAnsweredCommand.get(id).size());
+		}
 	}
 
 	/**
@@ -121,11 +125,15 @@ public class PeerData implements Serializable {
 			PeerData data = (PeerData) obj;
 			System.out.println("Finished loading PeerData");
 			System.out.println("DELTED FILES: " + data.getFilesDeleted().toString());
+			for (ChunkID id : serverAnsweredCommand.keySet()) {
+				System.out.println("CHUNKID: " + id);
+				System.out.println(" " + serverAnsweredCommand.get(id).size());
+			}
 			return data;
 		} else {
 			throw new ClassNotFoundException("Object read from PeerData.dat isn't a valid PeerData object.");
 		}
-
+		 
 	}
 
 	// GETTERS AND SETTERS
