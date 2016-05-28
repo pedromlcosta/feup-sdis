@@ -214,7 +214,8 @@ public class BackupProtocol extends Protocol {
 		}
 		long waitTime = TimeUnit.SECONDS.toNanos(INITIAL_WAITING_TIME);
 		do {
-			System.out.println("Wait for STORED");
+			System.out.println("Writing PUTCHUNK message.");
+			System.out.println("Packet length: " + msgPacket.getLength());
 			// send Message
 			peer.getDataChannel().writePacket(msgPacket);
 			nMessagesSent++;
