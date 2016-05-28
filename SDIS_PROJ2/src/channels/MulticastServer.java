@@ -22,13 +22,6 @@ import javax.crypto.SecretKey;
 import javax.crypto.spec.IvParameterSpec;
 import javax.crypto.spec.SecretKeySpec;
 
-
-
-
-
-
-
-
 import chunk.Chunk;
 import messages.Message;
 import service.Peer;
@@ -38,8 +31,8 @@ public class MulticastServer extends Thread {
 
 	private static final int HEADER_SIZE = 512;
 	private static final String CIPHER_TYPE = "AES";
-	
-	private int dataSize = Chunk.getChunkSize()*2;
+
+	private int dataSize = Chunk.getChunkSize() * 2;
 	private MulticastSocket socket = null;
 	private boolean quitFlag = false;
 	private int serverID;
@@ -123,9 +116,9 @@ public class MulticastServer extends Thread {
 			byte[] receivedMessage = receivePacket.getData();
 			byte[] body = null;
 			String header = null;
-			
-			System.out.println("Received message: " + new String(receivedMessage));
-			
+
+			//System.out.println("Received message: " + new String(receivedMessage));
+
 			for (int i = 0; i < receivedMessage.length; i++) {
 				if (receivedMessage[i] == '\r' && receivedMessage[i + 1] == '\n')
 					if (receivedMessage[i + 2] == '\r' && receivedMessage[i + 3] == '\n') {
@@ -142,8 +135,7 @@ public class MulticastServer extends Thread {
 				String[] headerArgs = Message.parseHeader(header);
 				System.out.println("headerArgs: " + headerArgs);
 				// TODO ignore messages sent by server
-				if (Integer.parseInt(headerArgs[2]) == Peer.getInstance().getServerID()
-						|| !headerArgs[1].equals(Peer.getCurrentVersion())) {
+				if (Integer.parseInt(headerArgs[2]) == Peer.getInstance().getServerID() || !headerArgs[1].equals(Peer.getCurrentVersion())) {
 					// System.out.println("same server");
 				} else {
 					System.out.print("Server Received:");
@@ -291,7 +283,7 @@ public class MulticastServer extends Thread {
 			//System.out.println(Base64.getEncoder().encodeToString(user.getEncryptionKey().getEncoded()));
 			
 			Cipher cipher = Cipher.getInstance(CIPHER_TYPE);
-
+			
 			cipher.init(Cipher.ENCRYPT_MODE, user.getEncryptionKey());
 			
 			System.out.println("Original length: " + p.getLength());
@@ -309,29 +301,29 @@ public class MulticastServer extends Thread {
 			//System.out.println("After encrypt and before encode: " + new String(encryptedData));
 			//System.out.println("After encrypt + encode: " + new String(encodedData));
 			
-		
+			
 			p.setData(encodedData);
 			p.setLength(encodedData.length);
 			
 			System.out.println("Sending packet with length: " + p.getLength() + " and data length: " + encodedData.length);
 			*/
 			this.socket.send(p);
-		} catch (Exception e){
-			
+		} catch (Exception e) {
+
 		} /*  catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException e) {
 			e.printStackTrace();
 			System.out.println("Error writePacket");
-		} catch (InvalidKeyException e) {
+			} catch (InvalidKeyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (IllegalBlockSizeException e) {
+			} catch (IllegalBlockSizeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (BadPaddingException e) {
+			} catch (BadPaddingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}   */
-		
+			}   */
+
 	}
 
 	/**
@@ -342,9 +334,7 @@ public class MulticastServer extends Thread {
 	 */
 	public DatagramPacket readPacket(DatagramPacket p) {
 		try {
-			
-			
-			
+
 			this.socket.receive(p);
 			/*
 			Cipher cipher = Cipher.getInstance(CIPHER_TYPE);
@@ -372,7 +362,7 @@ public class MulticastServer extends Thread {
 			
 			p.setData(decryptedData);
 			*/
-			
+
 			return p;
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -380,20 +370,20 @@ public class MulticastServer extends Thread {
 		} /* catch (IllegalBlockSizeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (BadPaddingException e) {
+			} catch (BadPaddingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (InvalidKeyException e) {
+			} catch (InvalidKeyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (NoSuchAlgorithmException e) {
+			} catch (NoSuchAlgorithmException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (NoSuchPaddingException e) {
+			} catch (NoSuchPaddingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}  */
-		
+			}  */
+
 		return null;
 	}
 

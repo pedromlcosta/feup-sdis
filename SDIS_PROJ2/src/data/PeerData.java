@@ -37,7 +37,7 @@ public class PeerData implements Serializable {
 	private HashMap<ChunkID, Integer> deleted;
 	private Date currentTime;
 	private ArrayList<ChunkID> removeLookup = new ArrayList<ChunkID>();
-	private final static long DISK_SIZE = Chunk.getChunkSize() * 100000;
+	private final static long DISK_SIZE = Chunk.getChunkSize() * 10000;
 	private static String dataPath = "";
 	private static final String fileName = "PeerData.dat";
 	private Set<FileID> filesDeleted;

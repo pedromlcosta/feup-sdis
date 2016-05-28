@@ -72,10 +72,17 @@ public class WakeProtocol extends Protocol {
 		Message msg = new WakeMsg();
 		msg.createMessage(null, args);
 		MCReceiver control = peer.getControlChannel();
-		DatagramPacket msgPacket = control.createDatagramPacket(msg.getMessageBytes()); //
+		// TODO check if copies are well done
+		byte[] msgBytes = msg.getMessageBytes();
+		int messageSize = msgBytes.length;
+		byte copyOfMessage[] = new byte[messageSize];
 
 		for (int i = 0; i < LOCAL_MAX; i++) {
+			// Copia conteudo (por causa da encrpitação ele será alterado
+			System.arraycopy(msgBytes, 0, copyOfMessage, 0, messageSize);
+			DatagramPacket msgPacket = control.createDatagramPacket(copyOfMessage); //
 			control.writePacket(msgPacket);
+
 			int delay = randomSeed.nextInt(SLEEP_TIME);
 			try {
 				Thread.sleep(delay);

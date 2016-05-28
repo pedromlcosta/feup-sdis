@@ -115,14 +115,20 @@ public class CheckChunksProtocol extends Protocol {
 	public void sendCheckChunksMsg(Message msg, String[] args) {
 		msg.createMessage(null, args);
 		Peer peer = Peer.getInstance();
-		DatagramPacket packet = peer.getControlChannel().createDatagramPacket(msg.getMessageBytes());
-		MCReceiver control = peer.getControlChannel();
 		int delay;
-		// long waitTime = TimeUnit.SECONDS.toMillis(INITIAL_WAITING_TIME);
-		// HashMap<ChunkID, ArrayList<Integer>> chunksStored =
-		// peer.getAnsweredCommand();
+
+		MCReceiver control = peer.getControlChannel();
+		// TODO check if copies are well done
+		byte[] msgBytes = msg.getMessageBytes();
+		int messageSize = msgBytes.length;
+		byte copyOfMessage[] = new byte[messageSize];
+
 		for (int i = 0; i < LOCAL_MAX; i++) {
-			control.writePacket(packet);
+
+			System.arraycopy(msgBytes, 0, copyOfMessage, 0, messageSize);
+			DatagramPacket msgPacket = control.createDatagramPacket(copyOfMessage); //
+			// send message
+			control.writePacket(msgPacket);
 			// 0 and 400 ms random delay
 			delay = randomSeed.nextInt(SLEEP_TIME);
 			try {
@@ -130,7 +136,6 @@ public class CheckChunksProtocol extends Protocol {
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
-			// send message
 
 		}
 	}

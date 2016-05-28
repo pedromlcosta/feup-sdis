@@ -57,7 +57,8 @@ public class Peer implements Invocation {
 	}
 
 	private PeerData data;
-	private static boolean connectedTracker = true; // TELLS IF THE PEER IS CONNECTED TO THE TRACKER
+	private static boolean connectedTracker = true; // TELLS IF THE PEER IS
+													// CONNECTED TO THE TRACKER
 
 	private MCReceiver controlChannel;
 	private MDBReceiver dataChannel;
@@ -82,7 +83,7 @@ public class Peer implements Invocation {
 
 	// Tracker connection data fields
 	private PeerTCPHandler trackerConnection;
-	
+
 	private SecretKey encryptionKey = null;
 	static int serverPort;
 	static InetAddress serverAddress;
@@ -197,20 +198,20 @@ public class Peer implements Invocation {
 
 			} catch (ConnectException e2) {
 				System.out.println("Problem connecting to server (wrong address or port?). Will retry in 2 seconds.");
-				
+
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-			} catch (IOException e3){
-				
+			} catch (IOException e3) {
+
 				try {
 					Thread.sleep(2000);
 				} catch (InterruptedException e) {
 					e.printStackTrace();
 				}
-				
+
 				System.out.println("Problem connecting to server. Error creating input streams. Will retry in 2 seconds.");
 				System.out.println("Missing key files?");
 			}
@@ -226,8 +227,6 @@ public class Peer implements Invocation {
 		try {
 			PeerData.setDataPath(peer.getServerID());
 			peer.loadData();
-			// It was peer data therefore it need to "recount"
-			(new WakeProtocol()).start();
 		} catch (FileNotFoundException e) {
 			System.out.println("There wasn't a peerData file, creating one now");
 			System.out.println(e.getMessage());
@@ -253,16 +252,16 @@ public class Peer implements Invocation {
 			// e.printStackTrace();
 			return;
 		}
-		
+
 		peer.trackerConnection.requestKey();
-		
-		while(instance.encryptionKey == null){
+
+		while (instance.encryptionKey == null) {
 			try {
 				Thread.sleep(100);
 			} catch (InterruptedException e) {
 			}
 		}
-		
+
 		registerRMI();
 		for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
 			System.out.println("Size: " + Peer.getInstance().getAnsweredCommand().get(c).size() + "  " + c.getActualRepDegree() + " " + c.getFileID() + "_" + c.getChunkNumber());
@@ -440,7 +439,6 @@ public class Peer implements Invocation {
 		return "reclaim sent";
 	}
 
-
 	// TODO 2 instances when restart can be called
 	// actually just one, after we ask for PD ( PeerData ) from tracker we will
 	// check
@@ -464,6 +462,7 @@ public class Peer implements Invocation {
 
 		if (isRunningCheckChunks() || isRunningRestart()) {
 			System.out.println("Check Chunks Called");
+			resetChunkData();
 			Thread checkChunks = new CheckChunksProtocol();
 			checkChunks.start();
 			return "check Chunks";
@@ -473,7 +472,7 @@ public class Peer implements Invocation {
 
 	public String restartProtocol() throws RemoteException {
 		if (isRunningRestart()) {
-			data.resetChunkData();
+			resetChunkData();
 			wakeUp();
 			checkChunks();
 			return "restart";
@@ -833,9 +832,9 @@ public class Peer implements Invocation {
 
 	public void sendMessageToTrackerTest(String message) throws IOException {
 
-		//trackerConnection.sendMessageToTrackerTest(message);
+		// trackerConnection.sendMessageToTrackerTest(message);
 	}
-	
+
 	@Override
 	public String testTCP() throws RemoteException {
 
@@ -850,7 +849,7 @@ public class Peer implements Invocation {
 	}
 
 	public void setKey(byte[] key) {
-		
+
 		encryptionKey = new SecretKeySpec(key, 0, key.length, "AES");
 	}
 
