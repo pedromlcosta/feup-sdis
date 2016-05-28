@@ -105,6 +105,7 @@ public class RestoreProtocol extends Protocol {
 		for (int i = 1; i <= file.getnChunks(); i++) {
 			String[] args = { "1.0", Integer.toString(peer.getServerID()), file.getID(), Integer.toString(i) };
 
+			msg = new GetChunkMsg();
 			// Create message
 			if (msg.createMessage(null, args) == false) {
 				System.out.println("Wasn't able to create getchunk message");

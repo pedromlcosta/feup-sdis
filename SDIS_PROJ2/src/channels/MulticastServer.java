@@ -37,13 +37,15 @@ import service.Processor;
 public class MulticastServer extends Thread {
 
 	private static final int HEADER_SIZE = 512;
-	private static final String CIPHER_TYPE = "AES/CBC/PKCS5Padding";
+	private static final String CIPHER_TYPE = "AES";
+	
+	private int dataSize = Chunk.getChunkSize()*2;
 	private MulticastSocket socket = null;
 	private boolean quitFlag = false;
 	private int serverID;
 	private InetAddress addr;
 	private int port;
-	private byte[] buf = new byte[Chunk.getChunkSize()*2 + 512];
+	private byte[] buf = new byte[dataSize + 512];
 	protected Peer user;
 
 	/**
@@ -121,6 +123,9 @@ public class MulticastServer extends Thread {
 			byte[] receivedMessage = receivePacket.getData();
 			byte[] body = null;
 			String header = null;
+			
+			System.out.println("Received message: " + new String(receivedMessage));
+			
 			for (int i = 0; i < receivedMessage.length; i++) {
 				if (receivedMessage[i] == '\r' && receivedMessage[i + 1] == '\n')
 					if (receivedMessage[i + 2] == '\r' && receivedMessage[i + 3] == '\n') {
@@ -135,7 +140,7 @@ public class MulticastServer extends Thread {
 				header = header.substring(0, header.length());
 
 				String[] headerArgs = Message.parseHeader(header);
-
+				System.out.println("headerArgs: " + headerArgs);
 				// TODO ignore messages sent by server
 				if (Integer.parseInt(headerArgs[2]) == Peer.getInstance().getServerID()
 						|| !headerArgs[1].equals(Peer.getCurrentVersion())) {
@@ -149,7 +154,7 @@ public class MulticastServer extends Thread {
 				}
 				header = "";
 				body = null;
-				buf = new byte[Chunk.getChunkSize() + HEADER_SIZE];
+				buf = new byte[dataSize + HEADER_SIZE];
 			}
 		}
 	}
@@ -282,13 +287,11 @@ public class MulticastServer extends Thread {
 	 */
 	public void writePacket(DatagramPacket p) {
 		try {
+			/*
 			//System.out.println(Base64.getEncoder().encodeToString(user.getEncryptionKey().getEncoded()));
 			
 			Cipher cipher = Cipher.getInstance(CIPHER_TYPE);
 
-			byte[] iv = cipher.getParameters().getParameterSpec(IvParameterSpec.class).getIV();
-			
-			IvParameterSpec ivSpec = new IvParameterSpec(iv);
 			cipher.init(Cipher.ENCRYPT_MODE, user.getEncryptionKey());
 			
 			System.out.println("Original length: " + p.getLength());
@@ -311,8 +314,11 @@ public class MulticastServer extends Thread {
 			p.setLength(encodedData.length);
 			
 			System.out.println("Sending packet with length: " + p.getLength() + " and data length: " + encodedData.length);
+			*/
 			this.socket.send(p);
-		} catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+		} catch (Exception e){
+			
+		} /*  catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException e) {
 			e.printStackTrace();
 			System.out.println("Error writePacket");
 		} catch (InvalidKeyException e) {
@@ -324,10 +330,7 @@ public class MulticastServer extends Thread {
 		} catch (BadPaddingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (InvalidParameterSpecException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		}   */
 		
 	}
 
@@ -343,14 +346,14 @@ public class MulticastServer extends Thread {
 			
 			
 			this.socket.receive(p);
-			
+			/*
 			Cipher cipher = Cipher.getInstance(CIPHER_TYPE);
 			
-			byte[] iv = cipher.getParameters().getParameterSpec(IvParameterSpec.class).getIV();
+			//byte[] iv = cipher.getParameters().getParameterSpec(IvParameterSpec.class).getIV();
 			
-			IvParameterSpec ivSpec = new IvParameterSpec(iv);
+			//IvParameterSpec ivSpec = new IvParameterSpec(iv);
 			  
-			cipher.init(Cipher.DECRYPT_MODE, user.getEncryptionKey(), ivSpec);
+			cipher.init(Cipher.DECRYPT_MODE, user.getEncryptionKey());
 			
 			
 			byte[] data = new byte[p.getLength()];
@@ -368,13 +371,13 @@ public class MulticastServer extends Thread {
 			//System.out.println("After decode + decrypt: " + new String(decryptedData));
 			
 			p.setData(decryptedData);
-			
+			*/
 			
 			return p;
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Error readPacket");
-		} catch (IllegalBlockSizeException e) {
+		} /* catch (IllegalBlockSizeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		} catch (BadPaddingException e) {
@@ -389,13 +392,7 @@ public class MulticastServer extends Thread {
 		} catch (NoSuchPaddingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		} catch (InvalidAlgorithmParameterException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (InvalidParameterSpecException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+		}  */
 		
 		return null;
 	}

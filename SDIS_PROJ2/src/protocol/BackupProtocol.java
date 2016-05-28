@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.concurrent.TimeUnit;
 
+import channels.MCReceiver;
+import channels.MDBReceiver;
 import chunk.Chunk;
 import chunk.ChunkID;
 import data.FileID;
@@ -24,7 +26,6 @@ import service.Peer;
 
 public class BackupProtocol extends Protocol {
 
-	 
 	// A peer must never store the chunks of its own files.
 	private int wantedRepDegree;
 	private String version = "1.0";
@@ -36,7 +37,6 @@ public class BackupProtocol extends Protocol {
 		this.peer = instance;
 	}
 
-	
 	public BackupProtocol(Peer instance) {
 		this.peer = instance;
 	}
@@ -74,8 +74,8 @@ public class BackupProtocol extends Protocol {
 						if (!fileList.contains(fileID)) {
 							fileList.add(fileID);
 						} else {
-							//System.out.println("File already backed up");
-							//return;
+							// System.out.println("File already backed up");
+							// return;
 						}
 					}
 			} else {
@@ -183,7 +183,8 @@ public class BackupProtocol extends Protocol {
 	 * @throws InterruptedException
 	 *             most 5 PUTCHUNK messages per chunk
 	 */
-	public boolean backupChunk(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version) throws SocketException, InterruptedException {
+	public boolean backupChunk(FileID file, byte[] chunkData, int chunkNumber, int wantedRepDegree, String version)
+			throws SocketException, InterruptedException {
 		System.out.println("Backup Chunk");
 		Message msg = new PutChunkMsg();
 		int nMessagesSent = 0;
@@ -203,10 +204,14 @@ public class BackupProtocol extends Protocol {
 		args[4] = Integer.toString(wantedRepDegree);
 		msg.createMessage(chunkData, args);
 
-		// Send Mensage
-		DatagramPacket msgPacket = peer.getDataChannel().createDatagramPacket(msg.getMessageBytes()); //
-
+		// Send Message
+		
+		byte copyOfMessageBytes[]= new byte[msg.getMessageBytes().length];
+		
+		MDBReceiver dataChannel = peer.getDataChannel();
+		 
 		HashMap<ChunkID, ArrayList<Integer>> seversAnswers = peer.getAnsweredCommand();
+		
 		synchronized (seversAnswers) {
 			if (seversAnswers.containsKey(chunkToSendID)) { // Place
 				System.out.println("Adding chunk");
@@ -215,21 +220,25 @@ public class BackupProtocol extends Protocol {
 		}
 		long waitTime = TimeUnit.SECONDS.toNanos(INITIAL_WAITING_TIME);
 		do {
+			System.arraycopy(msg.getMessageBytes(), 0, copyOfMessageBytes, 0, msg.getMessageBytes().length);
+			DatagramPacket msgPacket = dataChannel.createDatagramPacket(copyOfMessageBytes); //
 			System.out.println("Wait for STORED");
 			// send Message
 			peer.getDataChannel().writePacket(msgPacket);
 			nMessagesSent++;
 			waitForStoredMsg(chunkToSend, chunkToSendID, waitTime);
-
+			
 			// Double the waiting time
 			waitTime *= 2;
-		} while (nMessagesSent <  MAX_MESSAGES_TO_SEND && chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
+		} while (nMessagesSent < MAX_MESSAGES_TO_SEND
+				&& chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree());
 		System.out.println("End Backup Of Chunk");
 
 		// Failed the chunk backup
 		// TODO remove chunks here when it fails
 		if (nMessagesSent >= 5 || chunkToSend.getActualRepDegree() != chunkToSend.getDesiredRepDegree()) {
-			System.out.println("The backup of the file of the chunk Number: " + chunkNumber + " has failed to reach the desired Replication Degree: " + wantedRepDegree
+			System.out.println("The backup of the file of the chunk Number: " + chunkNumber
+					+ " has failed to reach the desired Replication Degree: " + wantedRepDegree
 					+ " instead the actual degree is: " + chunkToSend.getActualRepDegree());
 			chunkStatus = false;
 		}
@@ -263,7 +272,8 @@ public class BackupProtocol extends Protocol {
 		}
 
 		try {
-			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
+			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator
+					+ FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
 		}
 
@@ -323,7 +333,8 @@ public class BackupProtocol extends Protocol {
 	public void writeChunk(String dirPath, Chunk chunk, ChunkID id) {
 		try {
 
-			FileOutputStream fileWriter = new FileOutputStream(dirPath + File.separator + id.getFileID() + "_" + id.getChunkNumber());
+			FileOutputStream fileWriter = new FileOutputStream(dirPath + File.separator + id.getFileID() + "_"
+					+ id.getChunkNumber());
 			ObjectOutputStream out = new ObjectOutputStream(fileWriter);
 
 			out.writeObject(chunk);
@@ -336,7 +347,6 @@ public class BackupProtocol extends Protocol {
 			e.printStackTrace();
 		}
 	}
-
 
 	// return the number of server who have answered the putchunk msg
 	public int checkMessagesReceivedForChunk(ChunkID chunkToSendID) {

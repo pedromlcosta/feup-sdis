@@ -93,7 +93,8 @@ public class Processor extends Thread {
 				messageFields = Message.parseHeader(messageString);
 			messageString = ""; // Empty, so as not to fill unnecessary space
 
-			// System.out.println(messageFields[0]);
+			for (String s : messageFields)
+				System.out.println("Received a: " + s);
 
 			switch (messageFields[0]) {
 			case "PUTCHUNK": {
@@ -206,7 +207,8 @@ public class Processor extends Thread {
 		String dirPath = "";
 
 		try {
-			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
+			dirPath = Extra.createDirectory(Integer.toString(peer.getServerID()) + File.separator
+					+ FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e) {
 			System.out.println("Couldn't create or use directory");
 		}
@@ -287,7 +289,8 @@ public class Processor extends Thread {
 			if (!restore.wasForeignChunkReceived(chunkID)) {
 				// enviar mensagem com o chunk
 
-				System.out.println("No foreign chunk received! Going to send, as requests, chunk nr. " + chunkID.getChunkNumber());
+				System.out.println("No foreign chunk received! Going to send, as requests, chunk nr. "
+						+ chunkID.getChunkNumber());
 
 				byte[] chunkBody = new byte[0];
 				try {
@@ -295,11 +298,13 @@ public class Processor extends Thread {
 				} catch (IOException e) {
 					e.getMessage();
 					e.printStackTrace();
-					System.out.println("Wasn't able to load chunk nr. " + chunkID.getChunkNumber() + " from file id: " + chunkID.getFileID());
+					System.out.println("Wasn't able to load chunk nr. " + chunkID.getChunkNumber() + " from file id: "
+							+ chunkID.getFileID());
 					chunkBody = new byte[0];
 				}
 
-				String[] args = { "1.0", Integer.toString(Peer.getInstance().getServerID()), chunkID.getFileID(), Integer.toString(chunkID.getChunkNumber()) };
+				String[] args = { "1.0", Integer.toString(Peer.getInstance().getServerID()), chunkID.getFileID(),
+						Integer.toString(chunkID.getChunkNumber()) };
 
 				// byte[] chunkBody = new byte[64];
 				Message chunkMsg = new ChunkMsg();
@@ -340,7 +345,8 @@ public class Processor extends Thread {
 		boolean fullBackup;
 		String dirPath = "";
 		try {
-			dirPath = Extra.createDirectory(Integer.toString(Peer.getInstance().getServerID()) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
+			dirPath = Extra.createDirectory(Integer.toString(Peer.getInstance().getServerID()) + File.separator
+					+ FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
@@ -452,7 +458,8 @@ public class Processor extends Thread {
 		}
 
 		try {
-			new BackupProtocol(Peer.getInstance()).backupChunk(fileId, chunkBody, tmp.getChunkNumber(), desiredRepDegree, "1.0");
+			new BackupProtocol(Peer.getInstance()).backupChunk(fileId, chunkBody, tmp.getChunkNumber(),
+					desiredRepDegree, "1.0");
 		} catch (SocketException | InterruptedException e) {
 			System.out.println("Error launching Backup Protocol in reclaiming");
 		}
