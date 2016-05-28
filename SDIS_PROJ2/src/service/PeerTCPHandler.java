@@ -24,12 +24,14 @@ public class PeerTCPHandler extends Thread {
 	final static String trustStoreFile = "truststore";
 	final static String passwd = "123456";
 	final boolean debug = false;
+	final static int RECONNECT_TIME = 2000;
 
 	private Peer peerInstance;
 
 	private int serverPort;
 	private InetAddress serverAddress;
 	private SSLSocket remoteSocket;
+	boolean connectionOnline = false;
 
 	private ByteArrayOutputStream os;
 	private DataInputStream in;
@@ -55,6 +57,10 @@ public class PeerTCPHandler extends Thread {
 		// Initialize streams
 		in = new DataInputStream(remoteSocket.getInputStream());
 		out = new DataOutputStream(remoteSocket.getOutputStream());
+		
+		// Got to this point without exceptions = online again!
+		connectionOnline = true;
+		
 	}
 
 	public void run() {
@@ -78,9 +84,33 @@ public class PeerTCPHandler extends Thread {
 			} catch (IOException e1) {
 				System.out.println("Failed at closing streams. They are already closed, maybe socket was closed?");
 			}
-			e.printStackTrace();
-			System.out.println("Socket was closed.");
-			// DO SOCKET CLOSED STUFF HERE.
+			//e.printStackTrace();
+			connectionOnline = false;
+			System.out.println("Lost connection to the tracker.");
+			
+			while(!connectionOnline){
+				System.out.println("Trying to reconnect...");
+				
+				try {
+					
+					initializeConnection();
+					if(connectionOnline)
+						break;
+					else
+						Thread.sleep(RECONNECT_TIME);
+					
+				} catch (IOException e2) {
+					//e2.printStackTrace();
+				} catch (InterruptedException e1) {
+					e1.printStackTrace();
+				}
+				
+			}
+			
+			// Is connected again, run listener again
+			run();
+			
+			
 		}
 
 	}
