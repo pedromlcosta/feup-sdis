@@ -75,6 +75,7 @@ public class WakeProtocol extends Protocol {
 		DatagramPacket msgPacket = control.createDatagramPacket(msg.getMessageBytes()); //
 
 		for (int i = 0; i < LOCAL_MAX; i++) {
+			control.writePacket(msgPacket);
 			int delay = randomSeed.nextInt(SLEEP_TIME);
 			try {
 				Thread.sleep(delay);
@@ -82,7 +83,7 @@ public class WakeProtocol extends Protocol {
 				e.printStackTrace();
 			}
 		}
-		control.writePacket(msgPacket);
+
 	}
 
 	public synchronized void receiveWakeUp(Message msg) {

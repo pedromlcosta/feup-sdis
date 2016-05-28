@@ -17,6 +17,15 @@ public class Protocol extends Thread {
 	Random randomSeed = new Random();
 	String filePath;
 
+	public static boolean checkTrackerStatus() {
+		// PeerFlag
+		if (!Peer.getInstance().getTrackerConnection().isConnectionOnline()) {
+			System.out.println("Cannot start new Protocol Tracker is offline");
+			return false;
+		}
+		return true;
+	}
+
 	/**
 	 * Sends a stored message to the control channel
 	 * 
