@@ -31,7 +31,7 @@ public class PeerTCPHandler extends Thread {
 	private int serverPort;
 	private InetAddress serverAddress;
 	private SSLSocket remoteSocket;
-	boolean connectionOnline = false;
+	private boolean connectionOnline = false;
 
 	private ByteArrayOutputStream os;
 	private DataInputStream in;
@@ -293,4 +293,12 @@ public class PeerTCPHandler extends Thread {
 		}
 	}
 	*/
+	
+	public boolean isConnectionOnline() {
+		return connectionOnline;
+	}
+
+	public void setConnectionOnline(boolean connectionOnline) {
+		this.connectionOnline = connectionOnline;
+	}
 }
