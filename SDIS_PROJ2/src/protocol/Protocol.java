@@ -10,12 +10,22 @@ import messages.Message;
 import service.Peer;
 
 public class Protocol extends Thread {
+	private static final int ONE_SEC_IN_MILI_SEC = 1000;
 	static final int SLEEP_TIME = 401;
 	static final int MAX_MESSAGES_TO_SEND = 5;
 	static final int INITIAL_WAITING_TIME = 1;
 	Peer peer = Peer.getInstance();
 	Random randomSeed = new Random();
 	String filePath;
+
+	public static boolean checkTrackerStatus() {
+		// PeerFlag
+		if (!Peer.getInstance().getTrackerConnection().isConnectionOnline()) {
+			System.out.println("Cannot start new Protocol Tracker is offline");
+			return false;
+		}
+		return true;
+	}
 
 	/**
 	 * Sends a stored message to the control channel
