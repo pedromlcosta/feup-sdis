@@ -50,15 +50,15 @@ public class WakeProtocol extends Protocol {
 			String[] fileIDs = fileName.split(sufix);
 			if (fileIDs.length > 0) {
 				String fileID = fileIDs[0];
-				// if (chunkStored.get(fileID) == null) {
 				// chunkStored.put(fileID, true);
 				String args[] = new String[3];
 				args[0] = Peer.getCurrentVersion();
 				args[1] = Integer.toString(peer.getServerID());
 				args[2] = fileID;
-				sendWakeUp(args);
+				new Thread(() -> {
+					sendWakeUp(args);
+				}).start();
 				// The rest of the work need to be done at the processor
-				// }
 			}
 		}
 	}
@@ -75,6 +75,7 @@ public class WakeProtocol extends Protocol {
 		DatagramPacket msgPacket = control.createDatagramPacket(msg.getMessageBytes()); //
 
 		for (int i = 0; i < LOCAL_MAX; i++) {
+			control.writePacket(msgPacket);
 			int delay = randomSeed.nextInt(SLEEP_TIME);
 			try {
 				Thread.sleep(delay);
@@ -82,7 +83,7 @@ public class WakeProtocol extends Protocol {
 				e.printStackTrace();
 			}
 		}
-		control.writePacket(msgPacket);
+
 	}
 
 	public synchronized void receiveWakeUp(Message msg) {

@@ -123,6 +123,7 @@ public class CheckChunksProtocol extends Protocol {
 		// peer.getAnsweredCommand();
 		for (int i = 0; i < LOCAL_MAX; i++) {
 			// 0 and 400 ms random delay
+			control.writePacket(packet);
 			delay = randomSeed.nextInt(SLEEP_TIME);
 			try {
 				Thread.sleep(delay);
@@ -130,8 +131,6 @@ public class CheckChunksProtocol extends Protocol {
 				e.printStackTrace();
 			}
 			// send message
-
-			control.writePacket(packet);
 
 		}
 	}
