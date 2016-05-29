@@ -81,7 +81,7 @@ public class Tracker extends Thread {
 				System.out.println("<srvc_port> must be an integer.");
 				System.exit(0);
 			}
-			trackerMainArgs=args;
+			trackerMainArgs = args;
 			// Call the server
 			try {
 				instance = new Tracker(Integer.parseInt(args[0]));
@@ -268,7 +268,7 @@ public class Tracker extends Thread {
 
 		listeners.remove(id);
 	}
-	
+
 	public static class MonitorProcess extends Thread {
 		public void run() {
 
@@ -376,9 +376,16 @@ public class Tracker extends Thread {
 		builder = new ProcessBuilder(javaBin, "-cp", classpath, className,
 				"TRACKER", beepPORT, args[0]);
 
-		File oldLog = new File("monitor_logs\\tracker_monitor_log");
-		oldLog.delete();
-		File log = new File("monitor_logs\\tracker_monitor_log");
+		File peerDirectory = new File(System.getProperty("user.dir")
+				+ File.separator + "logs");
+		File fileDirectory = new File(peerDirectory, "monitor_logs");
+		if (!fileDirectory.exists())
+			fileDirectory.mkdirs();
+		String fileName = "tracker_monitor_log";
+		File oldlog = new File(fileDirectory, fileName);
+		oldlog.delete();
+		File log = new File(fileDirectory, fileName);
+
 
 		builder.redirectErrorStream(true);
 		builder.redirectOutput(Redirect.appendTo(log));
