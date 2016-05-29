@@ -323,7 +323,7 @@ public class Peer implements Invocation {
 			if ((args.length == 10 && (!args[9].equals("RESTART")))) {
 				return true;
 			}
-			System.out.println(args[9]);
+			//System.out.println(args[9]);
 			System.out.println("Incorrect number of args." + " You gave: "
 					+ args.length);
 			System.out
@@ -360,7 +360,7 @@ public class Peer implements Invocation {
 	public static void registerRMI() {
 		// Create and export object
 		try {
-
+			System.out.println("Registering RMI");
 			Invocation stub = (Invocation) UnicastRemoteObject.exportObject(
 					instance, 0);
 
