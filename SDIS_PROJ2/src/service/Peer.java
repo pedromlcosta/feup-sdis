@@ -1,11 +1,17 @@
 package service;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.NotSerializableException;
+import java.io.PrintWriter;
+import java.lang.ProcessBuilder.Redirect;
 import java.net.ConnectException;
 import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -31,7 +37,6 @@ import data.FileID;
 import data.PeerData;
 import extra.Extra;
 import extra.FileHandler;
-import monitor.Monitor;
 import protocol.BackupProtocol;
 import protocol.CheckChunksProtocol;
 import protocol.DeleteProtocol;
@@ -63,7 +68,7 @@ public class Peer implements Invocation {
 	private MCReceiver controlChannel;
 	private MDBReceiver dataChannel;
 	private MDRReceiver restoreChannel;
-	private Integer serverID;
+	private static Integer serverID;
 	private static Registry rmiRegistry;
 	private static String rmiName;
 	private String folderPath;
@@ -74,12 +79,17 @@ public class Peer implements Invocation {
 	private UDPConnection monitorConnection;
 
 	// Monitor Information
-	private Timer timer = new Timer();
-	private boolean monitorAlive = false;
-	private boolean monitorResurrectedAttempted = false;
-	private Random randomGenerator = new Random();
-	private final int LIMIT_OF_ATTEMPTS = 3;
-	private int nTries;
+	private static boolean connectionAlive = false;
+	private static final String FROM_PEER = "PEER_BEEP";
+	private static final String FROM_MONITOR = "MONITOR_BEEP";
+	private static final int LIMIT_OF_ATTEMPTS = 3;
+	private static PrintWriter bout = null;
+	private static BufferedReader bin = null;
+	private static boolean monitorAlive = false;
+	private static boolean monitorResurrectedAttempted = false;
+	private static int nTries = 0;
+	private static String[] peerMainArgs;
+	private static Process monitorProcess = null;
 
 	// Tracker connection data fields
 	private PeerTCPHandler trackerConnection;
@@ -113,9 +123,8 @@ public class Peer implements Invocation {
 	 * Starts running the peer, validating arguments and registering the RMI
 	 * 
 	 * @param args
-	 *            Peer arguments:
-	 *            <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port>
-	 *            <MDR_addr> <MDR_port>
+	 *            Peer arguments: <server_id> <MC_addr> <MC_port> <MDB_addr>
+	 *            <MDB_port> <MDR_addr> <MDR_port>
 	 */
 	public static void main(String[] args) {
 
@@ -144,6 +153,7 @@ public class Peer implements Invocation {
 		if (!validArgs(args)) {
 			System.exit(0);
 		}
+		peerMainArgs = args;
 
 		// OPEN TCP TRACKER SOCKET
 
@@ -171,7 +181,8 @@ public class Peer implements Invocation {
 			System.out.println("Couldn't bind IP:ports to peer");
 			return;
 		} catch (Exception e) {
-			System.out.println("Invalid Args. Ports must be between 1 and 9999 and IP must be a valid multicast address.");
+			System.out
+					.println("Invalid Args. Ports must be between 1 and 9999 and IP must be a valid multicast address.");
 			return;
 		}
 
@@ -188,7 +199,8 @@ public class Peer implements Invocation {
 				serverAddress = InetAddress.getByName(args[7]);
 				int port = Integer.parseInt(args[8]);
 
-				PeerTCPHandler tcpHandler = new PeerTCPHandler(instance, serverAddress, port);
+				PeerTCPHandler tcpHandler = new PeerTCPHandler(instance,
+						serverAddress, port);
 				instance.setTrackerConnection(tcpHandler);
 				tcpHandler.initializeConnection();
 				tcpHandler.start();
@@ -197,7 +209,8 @@ public class Peer implements Invocation {
 				connectedTracker = false;
 
 			} catch (ConnectException e2) {
-				System.out.println("Problem connecting to server (wrong address or port?). Will retry in 2 seconds.");
+				System.out
+						.println("Problem connecting to server (wrong address or port?). Will retry in 2 seconds.");
 
 				try {
 					Thread.sleep(2000);
@@ -212,7 +225,8 @@ public class Peer implements Invocation {
 					e.printStackTrace();
 				}
 
-				System.out.println("Problem connecting to server. Error creating input streams. Will retry in 2 seconds.");
+				System.out
+						.println("Problem connecting to server. Error creating input streams. Will retry in 2 seconds.");
 				System.out.println("Missing key files?");
 			}
 		}
@@ -228,7 +242,8 @@ public class Peer implements Invocation {
 			PeerData.setDataPath(peer.getServerID());
 			peer.loadData();
 		} catch (FileNotFoundException e) {
-			System.out.println("There wasn't a peerData file, creating one now");
+			System.out
+					.println("There wasn't a peerData file, creating one now");
 			System.out.println(e.getMessage());
 			// e.printStackTrace(); // Remove these stack traces after
 			// There wasn't a file, so we're creating one now!
@@ -242,7 +257,8 @@ public class Peer implements Invocation {
 		} catch (NotSerializableException e) {
 			System.out.println("PeerData is not Serializable");
 		} catch (IOException e) {
-			System.out.println("IOException while loading PeerData for the first time");
+			System.out
+					.println("IOException while loading PeerData for the first time");
 			System.out.println(e.getMessage());
 			// e.printStackTrace();
 			return;
@@ -264,59 +280,27 @@ public class Peer implements Invocation {
 
 		registerRMI();
 		for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
-			System.out.println("Size: " + Peer.getInstance().getAnsweredCommand().get(c).size() + "  " + c.getActualRepDegree() + " " + c.getFileID() + "_" + c.getChunkNumber());
+			System.out.println("Size: "
+					+ Peer.getInstance().getAnsweredCommand().get(c).size()
+					+ "  " + c.getActualRepDegree() + " " + c.getFileID() + "_"
+					+ c.getChunkNumber());
 
-	}
-
-	/**
-	 * Starts a monitor
-	 * 
-	 * @param addrUDP
-	 * @param portUDP
-	 * @param addrMC
-	 * @param portMC
-	 * @throws IOException
-	 */
-	public void startMonitor(InetAddress addrUDP, int portUDP, InetAddress addrMC, int portMC) throws IOException {
-
-		new Monitor(addrUDP, portUDP, addrMC, portMC);
-	}
-
-	public class monitorBeepTask extends TimerTask {
-
-		@Override
-		public void run() {
-			task();
-		}
-	}
-
-	// TODO peer mandar beep para monitor, ver se temos reposta
-	private void task() {
-		if (monitorAlive) {
-			nTries = 0;
-			monitorAlive = false;
-			// create msg all well
-			// send beep to monitor
-		} else {
-			if (monitorResurrectedAttempted) {
-				monitorResurrectedAttempted = false;
-				System.out.println("failed To Ressurect Peer");
-				// Action to take??
-
-			} else {
-				if (nTries >= LIMIT_OF_ATTEMPTS) {
-					monitorResurrectedAttempted = true;
-					attemptMonitorResurrection();
-				}
-				nTries++;
+		registerRMI();
+		for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
+			System.out.println("Size: "
+					+ Peer.getInstance().getAnsweredCommand().get(c).size()
+					+ "  " + c.getActualRepDegree() + " " + c.getFileID() + "_"
+					+ c.getChunkNumber());
+		if (args.length == 10 && args[9] == "RESTART") {
+			try {
+				peer.getInstance().restartProtocol();
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
 			}
-
 		}
-		// send msg
-		timer.schedule(new monitorBeepTask(), randomGenerator.nextInt(2) * 1000);
-	}
+		(new MonitorProcess()).start();
 
-	private void attemptMonitorResurrection() {
 	}
 
 	/**
@@ -335,15 +319,20 @@ public class Peer implements Invocation {
 	 */
 	public static boolean validArgs(String[] args) {
 
-		if (args.length != 9) {
-			System.out.println("Incorrect number of args." + " You gave: " + args.length);
-			System.out.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port> <Tracker_host> <Tracker_port>");
+		if (args.length != 9 || (args.length == 10 && args[9] != "RESTART")) {
+			System.out.println("Incorrect number of args." + " You gave: "
+					+ args.length);
+			System.out
+					.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port> <Tracker_host> <Tracker_port>");
 			return false;
 		}
 
-		if (!Extra.isNumeric(args[0]) || !Extra.isNumeric(args[2]) || !Extra.isNumeric(args[4]) || !Extra.isNumeric(args[6]) || !Extra.isNumeric(args[8])) {
+		if (!Extra.isNumeric(args[0]) || !Extra.isNumeric(args[2])
+				|| !Extra.isNumeric(args[4]) || !Extra.isNumeric(args[6])
+				|| !Extra.isNumeric(args[8])) {
 			System.out.println("Server ID and ports must be valid numbers");
-			System.out.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port> <Tracker_host> <Tracker_port>");
+			System.out
+					.println("Correct usage is: <server_id> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port> <Tracker_host> <Tracker_port>");
 			return false;
 		}
 
@@ -368,7 +357,8 @@ public class Peer implements Invocation {
 		// Create and export object
 		try {
 
-			Invocation stub = (Invocation) UnicastRemoteObject.exportObject(instance, 0);
+			Invocation stub = (Invocation) UnicastRemoteObject.exportObject(
+					instance, 0);
 
 			// Register object to rmi registry
 			rmiRegistry = LocateRegistry.getRegistry();
@@ -376,7 +366,8 @@ public class Peer implements Invocation {
 			try {
 				rmiRegistry.bind(rmiName, stub);
 			} catch (Exception e) {
-				System.out.println("Couldnt bind, try another remote name, this one is in use");
+				System.out
+						.println("Couldnt bind, try another remote name, this one is in use");
 				e.printStackTrace();
 			}
 
@@ -390,13 +381,15 @@ public class Peer implements Invocation {
 	 * Backup function for the RMI call - starts the backup protocol
 	 */
 	@Override
-	public synchronized String backup(String filePath, int desiredRepDegree) throws RemoteException {
+	public synchronized String backup(String filePath, int desiredRepDegree)
+			throws RemoteException {
 		// O dispatcher vai ter as cenas do socket necessarias
 		// e os metodos para enviar para os canais que queremos as cenas
 
 		// Call backup protocol through dispatcher
 		System.out.println(desiredRepDegree);
-		new BackupProtocol(filePath, desiredRepDegree, "1.0", Peer.getInstance()).start();
+		new BackupProtocol(filePath, desiredRepDegree, "1.0",
+				Peer.getInstance()).start();
 
 		System.out.println("backup called");
 		return "backup sent";
@@ -512,7 +505,8 @@ public class Peer implements Invocation {
 		return data.getServerAnsweredCommand();
 	}
 
-	public void setAnsweredCommand(HashMap<ChunkID, ArrayList<Integer>> answeredCommand) {
+	public void setAnsweredCommand(
+			HashMap<ChunkID, ArrayList<Integer>> answeredCommand) {
 		data.setServerAnsweredCommand(answeredCommand);
 	}
 
@@ -560,7 +554,8 @@ public class Peer implements Invocation {
 		return data.getServerAnsweredCommand();
 	}
 
-	public void setServerAnsweredCommand(HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand) {
+	public void setServerAnsweredCommand(
+			HashMap<ChunkID, ArrayList<Integer>> serverAnsweredCommand) {
 		data.setServerAnsweredCommand(serverAnsweredCommand);
 	}
 
@@ -576,9 +571,11 @@ public class Peer implements Invocation {
 		this.serverID = serverID;
 		try {
 			createPeerFolder();
-			Extra.createDirectory(Integer.toString(this.serverID) + File.separator + FileHandler.BACKUP_FOLDER_NAME);
+			Extra.createDirectory(Integer.toString(this.serverID)
+					+ File.separator + FileHandler.BACKUP_FOLDER_NAME);
 		} catch (IOException e1) {
-			System.out.println("IOException when creating the Peer and Backup folders.");
+			System.out
+					.println("IOException when creating the Peer and Backup folders.");
 			e1.printStackTrace();
 		}
 	}
@@ -622,7 +619,8 @@ public class Peer implements Invocation {
 	 * @throws ClassNotFoundException
 	 * @throws IOException
 	 */
-	public void loadData() throws FileNotFoundException, ClassNotFoundException, IOException {
+	public void loadData() throws FileNotFoundException,
+			ClassNotFoundException, IOException {
 		this.data = data.loadPeerData();
 	}
 
@@ -699,8 +697,10 @@ public class Peer implements Invocation {
 		// System.out.println("Testing " + PeerData.getDiskSize() + " " +
 		// backupFolderSize + " " + dataSize);
 		if (PeerData.getDiskSize() - (backupFolderSize + dataSize) < 0) {
-			System.out.println("!!Starting Disk Reclaim!!  " + PeerData.getDiskSize() + "   " + backupFolderSize);
-			return (new ReclaimProtocol(Chunk.getChunkSize())).nonPriorityReclaim();
+			System.out.println("!!Starting Disk Reclaim!!  "
+					+ PeerData.getDiskSize() + "   " + backupFolderSize);
+			return (new ReclaimProtocol(Chunk.getChunkSize()))
+					.nonPriorityReclaim();
 		}
 		return true;
 	}
@@ -730,14 +730,6 @@ public class Peer implements Invocation {
 		this.monitorConnection = monitorConnection;
 	}
 
-	public Timer getTimer() {
-		return timer;
-	}
-
-	public void setTimer(Timer timer) {
-		this.timer = timer;
-	}
-
 	public boolean isMonitorAlive() {
 		return monitorAlive;
 	}
@@ -750,16 +742,9 @@ public class Peer implements Invocation {
 		return monitorResurrectedAttempted;
 	}
 
-	public void setMonitorResurrectedAttempted(boolean monitorResurrectedAttempted) {
+	public void setMonitorResurrectedAttempted(
+			boolean monitorResurrectedAttempted) {
 		this.monitorResurrectedAttempted = monitorResurrectedAttempted;
-	}
-
-	public Random getRandomGenerator() {
-		return randomGenerator;
-	}
-
-	public void setRandomGenerator(Random randomGenerator) {
-		this.randomGenerator = randomGenerator;
 	}
 
 	public int getnTries() {
@@ -859,6 +844,130 @@ public class Peer implements Invocation {
 
 	public void setEncryptionKey(SecretKey encryptionKey) {
 		this.encryptionKey = encryptionKey;
+	}
+
+	public static void createMonitorProcess(int beepPort, String[] args)
+			throws IOException, InterruptedException {
+		String javaHome = System.getProperty("java.home");
+		String javaBin = javaHome + File.separator + "bin" + File.separator
+				+ "java";
+		String classpath = System.getProperty("java.class.path");
+		Class monitorClass = service.Monitor.class;
+		String className = monitorClass.getCanonicalName();
+		ProcessBuilder builder;
+		String beepPORT = beepPort + "";
+		System.out.println(args[0] + " " + args[1] + " " + args[2] + " "
+				+ args[3] + " " + args[4] + " " + args[5] + " " + args[6] + " "
+				+ args[7] + " " + args[8]);
+		System.out.println(beepPort);
+		builder = new ProcessBuilder(javaBin, "-cp", classpath, className,
+				"PEER", beepPORT, args[0], args[1], args[2], args[3], args[4],
+				args[5], args[6], args[7], args[8]);
+
+		File oldLog = new File("server" + serverID + "_monitor_log");
+		oldLog.delete();
+		File log = new File("server" + serverID + "_monitor_log");
+
+		builder.redirectErrorStream(true);
+		builder.redirectOutput(Redirect.appendTo(log));
+		monitorProcess = builder.start();
+		assert builder.redirectOutput().file() == log;
+		// process.waitFor();
+		// return process.exitValue();
+	}
+
+	public static class MonitorProcess extends Thread {
+		public void run() {
+
+			System.out.println("Entered Task Thread");
+			int beepServerPort = 4445;
+			boolean portEmpty = false;
+			while (!portEmpty) {
+				try { // SEE IF THIS WORKS
+					System.out.println("Trying port " + beepServerPort + "\n");
+					ServerSocket serverSocket = new ServerSocket(beepServerPort);
+					System.out.println("creating Monitor process");
+					createMonitorProcess(beepServerPort, peerMainArgs);
+					System.out.println("Monitor process created");
+					Socket clientSocket = serverSocket.accept();
+					System.out.println("client accepted | Created sockets");
+					portEmpty = true;
+					// Monitor monitor = new Monitor(beepServerPort); // NOT
+					// THIS:
+					// MUST CREATE A PROCESS
+					bout = new PrintWriter(clientSocket.getOutputStream(), true);
+					bin = new BufferedReader(new InputStreamReader(
+							clientSocket.getInputStream()));
+					System.out.println("created in and out streams\n");
+					connectionAlive = true;
+				} catch (IOException e) {
+					beepServerPort++;
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+
+			try {
+				System.out.println("start listening");
+				String fromPeer, fromMonitor;
+				Thread.sleep(4000);
+				while (connectionAlive) {
+					if (bin.ready()) { // buffer has something
+						if ((fromMonitor = bin.readLine()) != null) {
+							System.out.println("received: " + fromMonitor);
+							fromPeer = "PEER_BEEP";
+							Thread.sleep(1000);
+							monitorAlive = true;
+							bout.println(fromPeer);
+							System.out.println("sent: " + fromPeer);
+						} else
+							System.out.println("null readline");
+					} else {
+						nTries++;
+						monitorAlive = false;
+						int triesLeft = LIMIT_OF_ATTEMPTS - nTries;
+						System.out.println("Trying to reconect " + triesLeft
+								+ "more time(s)");
+						Thread.sleep(500);
+					}
+
+					if (monitorAlive) {
+						System.out.println("Monitor alive");
+						nTries = 0;
+						monitorAlive = false;
+						monitorResurrectedAttempted = false;
+					} else {
+						if (monitorResurrectedAttempted) {
+							monitorResurrectedAttempted = false;
+							System.out.println("failed To Ressurect Peer\n");
+							return;
+							// Action to take??
+						} else {
+							if (nTries >= LIMIT_OF_ATTEMPTS) {
+								monitorAlive = false;
+								monitorResurrectedAttempted = true;
+								System.out
+										.println("attempting ressurection \nCreating new Monitor process");
+								createMonitorProcess(beepServerPort,
+										peerMainArgs);
+								monitorAlive = true;
+								// attemptMonitorResurrection();
+							}
+						}
+					}
+					Thread.sleep(1000);
+				}
+				System.out.println("finished listening");
+			} catch (IOException e) {
+				connectionAlive = false;
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			System.out.println("Port nr: " + beepServerPort);
+			System.out.println("Finish main");
+		}
 	}
 
 }
