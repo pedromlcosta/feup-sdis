@@ -182,7 +182,7 @@ public class Monitor {
 			File fileDirectory = new File(peerDirectory, "peer_logs");
 			if (!fileDirectory.exists())
 				fileDirectory.mkdirs();
-			String fileName = "peer" + serverID + "_log";
+			String fileName = "peer" + args[2] + "_log";
 			File oldlog = new File(fileDirectory, fileName);
 			oldlog.delete();
 			log = new File(fileDirectory, fileName);
