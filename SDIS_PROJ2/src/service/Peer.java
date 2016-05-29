@@ -319,7 +319,11 @@ public class Peer implements Invocation {
 	 */
 	public static boolean validArgs(String[] args) {
 
-		if (args.length != 9 || (args.length == 10 && args[9] != "RESTART")) {
+		if (args.length != 9) {
+			if ((args.length == 10 && (!args[9].equals("RESTART")))) {
+				return true;
+			}
+			System.out.println(args[9]);
 			System.out.println("Incorrect number of args." + " You gave: "
 					+ args.length);
 			System.out
@@ -864,9 +868,10 @@ public class Peer implements Invocation {
 				"PEER", beepPORT, args[0], args[1], args[2], args[3], args[4],
 				args[5], args[6], args[7], args[8]);
 
-		File oldLog = new File("server" + serverID + "_monitor_log");
+		File oldLog = new File("monitor_logs\\server" + serverID
+				+ "_monitor_log");
 		oldLog.delete();
-		File log = new File("server" + serverID + "_monitor_log");
+		File log = new File("monitor_logs\\server" + serverID + "_monitor_log");
 
 		builder.redirectErrorStream(true);
 		builder.redirectOutput(Redirect.appendTo(log));

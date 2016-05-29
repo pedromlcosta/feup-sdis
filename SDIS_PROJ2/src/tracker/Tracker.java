@@ -81,7 +81,7 @@ public class Tracker extends Thread {
 				System.out.println("<srvc_port> must be an integer.");
 				System.exit(0);
 			}
-
+			trackerMainArgs=args;
 			// Call the server
 			try {
 				instance = new Tracker(Integer.parseInt(args[0]));
@@ -95,6 +95,7 @@ public class Tracker extends Thread {
 				return;
 			}
 
+			(new MonitorProcess()).start();
 			instance.serverStart();
 		}
 	}

@@ -171,7 +171,7 @@ public class Monitor {
 		System.out.println(creator);
 		if (creator.equals("PEER")) {
 			System.out.println("INSIDE HERE");
-			monitorClass = service.Peer.class;
+			monitorClass = Peer.class;
 			className = monitorClass.getCanonicalName();
 			builder = new ProcessBuilder(javaBin, "-cp", classpath, className,
 					args[2], args[3], args[4], args[5], args[6], args[7],
