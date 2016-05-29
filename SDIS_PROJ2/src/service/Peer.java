@@ -90,6 +90,7 @@ public class Peer implements Invocation {
 	private static int nTries = 0;
 	private static String[] peerMainArgs;
 	private static Process monitorProcess = null;
+	private static int resAttempts = 0;
 
 	// Tracker connection data fields
 	private PeerTCPHandler trackerConnection;
@@ -867,20 +868,16 @@ public class Peer implements Invocation {
 		builder = new ProcessBuilder(javaBin, "-cp", classpath, className,
 				"PEER", beepPORT, args[0], args[1], args[2], args[3], args[4],
 				args[5], args[6], args[7], args[8]);
-		
-		
+
 		File peerDirectory = new File(System.getProperty("user.dir")
-				+ File.separator + "logs" );
+				+ File.separator + "logs");
 		File fileDirectory = new File(peerDirectory, "monitor_logs");
 		if (!fileDirectory.exists())
 			fileDirectory.mkdirs();
-		String fileName = "server" + serverID
-				+ "_monitor_log";
-		File oldlog = new File(fileDirectory,
-				fileName);
+		String fileName = "server" + serverID + "_monitor_log";
+		File oldlog = new File(fileDirectory, fileName);
 		oldlog.delete();
-		File log = new File(fileDirectory,
-				fileName);
+		File log = new File(fileDirectory, fileName);
 
 		builder.redirectErrorStream(true);
 		builder.redirectOutput(Redirect.appendTo(log));
@@ -929,49 +926,50 @@ public class Peer implements Invocation {
 				while (connectionAlive) {
 					if (bin.ready()) { // buffer has something
 						if ((fromMonitor = bin.readLine()) != null) {
+							if (monitorResurrectedAttempted) {
+								monitorResurrectedAttempted = false;
+								resAttempts = 0;
+							}
 							System.out.println("received: " + fromMonitor);
 							fromPeer = "PEER_BEEP";
 							Thread.sleep(1000);
 							monitorAlive = true;
 							bout.println(fromPeer);
 							System.out.println("sent: " + fromPeer);
-						} else
-							System.out.println("null readline");
+						} 
+					} else if (monitorResurrectedAttempted) {
+						nTries = LIMIT_OF_ATTEMPTS + 1;
 					} else {
 						nTries++;
 						monitorAlive = false;
 						int triesLeft = LIMIT_OF_ATTEMPTS - nTries;
 						System.out.println("Trying to reconect " + triesLeft
 								+ "more time(s)");
-						Thread.sleep(500);
+						Thread.sleep(5000);
 					}
 
 					if (monitorAlive) {
 						System.out.println("Monitor alive");
 						nTries = 0;
 						monitorAlive = false;
-						monitorResurrectedAttempted = false;
 					} else {
-						if (monitorResurrectedAttempted) {
-							monitorResurrectedAttempted = false;
-							System.out.println("failed To Ressurect Peer\n");
-							return;
-							// Action to take??
-						} else {
-							if (nTries >= LIMIT_OF_ATTEMPTS) {
-								monitorAlive = false;
-								monitorResurrectedAttempted = true;
+						if (nTries >= LIMIT_OF_ATTEMPTS) {
+							if (resAttempts >= LIMIT_OF_ATTEMPTS) {
 								System.out
-										.println("attempting ressurection \nCreating new Monitor process");
-								createMonitorProcess(beepServerPort,
-										peerMainArgs);
-								monitorAlive = true;
-								// attemptMonitorResurrection();
+										.println("couldn't resurect monitor. Please try manually");
+								return;
 							}
+							monitorResurrectedAttempted = true;
+							System.out
+									.println("Trying to ressurect Monitor");
+							createMonitorProcess(beepServerPort, peerMainArgs);
+							resAttempts++;
+							return;
 						}
 					}
-					Thread.sleep(1000);
 				}
+				Thread.sleep(1000);
+
 				System.out.println("finished listening");
 			} catch (IOException e) {
 				connectionAlive = false;

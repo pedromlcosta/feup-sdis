@@ -310,7 +310,7 @@ public class Tracker extends Thread {
 						if ((fromMonitor = bin.readLine()) != null) {
 							System.out.println("received: " + fromMonitor);
 							fromTracker = "TRACKER_BEEP";
-							Thread.sleep(1000);
+							Thread.sleep(5000);
 							monitorAlive = true;
 							bout.println(fromTracker);
 							System.out.println("sent: " + fromTracker);
@@ -322,7 +322,7 @@ public class Tracker extends Thread {
 						int triesLeft = LIMIT_OF_ATTEMPTS - nTries;
 						System.out.println("Trying to reconect " + triesLeft
 								+ "more time(s)");
-						Thread.sleep(500);
+						Thread.sleep(4000);
 					}
 
 					if (monitorAlive) {

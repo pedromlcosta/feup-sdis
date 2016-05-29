@@ -92,8 +92,6 @@ public class Monitor {
 			String fromUser, fromServer;
 			while (connectionAlive) {
 				// Receive
-				if (in == null)
-					System.out.println("in é null");
 				if (in.ready() || first) {
 					first = false;
 					System.out.println("buffer not empty");
@@ -104,7 +102,7 @@ public class Monitor {
 						}
 						System.out.println("received: " + fromServer);
 						fromUser = "MONITOR_BEEP";
-						Thread.sleep(1000);
+						Thread.sleep(5000);
 						peerAlive = true;
 						out.println(fromUser);
 						System.out.println("sent: " + fromUser);
@@ -117,7 +115,7 @@ public class Monitor {
 					int triesLeft = LIMIT_OF_ATTEMPTS - nTries;
 					System.out.println("Trying to reconect " + triesLeft
 							+ "more time(s)");
-					Thread.sleep(500);
+					Thread.sleep(4000);
 				}
 				if (peerAlive) {
 					System.out.println("Peer alive");
@@ -126,7 +124,7 @@ public class Monitor {
 
 				} else {
 					if (nTries >= LIMIT_OF_ATTEMPTS) {
-						if (resAttempts >= LIMIT_OF_ATTEMPTS) {
+						if (	resAttempts >= LIMIT_OF_ATTEMPTS) {
 							System.out.println("couldn't resurect " + creator
 									+ ". Please try manually");
 							return;
