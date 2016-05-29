@@ -1,5 +1,7 @@
 INSTRUCTIONS
 
+These are the instructions for the Enhanced version of the Distributed Backup System. While they are very similar to the original instructions, they have some important differences.
+
 COMPILING THE APP
 
 	To compile the app, you may do it in one of two ways: 1. automatically with eclipse, or 2. manually through the command line in Windows (Linux should be simillar).
@@ -22,11 +24,13 @@ COMPILING THE APP
 RUNNING THE APP
 
 	Our TestApp uses RMI to contact with the peers, so the first step is to start an RMI registry.
-	The next steps are to run the TestApp and any necessary peers. Remembers, peers should have different IDs from the ones already running! For the peers to work, there needs to be a tracker running on the local network, whose address and port should be given as arguments of the peer. The instructions are as follows:
+	The next steps are to run the TestApp and any necessary peers. Remembers, peers should have different IDs from the ones already running! For the peers to work, there needs to be a tracker running on the local network, whose address and port should be given as arguments of the peer. Another precondition for this to work, is for the peer to have the "client.keys" file and "truststore" file on the binfolder, otherwise it can't connect to the tracker!
+
+	 The instructions are as follows:
 
 	1. Go to the folder where the compiled packages are (bin, if you followed the directions given), open the command line and invoke "start rmiregistry". A window with a new rmiregistry will open. This is essential for both the TestApp and Peer to work, so don't close it.
 
-	2. To run a peer, while still inside the compilation folder, on a command line window run the following command: java service.Peer <peer_ap> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port>
+	2. To run a peer, while still inside the compilation folder, on a command line window run the following command: java service.Peer <peer_ap> <MC_addr> <MC_port> <MDB_addr> <MDB_port> <MDR_addr> <MDR_port> <tracker_host_address> <tracker_port>
 	Pay attention so that you don't use reserved addresses (example: 224.0.0.0 or 224.0.0.1) and also use only ports that aren't being used already. In our case, the peer_ap will also be the remote name of the RMI, and needs to be a number. The peer_ap must also be different from the id of any other peers already running!
 
 	3. To run the TestApp, while still inside the compilation folder, on a command line window, run the following command: java service.TestApp <peer_ap> <sub_protocol> <opnd_1> <opnd_2>.
@@ -47,4 +51,7 @@ RUNNING THE APP
 		Example: if to backup, you do...     java service.Peer BACKUP folder1/folder2/image.jpg 1
 				 then to restore, you do...  java service.Peer RESTORE folder1/folder2/image.jpg
 
-	
+
+WHILE THE APP RUNS
+
+The peer will only run as long as the tracker is alive, otherwise the connection wouldnt be guaranteed to be safe. So, keep in mind that, if the peer disconnects and can't connect to the tracker, you won't be able to send new commands while it doesn't reconnect.
