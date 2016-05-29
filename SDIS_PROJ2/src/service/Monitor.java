@@ -176,17 +176,31 @@ public class Monitor {
 			builder = new ProcessBuilder(javaBin, "-cp", classpath, className,
 					args[2], args[3], args[4], args[5], args[6], args[7],
 					args[8], args[9], args[10], "RESTART	");
-			File oldLog = new File("peer_logs\\peer" + args[2] + "_log");
-			oldLog.delete();
-			log = new File("peer_logs\\peer" + args[2] + "_log");
+
+			File peerDirectory = new File(System.getProperty("user.dir")
+					+ File.separator + "logs");
+			File fileDirectory = new File(peerDirectory, "peer_logs");
+			if (!fileDirectory.exists())
+				fileDirectory.mkdirs();
+			String fileName = "peer" + args[2] + "_log";
+			File oldlog = new File(fileDirectory, fileName);
+			oldlog.delete();
+			log = new File(fileDirectory, fileName);
 		} else if (creator.equals("TRACKER")) {
 			monitorClass = Tracker.class;
 			className = monitorClass.getCanonicalName();
 			builder = new ProcessBuilder(javaBin, "-cp", classpath, className,
 					args[2]);
-			File oldLog = new File("tracker_logs\\tracker_log");
-			oldLog.delete();
-			log = new File("tracker_logs\\tracker_log");
+
+			File peerDirectory = new File(System.getProperty("user.dir")
+					+ File.separator + "logs");
+			File fileDirectory = new File(peerDirectory, "tracker_logs");
+			if (!fileDirectory.exists())
+				fileDirectory.mkdirs();
+			String fileName = "tracker_log";
+			File oldlog = new File(fileDirectory, fileName);
+			oldlog.delete();
+			log = new File(fileDirectory, fileName);
 		}
 
 		builder.redirectErrorStream(true);

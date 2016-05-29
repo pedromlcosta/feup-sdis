@@ -867,11 +867,20 @@ public class Peer implements Invocation {
 		builder = new ProcessBuilder(javaBin, "-cp", classpath, className,
 				"PEER", beepPORT, args[0], args[1], args[2], args[3], args[4],
 				args[5], args[6], args[7], args[8]);
-
-		File oldLog = new File("monitor_logs\\server" + serverID
-				+ "_monitor_log");
-		oldLog.delete();
-		File log = new File("monitor_logs\\server" + serverID + "_monitor_log");
+		
+		
+		File peerDirectory = new File(System.getProperty("user.dir")
+				+ File.separator + "logs" );
+		File fileDirectory = new File(peerDirectory, "monitor_logs");
+		if (!fileDirectory.exists())
+			fileDirectory.mkdirs();
+		String fileName = "server" + serverID
+				+ "_monitor_log";
+		File oldlog = new File(fileDirectory,
+				fileName);
+		oldlog.delete();
+		File log = new File(fileDirectory,
+				fileName);
 
 		builder.redirectErrorStream(true);
 		builder.redirectOutput(Redirect.appendTo(log));
