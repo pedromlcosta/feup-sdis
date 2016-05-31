@@ -60,10 +60,10 @@ public class TestApp {
 					break;
 				case "testtcp":
 					response = stub.testTCP();
-					break;	
-					case "quit":
-						response = stub.quit();
-						break;
+					break;
+				case "quit":
+					response = stub.quit();
+					break;
 				default:
 					System.out.println("Operation not supported");
 					break;
@@ -174,9 +174,10 @@ public class TestApp {
 					System.out.println("Incorrect number of args.");
 					System.out.println("Correct usage: java TestApp <peer_ap> CHECKCHUNKS. ");
 					return false;
+				} else if (protocol.equals("quit")) {
 				}
-			} else if (protocol.equals("testtcp")){
-			}else{
+			} else if (protocol.equals("testtcp")) {
+			} else {
 				System.out.println("<protocol> must be one of the following: backup, restore, delete, reclaim, wakeup or checkchunks.");
 			}
 		}
