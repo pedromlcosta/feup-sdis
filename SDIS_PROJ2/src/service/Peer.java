@@ -274,15 +274,12 @@ public class Peer implements Invocation {
 		}
 
 		registerRMI();
-		for (ChunkID c : Peer.getInstance().getAnsweredCommand().keySet())
-			System.out.println("Size: " + Peer.getInstance().getAnsweredCommand().get(c).size() + "  " + c.getActualRepDegree() + " " + c.getFileID() + "_" + c.getChunkNumber());
-
+	
 		if (args.length == 10 && args[9].equals("RESTART")) {
 			System.out.print("STARTED RESTART: ");
 			try {
 				peer.restartProtocol();
 			} catch (RemoteException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 		}
