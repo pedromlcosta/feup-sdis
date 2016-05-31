@@ -134,7 +134,7 @@ public class MulticastServer extends Thread {
 				header = header.substring(0, header.length());
 
 				String[] headerArgs = Message.parseHeader(header);
-				System.out.println("headerArgs: " + headerArgs);
+				// System.out.println("headerArgs: " + headerArgs);
 				// TODO ignore messages sent by server
 				if (Integer.parseInt(headerArgs[2]) == Peer.getInstance().getServerID() || !headerArgs[1].equals(Peer.getCurrentVersion())) {
 					// System.out.println("same server");

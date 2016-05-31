@@ -60,7 +60,10 @@ public class TestApp {
 					break;
 				case "testtcp":
 					response = stub.testTCP();
-					break;
+					break;	
+					case "quit":
+						response = stub.quit();
+						break;
 				default:
 					System.out.println("Operation not supported");
 					break;
