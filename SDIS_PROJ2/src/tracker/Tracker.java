@@ -69,6 +69,8 @@ public class Tracker extends Thread {
 	private static boolean monitorResurrectedAttempted = false;
 	private static int nTries = 0;
 	private static String[] trackerMainArgs;
+	private static ServerSocket serverSocket = null;
+	private static Socket clientSocket = null;
 
 	public static void main(String[] args) throws IOException {
 		// Check if args are all ok and well written
@@ -272,26 +274,23 @@ public class Tracker extends Thread {
 	public static class MonitorProcess extends Thread {
 		public void run() {
 
-			System.out.println("Entered Task Thread");
+//			System.out.println("Entered Task Thread");
 			int beepServerPort = 4445;
 			boolean portEmpty = false;
 			while (!portEmpty) {
-				try { // SEE IF THIS WORKS
-					System.out.println("Trying port " + beepServerPort + "\n");
-					ServerSocket serverSocket = new ServerSocket(beepServerPort);
-					System.out.println("creating Monitor process");
+				try {
+//					System.out.println("Trying port " + beepServerPort + "\n");
+					serverSocket = new ServerSocket(beepServerPort);
+//					System.out.println("creating Monitor process");
 					createMonitorProcess(beepServerPort, trackerMainArgs);
-					System.out.println("Monitor process created");
-					Socket clientSocket = serverSocket.accept();
-					System.out.println("client accepted | Created sockets");
+//					System.out.println("Monitor process created");
+					clientSocket = serverSocket.accept();
+//					System.out.println("client accepted | Created sockets");
 					portEmpty = true;
-					// Monitor monitor = new Monitor(beepServerPort); // NOT
-					// THIS:
-					// MUST CREATE A PROCESS
 					bout = new PrintWriter(clientSocket.getOutputStream(), true);
 					bin = new BufferedReader(new InputStreamReader(
 							clientSocket.getInputStream()));
-					System.out.println("created in and out streams\n");
+//					System.out.println("created in and out streams\n");
 					connectionAlive = true;
 				} catch (IOException e) {
 					beepServerPort++;
@@ -302,66 +301,61 @@ public class Tracker extends Thread {
 			}
 
 			try {
-				System.out.println("start listening");
 				String fromTracker, fromMonitor;
-				Thread.sleep(4000);
+				Thread.sleep(2000);
 				while (connectionAlive) {
+					Thread.sleep(2500);
 					if (bin.ready()) { // buffer has something
 						if ((fromMonitor = bin.readLine()) != null) {
-							System.out.println("received: " + fromMonitor);
+							// System.out.println("received: " + fromMonitor);
 							fromTracker = "TRACKER_BEEP";
 							Thread.sleep(5000);
 							monitorAlive = true;
 							bout.println(fromTracker);
-							System.out.println("sent: " + fromTracker);
-						} else
-							System.out.println("null readline");
+							// System.out.println("sent: " + fromTracker);
+						}
 					} else {
 						nTries++;
 						monitorAlive = false;
 						int triesLeft = LIMIT_OF_ATTEMPTS - nTries;
-						System.out.println("Trying to reconect " + triesLeft
-								+ "more time(s)");
 						Thread.sleep(4000);
 					}
 
 					if (monitorAlive) {
-						System.out.println("Monitor alive");
 						nTries = 0;
 						monitorAlive = false;
-						monitorResurrectedAttempted = false;
-					} else {
-						if (monitorResurrectedAttempted) {
-							monitorResurrectedAttempted = false;
-							System.out.println("failed To Ressurect Monitor\n");
-							return;
-							// Action to take??
-						} else {
-							if (nTries >= LIMIT_OF_ATTEMPTS) {
-								monitorAlive = false;
-								monitorResurrectedAttempted = true;
-								System.out
-										.println("attempting ressurection \nCreating new Monitor process");
-								createMonitorProcess(beepServerPort,
-										trackerMainArgs);
-								monitorAlive = true;
-								// attemptMonitorResurrection();
-							}
-						}
+					} else if (nTries >= LIMIT_OF_ATTEMPTS) {
+						monitorAlive = false;
+						monitorResurrectedAttempted = true;
+						System.out
+								.println("Monitor not responding, ressurecting");
+						createMonitorProcess(beepServerPort, trackerMainArgs);
+						clientSocket = serverSocket.accept();
+						bout = new PrintWriter(clientSocket.getOutputStream(),
+								true);
+						bin = new BufferedReader(new InputStreamReader(
+								clientSocket.getInputStream()));
+						monitorAlive = true;
+						nTries = 0;
+						Thread.sleep(3000);
+						System.out.println("Resurrected");
 					}
+
 					Thread.sleep(1000);
 				}
-				System.out.println("finished listening");
+				// }
+//				System.out.println("finished listening");
 			} catch (IOException e) {
 				connectionAlive = false;
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			System.out.println("Port nr: " + beepServerPort);
-			System.out.println("Finish main");
+//			System.out.println("Port nr: " + beepServerPort);
+//			System.out.println("Finish main");
 		}
 	}
+
 
 	public static void createMonitorProcess(int beepPort, String[] args)
 			throws IOException, InterruptedException {
@@ -381,11 +375,10 @@ public class Tracker extends Thread {
 		File fileDirectory = new File(peerDirectory, "monitor_logs");
 		if (!fileDirectory.exists())
 			fileDirectory.mkdirs();
-		String fileName = "tracker_monitor_log";
+		String fileName = "tracker_monitor_log.txt";
 		File oldlog = new File(fileDirectory, fileName);
 		oldlog.delete();
 		File log = new File(fileDirectory, fileName);
-
 
 		builder.redirectErrorStream(true);
 		builder.redirectOutput(Redirect.appendTo(log));

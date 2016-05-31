@@ -35,18 +35,22 @@ public class Monitor {
 			// TODO should the be like they were? com as declarações atrás ou
 			// assim?
 			out = new PrintWriter(peerSocket.getOutputStream(), true);
-			in = new BufferedReader(new InputStreamReader(peerSocket.getInputStream()));
+			in = new BufferedReader(new InputStreamReader(
+					peerSocket.getInputStream()));
 			connectionAlive = true;
 			peerAlive = true;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		// System.out.println("Port nr: " + beepServerPort);
+		 System.out.println("Port nr: " + beepServerPort);
 	}
 
 	public static void main(String[] args) throws InterruptedException {
-		System.out.println("Entered peer " + args[0] + " monitor's main\n");
 		creator = args[0];
+		if (creator.equals("PEER"))
+			System.out.println("Entered peer " + args[2] + " monitor's main");
+		else
+			System.out.println("Entered tracker monitor's main");
 		// System.out.println(creator);
 		beepPort = Integer.parseInt(args[1]);
 		peerMainArgs = args;
@@ -55,10 +59,12 @@ public class Monitor {
 	}
 
 	public static void startBeeping() {
+//		System.out.print("started beepping\n");
 		try {
 			Socket socket = new Socket("localhost", beepPort);
 			out = new PrintWriter(socket.getOutputStream(), true);
-			in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			in = new BufferedReader(new InputStreamReader(
+					socket.getInputStream()));
 
 			connectionAlive = true;
 			peerAlive = true;
@@ -67,9 +73,10 @@ public class Monitor {
 			// send 1st msg
 			fromUser = "MONITOR_BEEP";
 			if (fromUser != null) {
+//				System.out.println("Sent 1st message to "+beepPort);
 				out.println(fromUser);
-				// System.out.println("Monitor: " + fromUser);
-				Thread.sleep(750);
+				 System.out.println("Monitor: " + fromUser);
+				// Thread.sleep(750);
 			}
 			boolean first = true;
 			// System.out.println("here " + connectionAlive);
@@ -80,31 +87,30 @@ public class Monitor {
 			e.printStackTrace();
 		} catch (IOException e) {
 			connectionAlive = false;
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
+		// catch (InterruptedException e) {
+		// // TODO Auto-generated catch block
+		// e.printStackTrace();
+		// }
 	}
 
 	public static void beeps(boolean first) {
 		try {
 			String fromUser, fromServer;
 			while (connectionAlive) {
+				Thread.sleep(5000);
 				// Receive
+//				System.out.println("loop");
 				if (in.ready() || first) {
 					first = false;
-					// System.out.println("buffer not empty");
+//					 System.out.println("buffer not empty/1st access");
 					if ((fromServer = in.readLine()) != null) {
-						if (peerResurrectedAttempted) {
-							peerResurrectedAttempted = false;
-							resAttempts = 0;
-						}
-						// System.out.println("received: " + fromServer);
+						 System.out.println("received: " + fromServer);
 						fromUser = "MONITOR_BEEP";
 						Thread.sleep(5000);
 						peerAlive = true;
 						out.println(fromUser);
-						// System.out.println("sent: " + fromUser);
+						 System.out.println("sent: " + fromUser);
 					}
 				} else if (peerResurrectedAttempted) {
 					nTries = LIMIT_OF_ATTEMPTS + 1;
@@ -112,23 +118,24 @@ public class Monitor {
 					nTries++;
 					peerAlive = false;
 					int triesLeft = LIMIT_OF_ATTEMPTS - nTries;
-					System.out.println("Trying to reconect " + triesLeft + "more time(s)");
+				System.out.println("Trying to reconect " + triesLeft
+							+ "more time(s)");
 					Thread.sleep(4000);
 				}
 				if (peerAlive) {
-					System.out.println("Peer alive");
+//					System.out.println("Peer alive");
 					nTries = 0;
 					peerAlive = false;
 
 				} else {
 					if (nTries >= LIMIT_OF_ATTEMPTS) {
 						if (resAttempts >= LIMIT_OF_ATTEMPTS) {
-							System.out.println("couldn't resurect " + creator + ". Please try manually");
+//							System.out.println("couldn't resurect " + creator
+//									+ ". Please try manually");
 							return;
 						}
 						peerResurrectedAttempted = true;
-						// System.out.println("Trying to ressurect
-						// Peer/Tracker");
+						 System.out.println("Trying to ressurect Peer/Tracker");
 						attemptResurrection();
 						resAttempts++;
 						return;
@@ -151,40 +158,47 @@ public class Monitor {
 		}
 	}
 
-	public static void createResProcess(String[] args) throws IOException, InterruptedException {
+	public static void createResProcess(String[] args) throws IOException,
+			InterruptedException {
 		String javaHome = System.getProperty("java.home");
-		String javaBin = javaHome + File.separator + "bin" + File.separator + "java";
+		String javaBin = javaHome + File.separator + "bin" + File.separator
+				+ "java";
 		String classpath = System.getProperty("java.class.path");
 		Class monitorClass;
 		String className;
 		ProcessBuilder builder = null;
 		File log = null;
 		// createProcess builder
-		System.out.println(creator);
+//		System.out.println(creator);
 		if (creator.equals("PEER")) {
-			System.out.println("INSIDE HERE");
+//			System.out.println("INSIDE HERE");
 			monitorClass = Peer.class;
 			className = monitorClass.getCanonicalName();
-			builder = new ProcessBuilder(javaBin, "-cp", classpath, className, args[2], args[3], args[4], args[5], args[6], args[7], args[8], args[9], args[10], "RESTART");
+			builder = new ProcessBuilder(javaBin, "-cp", classpath, className,
+					args[2], args[3], args[4], args[5], args[6], args[7],
+					args[8], args[9], args[10], "RESTART");
 
-			File peerDirectory = new File(System.getProperty("user.dir") + File.separator + "logs");
+			File peerDirectory = new File(System.getProperty("user.dir")
+					+ File.separator + "logs");
 			File fileDirectory = new File(peerDirectory, "peer_logs");
 			if (!fileDirectory.exists())
 				fileDirectory.mkdirs();
-			String fileName = "peer" + args[2] + "_log";
+			String fileName = "peer" + args[2] + "_log.txt";
 			File oldlog = new File(fileDirectory, fileName);
 			oldlog.delete();
 			log = new File(fileDirectory, fileName);
 		} else if (creator.equals("TRACKER")) {
 			monitorClass = Tracker.class;
 			className = monitorClass.getCanonicalName();
-			builder = new ProcessBuilder(javaBin, "-cp", classpath, className, args[2]);
+			builder = new ProcessBuilder(javaBin, "-cp", classpath, className,
+					args[2]);
 
-			File peerDirectory = new File(System.getProperty("user.dir") + File.separator + "logs");
+			File peerDirectory = new File(System.getProperty("user.dir")
+					+ File.separator + "logs");
 			File fileDirectory = new File(peerDirectory, "tracker_logs");
 			if (!fileDirectory.exists())
 				fileDirectory.mkdirs();
-			String fileName = "tracker_log";
+			String fileName = "tracker_log.txt";
 			File oldlog = new File(fileDirectory, fileName);
 			oldlog.delete();
 			log = new File(fileDirectory, fileName);
