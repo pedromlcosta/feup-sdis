@@ -117,7 +117,8 @@ public class MulticastServer extends Thread {
 			byte[] body = null;
 			String header = null;
 
-			//System.out.println("Received message: " + new String(receivedMessage));
+			// System.out.println("Received message: " + new
+			// String(receivedMessage));
 
 			for (int i = 0; i < receivedMessage.length; i++) {
 				if (receivedMessage[i] == '\r' && receivedMessage[i + 1] == '\n')
@@ -279,50 +280,36 @@ public class MulticastServer extends Thread {
 	 */
 	public void writePacket(DatagramPacket p) {
 		try {
-			/*
-			//System.out.println(Base64.getEncoder().encodeToString(user.getEncryptionKey().getEncoded()));
-			
+			// System.out.println(Base64.getEncoder().encodeToString(user.getEncryptionKey().getEncoded()));
+
 			Cipher cipher = Cipher.getInstance(CIPHER_TYPE);
-			
+
 			cipher.init(Cipher.ENCRYPT_MODE, user.getEncryptionKey());
-			
+
 			System.out.println("Original length: " + p.getLength());
-			//System.out.println("Data straight to string: " + new String(p.getData()));
-			//String data = Base64.encodeBase64String(p.getData());
-			//data = new String(p.getData());
-			//System.out.println("Data to string with encode: " + data);
-			//byte[] dataUTF = data.getBytes("UTF-8");
-			//System.out.println("Before encrypt + encode: " + new String(p.getData()));
-			
-			
+
 			byte[] encryptedData = cipher.doFinal(p.getData());
 			System.out.println("Length after encryption: " + encryptedData.length);
 			byte[] encodedData = Base64.getEncoder().encode(encryptedData);
-			//System.out.println("After encrypt and before encode: " + new String(encryptedData));
-			//System.out.println("After encrypt + encode: " + new String(encodedData));
-			
-			
+
 			p.setData(encodedData);
 			p.setLength(encodedData.length);
-			
-			System.out.println("Sending packet with length: " + p.getLength() + " and data length: " + encodedData.length);
-			*/
-			this.socket.send(p);
-		} catch (Exception e) {
 
-		} /*  catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException e) {
+			System.out.println("Sending packet with length: " + p.getLength() + " and data length: " + encodedData.length);
+			this.socket.send(p);
+		} catch (IOException | NoSuchAlgorithmException | NoSuchPaddingException e) {
 			e.printStackTrace();
 			System.out.println("Error writePacket");
-			} catch (InvalidKeyException e) {
+		} catch (InvalidKeyException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			} catch (IllegalBlockSizeException e) {
+		} catch (IllegalBlockSizeException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			} catch (BadPaddingException e) {
+		} catch (BadPaddingException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-			}   */
+		}
 
 	}
 
@@ -336,53 +323,37 @@ public class MulticastServer extends Thread {
 		try {
 
 			this.socket.receive(p);
-			/*
 			Cipher cipher = Cipher.getInstance(CIPHER_TYPE);
-			
-			//byte[] iv = cipher.getParameters().getParameterSpec(IvParameterSpec.class).getIV();
-			
-			//IvParameterSpec ivSpec = new IvParameterSpec(iv);
-			  
 			cipher.init(Cipher.DECRYPT_MODE, user.getEncryptionKey());
-			
-			
+
 			byte[] data = new byte[p.getLength()];
 			System.arraycopy(p.getData(), 0, data, 0, p.getLength());
-			
+
 			System.out.println("Received packet with length: " + p.getLength() + " and encodedData with length: " + data.length);
-			
-			//System.out.println("Before decode and decrypt: " + new String(data));
+
 			byte[] decodedData = Base64.getDecoder().decode(data);
-			//System.out.println("After decode and before decrypt: " + new String(decodedData));
 			System.out.println("Decoded data has length: " + decodedData.length);
 			byte[] decryptedData = cipher.doFinal(decodedData);
 			System.out.println("Successfully decrypted.");
 			System.out.println("");
-			//System.out.println("After decode + decrypt: " + new String(decryptedData));
-			
+
 			p.setData(decryptedData);
-			*/
 
 			return p;
 		} catch (IOException e) {
 			e.printStackTrace();
 			System.out.println("Error readPacket");
-		} /* catch (IllegalBlockSizeException e) {
-			// TODO Auto-generated catch block
+		} catch (IllegalBlockSizeException e) {
 			e.printStackTrace();
-			} catch (BadPaddingException e) {
-			// TODO Auto-generated catch block
+		} catch (BadPaddingException e) {
 			e.printStackTrace();
-			} catch (InvalidKeyException e) {
-			// TODO Auto-generated catch block
+		} catch (InvalidKeyException e) {
 			e.printStackTrace();
-			} catch (NoSuchAlgorithmException e) {
-			// TODO Auto-generated catch block
+		} catch (NoSuchAlgorithmException e) {
 			e.printStackTrace();
-			} catch (NoSuchPaddingException e) {
-			// TODO Auto-generated catch block
+		} catch (NoSuchPaddingException e) {
 			e.printStackTrace();
-			}  */
+		}
 
 		return null;
 	}

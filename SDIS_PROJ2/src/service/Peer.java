@@ -279,7 +279,7 @@ public class Peer implements Invocation {
 		if (args.length == 10 && args[9].equals("RESTART")) {
 			System.out.print("STARTED RESTART: ");
 			try {
-				peer.getInstance().restartProtocol();
+				peer.restartProtocol();
 			} catch (RemoteException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -306,7 +306,7 @@ public class Peer implements Invocation {
 	public static boolean validArgs(String[] args) {
 
 		if (args.length != 9) {
-			if ((args.length == 10 && (!args[9].equals("RESTART")))) {
+			if ((args.length == 10 && (args[9].equals("RESTART")))) {
 				return true;
 			}
 			System.out.println(args[9]);
@@ -329,7 +329,6 @@ public class Peer implements Invocation {
 		try {
 			trackerConnection.close();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
@@ -422,7 +421,7 @@ public class Peer implements Invocation {
 
 	public String wakeUp() throws RemoteException {
 
-		if (isRunningWakeUp() || isRunningRestart()) {
+		if (!isRunningWakeUp() && !isRunningRestart()) {
 			System.out.println("WakeUp Called");
 			Thread wakeup = new WakeProtocol();
 			wakeup.start();
@@ -434,7 +433,7 @@ public class Peer implements Invocation {
 
 	public String checkChunks() throws RemoteException {
 
-		if (isRunningCheckChunks() || isRunningRestart()) {
+		if (!isRunningCheckChunks() && !isRunningRestart()) {
 			System.out.println("Check Chunks Called");
 			resetChunkData();
 			Thread checkChunks = new CheckChunksProtocol();
@@ -445,7 +444,7 @@ public class Peer implements Invocation {
 	}
 
 	public String restartProtocol() throws RemoteException {
-		if (isRunningRestart()) {
+		if (!isRunningRestart()) {
 			resetChunkData();
 			wakeUp();
 			checkChunks();
@@ -799,7 +798,6 @@ public class Peer implements Invocation {
 		try {
 			sendMessageToTrackerTest("test message");
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 
@@ -830,12 +828,9 @@ public class Peer implements Invocation {
 		System.out.println(args[0] + " " + args[1] + " " + args[2] + " " + args[3] + " " + args[4] + " " + args[5] + " " + args[6] + " " + args[7] + " " + args[8]);
 		System.out.println(beepPort);
 
-		builder = new ProcessBuilder(javaBin, "-cp", classpath, className,
-				"PEER", beepPORT, args[0], args[1], args[2], args[3], args[4],
-				args[5], args[6], args[7], args[8]);
+		builder = new ProcessBuilder(javaBin, "-cp", classpath, className, "PEER", beepPORT, args[0], args[1], args[2], args[3], args[4], args[5], args[6], args[7], args[8]);
 
-		File peerDirectory = new File(System.getProperty("user.dir")
-				+ File.separator + "logs");
+		File peerDirectory = new File(System.getProperty("user.dir") + File.separator + "logs");
 
 		File fileDirectory = new File(peerDirectory, "monitor_logs");
 		if (!fileDirectory.exists())
@@ -901,7 +896,7 @@ public class Peer implements Invocation {
 							monitorAlive = true;
 							bout.println(fromPeer);
 							System.out.println("sent: " + fromPeer);
-						} 
+						}
 					} else if (monitorResurrectedAttempted) {
 						nTries = LIMIT_OF_ATTEMPTS + 1;
 					} else {
@@ -935,8 +930,7 @@ public class Peer implements Invocation {
 
 							}
 							monitorResurrectedAttempted = true;
-							System.out
-									.println("Trying to ressurect Monitor");
+							System.out.println("Trying to ressurect Monitor");
 							createMonitorProcess(beepServerPort, peerMainArgs);
 							resAttempts++;
 							return;
@@ -949,7 +943,6 @@ public class Peer implements Invocation {
 			} catch (IOException e) {
 				connectionAlive = false;
 			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
 			System.out.println("Port nr: " + beepServerPort);

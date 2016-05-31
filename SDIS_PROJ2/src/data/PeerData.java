@@ -80,10 +80,7 @@ public class PeerData implements Serializable {
 		objOut.writeObject(this);
 		fileOut.close();
 		objOut.close();
-		for (ChunkID id : serverAnsweredCommand.keySet()) {
-			System.out.println("CHUNKID: " + id);
-			System.out.println(" " + serverAnsweredCommand.get(id).size());
-		}
+
 	}
 
 	/**
@@ -124,16 +121,13 @@ public class PeerData implements Serializable {
 		if (obj instanceof PeerData) {
 			PeerData data = (PeerData) obj;
 			System.out.println("Finished loading PeerData");
-			System.out.println("DELTED FILES: " + data.getFilesDeleted().toString());
-			for (ChunkID id : serverAnsweredCommand.keySet()) {
-				System.out.println("CHUNKID: " + id);
-				System.out.println(" " + serverAnsweredCommand.get(id).size());
-			}
+			System.out.println("DELETED FILES: " + data.getFilesDeleted().toString());
+
 			return data;
 		} else {
 			throw new ClassNotFoundException("Object read from PeerData.dat isn't a valid PeerData object.");
 		}
-		 
+
 	}
 
 	// GETTERS AND SETTERS
@@ -343,22 +337,4 @@ public class PeerData implements Serializable {
 			id.setActualRepDegree(1);
 
 	}
-
-	/*
-	public static void main(String[] args){
-		
-		PeerData data = new PeerData();
-		PeerData other;
-		
-		PeerData.setDataPath(2);
-		data.dataPath = "bin\\" + data.dataPath;
-		try {
-			byte[] t = data.getData();
-			other = PeerData.getPeerData(t);
-			System.out.println(other.currentTime);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}*/
 }
