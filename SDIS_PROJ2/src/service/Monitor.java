@@ -42,7 +42,7 @@ public class Monitor {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		 System.out.println("Port nr: " + beepServerPort);
+		System.out.println("Port nr: " + beepServerPort);
 	}
 
 	public static void main(String[] args) throws InterruptedException {
@@ -59,7 +59,7 @@ public class Monitor {
 	}
 
 	public static void startBeeping() {
-//		System.out.print("started beepping\n");
+		// System.out.print("started beepping\n");
 		try {
 			Socket socket = new Socket("localhost", beepPort);
 			out = new PrintWriter(socket.getOutputStream(), true);
@@ -73,9 +73,9 @@ public class Monitor {
 			// send 1st msg
 			fromUser = "MONITOR_BEEP";
 			if (fromUser != null) {
-//				System.out.println("Sent 1st message to "+beepPort);
+				// System.out.println("Sent 1st message to "+beepPort);
 				out.println(fromUser);
-				 System.out.println("Monitor: " + fromUser);
+				System.out.println("sent: " + fromUser);
 				// Thread.sleep(750);
 			}
 			boolean first = true;
@@ -97,45 +97,41 @@ public class Monitor {
 	public static void beeps(boolean first) {
 		try {
 			String fromUser, fromServer;
-			while (connectionAlive) {
+			while (true ) {
 				Thread.sleep(5000);
 				// Receive
-//				System.out.println("loop");
-				if (in.ready() || first) {
+				if (in.ready()) {
 					first = false;
-//					 System.out.println("buffer not empty/1st access");
 					if ((fromServer = in.readLine()) != null) {
-						 System.out.println("received: " + fromServer);
+						System.out.println("received: " + fromServer);
 						fromUser = "MONITOR_BEEP";
 						Thread.sleep(5000);
 						peerAlive = true;
 						out.println(fromUser);
-						 System.out.println("sent: " + fromUser);
+						System.out.println("sent: " + fromUser);
 					}
-				} else if (peerResurrectedAttempted) {
-					nTries = LIMIT_OF_ATTEMPTS + 1;
 				} else {
 					nTries++;
 					peerAlive = false;
 					int triesLeft = LIMIT_OF_ATTEMPTS - nTries;
-				System.out.println("Trying to reconect " + triesLeft
+					System.out.println("Trying to reconect " + triesLeft
 							+ "more time(s)");
 					Thread.sleep(4000);
 				}
 				if (peerAlive) {
-//					System.out.println("Peer alive");
+					// System.out.println("Peer alive");
 					nTries = 0;
 					peerAlive = false;
 
 				} else {
 					if (nTries >= LIMIT_OF_ATTEMPTS) {
 						if (resAttempts >= LIMIT_OF_ATTEMPTS) {
-//							System.out.println("couldn't resurect " + creator
-//									+ ". Please try manually");
+							// System.out.println("couldn't resurect " + creator
+							// + ". Please try manually");
 							return;
 						}
 						peerResurrectedAttempted = true;
-						 System.out.println("Trying to ressurect Peer/Tracker");
+						System.out.println("Trying to ressurect Peer/Tracker");
 						attemptResurrection();
 						resAttempts++;
 						return;
@@ -169,9 +165,9 @@ public class Monitor {
 		ProcessBuilder builder = null;
 		File log = null;
 		// createProcess builder
-//		System.out.println(creator);
+		// System.out.println(creator);
 		if (creator.equals("PEER")) {
-//			System.out.println("INSIDE HERE");
+			// System.out.println("INSIDE HERE");
 			monitorClass = Peer.class;
 			className = monitorClass.getCanonicalName();
 			builder = new ProcessBuilder(javaBin, "-cp", classpath, className,
