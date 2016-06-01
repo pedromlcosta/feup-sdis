@@ -118,6 +118,7 @@ public class Tracker extends Thread {
 		} catch (IOException e) {
 			System.out
 					.println("Couldn't create socket. Check key files and/or try another port.");
+			System.exit(0);
 			throw e;
 			// e.printStackTrace();
 		}

@@ -352,6 +352,7 @@ public class Peer implements Invocation {
 			} catch (Exception e) {
 				System.out.println("Couldnt bind, try another remote name, this one is in use");
 				e.printStackTrace();
+				System.exit(0);
 			}
 
 		} catch (Exception e) {
@@ -612,8 +613,9 @@ public class Peer implements Invocation {
 
 	public String quit() throws RemoteException {
 		monitorProcess.destroy();
-		System.exit(1);
+		System.exit(0);
 		return "quited";
+		
 	}
 
 	public String getFolderPath() {
