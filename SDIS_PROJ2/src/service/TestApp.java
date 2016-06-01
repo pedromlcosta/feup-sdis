@@ -1,6 +1,7 @@
 package service;
 
 import java.io.IOException;
+import java.rmi.UnmarshalException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 
@@ -69,11 +70,14 @@ public class TestApp {
 					break;
 				}
 
-			} catch (Exception e) {
+			} catch(UnmarshalException e2){
+				System.out.println("RMI Connection to peer closed.");
+			}catch (Exception e) {
 				System.err.println("Client exception: " + e.toString());
-				e.printStackTrace();
+				//e.printStackTrace();
 				System.out.println("No host with that remoteName exists");
-			}
+				return;
+			} 
 		} else {
 			return;
 		}
